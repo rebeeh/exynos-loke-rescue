@@ -6,129 +6,168 @@
   <title>Exynos LOKE Rescue — Liquid Glass Diagnostics Suite</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
-    /* Apple Liquid Glass Design System Core Tokens */
+    /* Apple Liquid Glass Design System Core Tokens with Dynamic Contrast Syncing */
+    :root {
+      --glass-surface-bg: rgba(255, 255, 255, 0.05);
+      --glass-surface-border: rgba(255, 255, 255, 0.14);
+      --glass-card-bg: rgba(255, 255, 255, 0.035);
+      --glass-card-border: rgba(255, 255, 255, 0.10);
+      --glass-pill-bg: rgba(255, 255, 255, 0.07);
+      --glass-pill-border: rgba(255, 255, 255, 0.14);
+      --text-contrast-primary: #f4f4f5;
+      --text-contrast-secondary: #a1a1aa;
+      --text-contrast-tertiary: #71717a;
+    }
+
+    /* Light Theme Contrast Syncing */
+    .light, [data-theme="light"] {
+      --glass-surface-bg: rgba(255, 255, 255, 0.90);
+      --glass-surface-border: rgba(0, 0, 0, 0.12);
+      --glass-card-bg: rgba(255, 255, 255, 0.82);
+      --glass-card-border: rgba(0, 0, 0, 0.09);
+      --glass-pill-bg: rgba(0, 0, 0, 0.04);
+      --glass-pill-border: rgba(0, 0, 0, 0.10);
+      --text-contrast-primary: #09090b;
+      --text-contrast-secondary: #3f3f46;
+      --text-contrast-tertiary: #52525b;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not(.dark) {
+        --glass-surface-bg: rgba(255, 255, 255, 0.90);
+        --glass-surface-border: rgba(0, 0, 0, 0.12);
+        --glass-card-bg: rgba(255, 255, 255, 0.82);
+        --glass-card-border: rgba(0, 0, 0, 0.09);
+        --glass-pill-bg: rgba(0, 0, 0, 0.04);
+        --glass-pill-border: rgba(0, 0, 0, 0.10);
+        --text-contrast-primary: #09090b;
+        --text-contrast-secondary: #3f3f46;
+        --text-contrast-tertiary: #52525b;
+      }
+    }
+
     html {
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     }
 
-    /* Ambient Liquid Mesh Gradient */
+    /* Liquid Mesh Aura */
     .liquid-mesh {
-      background: radial-gradient(circle at 15% 15%, rgba(0, 113, 227, 0.12) 0%, transparent 45%),
-                  radial-gradient(circle at 85% 25%, rgba(52, 199, 89, 0.08) 0%, transparent 40%),
-                  radial-gradient(circle at 50% 85%, rgba(94, 92, 230, 0.10) 0%, transparent 50%);
+      background: radial-gradient(circle at 10% 10%, rgba(0, 113, 227, 0.14) 0%, transparent 45%),
+                  radial-gradient(circle at 90% 20%, rgba(52, 199, 89, 0.10) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 90%, rgba(94, 92, 230, 0.12) 0%, transparent 50%);
     }
 
-    /* Liquid Glass Material Surfaces */
+    /* Liquid Glass Material Surfaces with Contrast Adaptive Properties */
     .glass-surface {
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--glass-surface-bg);
       backdrop-filter: blur(28px) saturate(190%);
       -webkit-backdrop-filter: blur(28px) saturate(190%);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.20);
+      border: 1px solid var(--glass-surface-border);
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
     }
 
     .glass-card {
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--glass-card-bg);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--glass-card-border);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .glass-card:hover {
       transform: translateY(-1.5px);
-      border-color: rgba(0, 113, 227, 0.35);
-      box-shadow: 0 14px 30px -10px rgba(0, 113, 227, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+      border-color: rgba(0, 113, 227, 0.40);
+      box-shadow: 0 16px 32px -10px rgba(0, 113, 227, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.30);
     }
 
     .glass-pill {
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--glass-pill-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid var(--glass-pill-border);
       box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
     }
 
     .glass-pill-active {
-      background: rgba(0, 113, 227, 0.20);
-      color: #2997ff;
-      border: 1px solid rgba(0, 113, 227, 0.45);
-      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.30);
+      background: rgba(0, 113, 227, 0.22);
+      color: #0071e3;
+      border: 1px solid rgba(0, 113, 227, 0.50);
+      box-shadow: 0 4px 14px rgba(0, 113, 227, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.35);
     }
-
-    /* Custom sleek scrollbar */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(150, 150, 160, 0.25); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(150, 150, 160, 0.45); }
 
     /* Keyframe animations */
     @keyframes pulseGlow {
-      0%, 100% { opacity: 0.8; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(52, 199, 89, 0.6)); }
+      0%, 100% { opacity: 0.85; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.06); filter: drop-shadow(0 0 8px rgba(52, 199, 89, 0.7)); }
     }
     .pulse-glow { animation: pulseGlow 2.5s infinite ease-in-out; }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(140, 140, 150, 0.35); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 150, 0.55); }
   </style>
 </head>
-<body class="min-h-full bg-[var(--background)] text-[var(--foreground)] liquid-mesh antialiased p-3 sm:p-5 md:p-8 lg:p-10 flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">
+<body class="min-h-full bg-[var(--background)] text-[var(--foreground)] liquid-mesh antialiased p-3 sm:p-5 md:p-7 lg:p-9 flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">
 
   <!-- Core Content Wrapper -->
   <div class="max-w-7xl w-full mx-auto space-y-6">
 
     <!-- Top Navigation Header (Liquid Glass Floating Island) -->
-    <header class="glass-surface rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+    <header class="glass-surface rounded-3xl p-4 sm:p-6 md:p-7 shadow-2xl relative overflow-hidden">
       <!-- Ambient specular highlight line -->
-      <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></div>
+      <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none"></div>
 
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         
         <!-- Brand & Protocol Architecture -->
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 via-blue-600/10 to-transparent border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0 shadow-inner">
-            <!-- SF Symbol Smartphone Silhouette -->
-            <svg class="w-6 h-6 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-500/25 via-blue-600/15 to-transparent border border-blue-400/35 flex items-center justify-center text-blue-500 shrink-0 shadow-inner">
+            <!-- Smartphone Vector Icon -->
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="2" width="14" height="20" rx="3.5" ry="3.5"></rect>
               <line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2.5"></line>
             </svg>
           </div>
           <div>
             <div class="flex items-center gap-2.5 flex-wrap">
-              <h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue</h1>
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/15 text-blue-400 border border-blue-400/25 tracking-wide">v1.0.0</span>
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-400/25 tracking-wide">Pure Rust nusb</span>
+              <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-500 border border-blue-400/30 tracking-wide">v1.0.0</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-400/30 tracking-wide">Pure Rust nusb</span>
             </div>
-            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-0.5">
-              Deterministic Odin v3/v4 Protocol Engine &bull; Direct Hardware NAND Recovery &bull; Reverse Engineered Architecture
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium leading-relaxed">
+              Deterministic Odin v3/v4 Protocol Driver &bull; Hardware NAND Recovery &bull; Clean-Room Architecture
             </p>
           </div>
         </div>
 
-        <!-- Real-Time Hardware Status Badges -->
+        <!-- Real-Time Hardware Status Badges (High Contrast) -->
         <div class="flex items-center gap-2.5 flex-wrap">
-          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-glow"></span>
+          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-medium">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-glow"></span>
             <span class="text-[var(--muted-foreground)]">Transport:</span>
-            <span class="font-mono font-medium text-[var(--foreground)]">04e8:685d (LOKE)</span>
+            <span class="font-mono font-semibold text-[var(--foreground)]">04e8:685d (LOKE)</span>
           </div>
-          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs">
-            <span class="text-[var(--muted-foreground)]">Device:</span>
-            <span class="font-mono font-semibold text-blue-400">Galaxy A21s (SM-A217F)</span>
+          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-medium">
+            <span class="text-[var(--muted-foreground)]">Target:</span>
+            <span class="font-mono font-bold text-blue-500">Galaxy A21s (SM-A217F)</span>
           </div>
-          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs">
+          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-medium">
             <span class="text-[var(--muted-foreground)]">Protocol:</span>
-            <span class="font-mono text-purple-400 font-semibold">Tier v3 (1MB Macro)</span>
+            <span class="font-mono text-purple-500 font-bold">Tier v3 (1MB Macro)</span>
           </div>
         </div>
       </div>
 
-      <!-- Segmented Control Bar (Glass Dynamic Island) -->
-      <nav class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between gap-3 overflow-x-auto pb-1">
-        <div class="inline-flex p-1 rounded-2xl glass-pill text-xs font-medium gap-1 min-w-max">
-          <button onclick="switchTab('tab-storage')" id="btn-tab-storage" class="nav-tab glass-pill-active flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Segmented Control Navigation Bar (Glass Island) -->
+      <nav class="mt-6 pt-5 border-t border-[var(--glass-surface-border)] flex items-center justify-between gap-3 overflow-x-auto pb-1">
+        <div class="inline-flex p-1.5 rounded-2xl glass-pill text-xs sm:text-sm font-medium gap-1 min-w-max">
+          <button onclick="switchTab('tab-storage')" id="btn-tab-storage" class="nav-tab glass-pill-active flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 font-semibold">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
               <line x1="12" y1="22.08" x2="12" y2="12"></line>
@@ -137,7 +176,7 @@
           </button>
 
           <button onclick="switchTab('tab-protocol')" id="btn-tab-protocol" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
               <rect x="9" y="9" width="6" height="6"></rect>
               <line x1="9" y1="1" x2="9" y2="4"></line>
@@ -149,29 +188,29 @@
           </button>
 
           <button onclick="switchTab('tab-diagnostics')" id="btn-tab-diagnostics" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
             <span>Guided Diagnostics</span>
           </button>
 
           <button onclick="switchTab('tab-studio')" id="btn-tab-studio" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="4 17 10 11 4 5"></polyline>
               <line x1="12" y1="19" x2="20" y2="19"></line>
             </svg>
-            <span>Terminal Command Studio</span>
+            <span>Command Studio</span>
           </button>
 
           <button onclick="switchTab('tab-simulator')" id="btn-tab-simulator" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
             <span>Live Flash Simulator</span>
           </button>
 
           <button onclick="switchTab('tab-safety')" id="btn-tab-safety" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
             <span>Safety Invariants</span>
@@ -181,57 +220,121 @@
     </header>
 
     <!-- ======================================================== -->
-    <!-- TAB 1: Storage Geometry & 42-Partition Dissector         -->
+    <!-- TAB 1: Storage Geometry & Responsive Capacity Inspector  -->
     <!-- ======================================================== -->
     <main id="content-tab-storage" class="space-y-6">
-      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Flash Storage & PIT Dissector</h2>
-            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Physical eMMC geometry & dynamic partition metadata from A21S_EUR_OPEN.pit</p>
+            <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Flash Storage & PIT Dissector</h2>
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Physical eMMC geometry & dynamic partition metadata from A21S_EUR_OPEN.pit</p>
           </div>
-          <!-- Filter Buttons -->
-          <div class="flex items-center gap-2 flex-wrap text-xs">
-            <button onclick="filterPartitions('all')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill font-medium text-blue-400 border-blue-400/40">All (42)</button>
-            <button onclick="filterPartitions('core')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Kernel & Boot (5)</button>
-            <button onclick="filterPartitions('super')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Dynamic Super (1)</button>
-            <button onclick="filterPartitions('storage')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">User Storage (3)</button>
-            <button onclick="filterPartitions('nvram')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Protected NVRAM (4)</button>
+          <!-- Filter Buttons with High Contrast -->
+          <div class="flex items-center gap-2 flex-wrap text-xs sm:text-sm">
+            <button onclick="filterPartitions('all')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-blue-500 border-blue-500/50">All (42)</button>
+            <button onclick="filterPartitions('core')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Kernel & Boot (5)</button>
+            <button onclick="filterPartitions('super')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Dynamic Super (1)</button>
+            <button onclick="filterPartitions('storage')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">User Storage (3)</button>
+            <button onclick="filterPartitions('nvram')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Protected NVRAM (4)</button>
           </div>
         </div>
 
-        <!-- Proportional Segmented Capacity Bar (Apple macOS / iOS Storage Inspector) -->
-        <div class="glass-card rounded-2xl p-4 sm:p-5 mb-7">
-          <div class="flex justify-between items-center text-xs mb-3">
-            <span class="font-medium text-[var(--foreground)]">Proportional Capacity Allocation</span>
-            <span class="font-mono text-[var(--muted-foreground)]">Total 32.00 GB eMMC Flash</span>
+        <!-- RESPONSIVE STORAGE CAPACITY ALLOCATION (Multi-Tier Apple Inspector) -->
+        <div class="glass-card rounded-2xl p-4 sm:p-6 mb-7">
+          <div class="flex justify-between items-center text-xs sm:text-sm mb-3.5 font-medium">
+            <span class="text-[var(--foreground)] font-semibold flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+              </svg>
+              <span>eMMC Flash Memory Allocation</span>
+            </span>
+            <span class="font-mono text-blue-500 font-bold">~32.00 GB Total Capacity</span>
           </div>
 
-          <div class="w-full h-9 rounded-xl overflow-hidden flex bg-black/40 border border-white/10 p-1 gap-1 shadow-inner select-none">
-            <div style="width: 17.5%;" onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Dynamic container storing Android system, vendor, product, odm. Android Sparse format 0xed26ff3a.')" class="h-full rounded-lg bg-emerald-500/90 hover:bg-emerald-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-2 cursor-pointer shadow-sm">
-              <span class="truncate">SUPER (5.18 GB)</span>
-            </div>
-            <div style="width: 73.5%;" onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted userdata partition. Erased via low-level NAND hardware wipe 0x64 (0x07) to unbrick broken power key prompt.')" class="h-full rounded-lg bg-amber-500/90 hover:bg-amber-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-2 cursor-pointer shadow-sm">
-              <span class="truncate">USERDATA (~24.0 GB)</span>
-            </div>
-            <div style="width: 3.5%;" onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="h-full rounded-lg bg-blue-500/90 hover:bg-blue-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-1 cursor-pointer shadow-sm">
-              <span class="truncate">REC</span>
-            </div>
-            <div style="width: 2.5%;" onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="h-full rounded-lg bg-cyan-400 hover:bg-cyan-300 transition-colors flex items-center justify-center text-[11px] font-semibold text-black px-1 cursor-pointer shadow-sm">
-              <span class="truncate">BOOT</span>
-            </div>
-            <div style="width: 3%;" onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Radio calibrations, IMEI, MAC address certificates. Immutable and hard write-protected by driver.')" class="h-full rounded-lg bg-rose-500 hover:bg-rose-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-1 cursor-pointer shadow-sm">
-              <span class="truncate">EFS</span>
+          <!-- Tier 1: Proportional Bar with Adaptive Minimum Cell Widths -->
+          <div class="w-full rounded-2xl bg-black/40 border border-[var(--glass-card-border)] p-1.5 shadow-inner select-none overflow-x-auto">
+            <div class="flex items-center gap-1.5 min-w-[620px] sm:min-w-full h-11 sm:h-12">
+              
+              <!-- SUPER Segment -->
+              <div style="flex: 17.5 1 125px;" onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Dynamic container storing Android system, vendor, product, odm. Android Sparse format 0xed26ff3a.')" class="min-w-[125px] h-full rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2.5 cursor-pointer shadow-md">
+                <span class="truncate">SUPER (5.18 GB)</span>
+              </div>
+
+              <!-- USERDATA Segment -->
+              <div style="flex: 73.5 1 180px;" onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted userdata partition. Erased via low-level NAND hardware wipe 0x64 (0x07) to unbrick broken power key prompt.')" class="min-w-[180px] h-full rounded-xl bg-amber-500 hover:bg-amber-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2.5 cursor-pointer shadow-md">
+                <span class="truncate">USERDATA (~24.0 GB)</span>
+              </div>
+
+              <!-- RECOVERY Segment -->
+              <div style="flex: 3.5 1 75px;" onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="min-w-[75px] h-full rounded-xl bg-blue-500 hover:bg-blue-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2 cursor-pointer shadow-md">
+                <span class="truncate">REC (53M)</span>
+              </div>
+
+              <!-- BOOT Segment -->
+              <div style="flex: 2.5 1 70px;" onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="min-w-[70px] h-full rounded-xl bg-cyan-400 hover:bg-cyan-300 transition-colors flex items-center justify-center text-xs font-bold text-black px-2 cursor-pointer shadow-md">
+                <span class="truncate">BOOT (36M)</span>
+              </div>
+
+              <!-- EFS Segment -->
+              <div style="flex: 3.0 1 70px;" onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Radio calibrations, IMEI, MAC address certificates. Immutable and hard write-protected by driver.')" class="min-w-[70px] h-full rounded-xl bg-rose-500 hover:bg-rose-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2 cursor-pointer shadow-md">
+                <span class="truncate">EFS (20M)</span>
+              </div>
+
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-[11px] text-[var(--muted-foreground)] mt-3 pt-2 border-t border-white/5 flex-wrap gap-2">
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Dynamic Super: 5.18 GiB</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Encrypted Data: ~24.0 GiB</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Recovery: 53.0 MiB</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Kernel: 36.0 MiB</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Protected NVRAM: 20.0 MiB</span>
+          <!-- Tier 2: Responsive Partition Card Deck (Grid of Major Partitions) -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4 pt-3 border-t border-[var(--glass-card-border)]">
+            
+            <div onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Dynamic container storing Android system, vendor, product, odm. Android Sparse format 0xed26ff3a.')" class="p-3 rounded-xl glass-pill hover:border-emerald-500/50 cursor-pointer transition-all flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                <span class="font-mono text-xs font-bold text-emerald-500">17.5%</span>
+              </div>
+              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">SUPER</div>
+              <div class="font-mono text-xs text-[var(--muted-foreground)]">5.18 GiB Dynamic</div>
+            </div>
+
+            <div onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted userdata partition. Erased via low-level NAND hardware wipe 0x64 (0x07) to unbrick broken power key prompt.')" class="p-3 rounded-xl glass-pill hover:border-amber-500/50 cursor-pointer transition-all flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                <span class="font-mono text-xs font-bold text-amber-500">73.5%</span>
+              </div>
+              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">USERDATA</div>
+              <div class="font-mono text-xs text-[var(--muted-foreground)]">~24.0 GiB Ext4</div>
+            </div>
+
+            <div onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="p-3 rounded-xl glass-pill hover:border-blue-500/50 cursor-pointer transition-all flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                <span class="font-mono text-xs font-bold text-blue-500">3.5%</span>
+              </div>
+              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">RECOVERY</div>
+              <div class="font-mono text-xs text-[var(--muted-foreground)]">53.0 MiB Stock/OS</div>
+            </div>
+
+            <div onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="p-3 rounded-xl glass-pill hover:border-cyan-400/50 cursor-pointer transition-all flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="w-3 h-3 rounded-full bg-cyan-400"></span>
+                <span class="font-mono text-xs font-bold text-cyan-500">2.5%</span>
+              </div>
+              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">BOOT</div>
+              <div class="font-mono text-xs text-[var(--muted-foreground)]">36.0 MiB Kernel</div>
+            </div>
+
+            <div onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Radio calibrations, IMEI, MAC address certificates. Immutable and hard write-protected by driver.')" class="p-3 rounded-xl glass-pill hover:border-rose-500/50 cursor-pointer transition-all flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                <span class="font-mono text-xs font-bold text-rose-500">LOCKED</span>
+              </div>
+              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">EFS / NVRAM</div>
+              <div class="font-mono text-xs text-[var(--muted-foreground)]">20.0 MiB Protected</div>
+            </div>
+
           </div>
         </div>
 
@@ -240,12 +343,12 @@
           
           <!-- Partition Grid List (7 Cols) -->
           <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden flex flex-col">
-            <div class="p-3.5 border-b border-white/10 bg-white/5 flex items-center justify-between text-xs">
-              <span class="font-medium text-[var(--foreground)]">Partition Table Inventory</span>
-              <span class="text-[var(--muted-foreground)]" id="partition-counter">Showing 42 partitions</span>
+            <div class="p-4 border-b border-[var(--glass-card-border)] bg-black/20 flex items-center justify-between text-xs sm:text-sm font-semibold">
+              <span class="text-[var(--foreground)]">Partition Inventory Record</span>
+              <span class="text-[var(--muted-foreground)] font-mono" id="partition-counter">Showing 42 partitions</span>
             </div>
 
-            <div class="divide-y divide-white/5 max-h-96 overflow-y-auto" id="partition-list-container">
+            <div class="divide-y divide-[var(--glass-card-border)] max-h-96 overflow-y-auto" id="partition-list-container">
               <!-- Dynamically populated via script -->
             </div>
           </div>
@@ -254,59 +357,59 @@
           <div class="lg:col-span-5 glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Partition Inspector</span>
-                <span id="inspect-badge" class="px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold bg-blue-500/15 text-blue-400 border border-blue-400/30">ID 18</span>
+                <span class="text-xs sm:text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Partition Inspector</span>
+                <span id="inspect-badge" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-mono font-bold bg-blue-500/15 text-blue-500 border border-blue-400/30">ID 18</span>
               </div>
               <div>
-                <h3 id="inspect-name" class="text-2xl font-bold tracking-tight text-[var(--foreground)]">BOOT</h3>
-                <p id="inspect-desc" class="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed">
+                <h3 id="inspect-name" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">BOOT</h3>
+                <p id="inspect-desc" class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-2 leading-relaxed font-medium">
                   Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.
                 </p>
               </div>
 
-              <!-- Technical Details Breakdown -->
-              <div class="space-y-2.5 pt-4 border-t border-white/10 text-xs">
+              <!-- Technical Details Breakdown with High Contrast -->
+              <div class="space-y-3 pt-4 border-t border-[var(--glass-card-border)] text-xs sm:text-sm">
                 <div class="flex justify-between items-center">
-                  <span class="text-[var(--muted-foreground)]">Flash Filename:</span>
-                  <span id="inspect-file" class="font-mono font-medium text-[var(--foreground)]">boot.img</span>
+                  <span class="text-[var(--muted-foreground)] font-medium">Flash Filename:</span>
+                  <span id="inspect-file" class="font-mono font-semibold text-[var(--foreground)]">boot.img</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="text-[var(--muted-foreground)]">Block Count:</span>
-                  <span id="inspect-blocks" class="font-mono text-[var(--foreground)]">73,728 blocks</span>
+                  <span class="text-[var(--muted-foreground)] font-medium">Block Count:</span>
+                  <span id="inspect-blocks" class="font-mono text-[var(--foreground)] font-medium">73,728 blocks</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="text-[var(--muted-foreground)]">Allocated Capacity:</span>
-                  <span id="inspect-size" class="font-mono font-bold text-blue-400">36.00 MiB</span>
+                  <span class="text-[var(--muted-foreground)] font-medium">Allocated Capacity:</span>
+                  <span id="inspect-size" class="font-mono font-bold text-blue-500 text-sm sm:text-base">36.00 MiB</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="text-[var(--muted-foreground)]">Binary Domain:</span>
+                  <span class="text-[var(--muted-foreground)] font-medium">Binary Domain:</span>
                   <span id="inspect-type" class="font-medium text-[var(--foreground)]">AP (Application Processor)</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="text-[var(--muted-foreground)]">Flash Safety Tier:</span>
-                  <span id="inspect-safety" class="font-medium text-emerald-400">Safe for Direct Flashing</span>
+                  <span class="text-[var(--muted-foreground)] font-medium">Flash Safety Tier:</span>
+                  <span id="inspect-safety" class="font-semibold text-emerald-500">Safe for Direct Flashing</span>
                 </div>
               </div>
 
               <!-- Reverse Engineering Protocol Note -->
-              <div class="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
-                <div class="font-semibold text-blue-400 flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-xs sm:text-sm space-y-1.5">
+                <div class="font-bold text-blue-500 flex items-center gap-2">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                   </svg>
                   <span>LOKE Protocol Rationale</span>
                 </div>
-                <p id="inspect-rationale" class="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+                <p id="inspect-rationale" class="text-xs text-[var(--muted-foreground)] leading-relaxed">
                   LOKE verifies the OEM RSA cryptographic signature on the final sequence block. Mismatches trigger error code -1.
                 </p>
               </div>
             </div>
 
-            <div class="pt-5 border-t border-white/10 mt-4">
-              <button onclick="copySinglePartitionCommand()" id="btn-copy-partition" class="w-full py-2.5 px-4 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-400/30 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="pt-5 border-t border-[var(--glass-card-border)] mt-4">
+              <button onclick="copySinglePartitionCommand()" id="btn-copy-partition" class="w-full py-3 px-4 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-500 border border-blue-400/40 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
@@ -322,109 +425,109 @@
     <!-- TAB 2: Reverse Engineered Wire Protocol Inspector       -->
     <!-- ======================================================== -->
     <section id="content-tab-protocol" class="hidden space-y-6">
-      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         <div class="mb-6">
-          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Odin Wire Protocol Reverse Engineered Specification</h2>
-          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Wire-level state machine reconstructed from Samsung LOKE bootloader memory analysis</p>
+          <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Odin Wire Protocol Reverse Engineered Specification</h2>
+          <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Wire-level state machine reconstructed from Samsung LOKE bootloader memory analysis</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <!-- Step 1 -->
-          <div class="glass-card rounded-2xl p-4 space-y-2">
+          <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 font-mono text-xs font-bold flex items-center justify-center">01</span>
-              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Init</span>
+              <span class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-500 font-mono text-xs font-bold flex items-center justify-center">01</span>
+              <span class="text-xs font-mono text-[var(--muted-foreground)] font-semibold">Init</span>
             </div>
-            <h3 class="text-sm font-semibold text-[var(--foreground)]">Handshake & Ping</h3>
-            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Host sends ASCII string <code class="text-blue-400">"ODIN"</code> (4 bytes). Bootloader verifies cable and echoes <code class="text-emerald-400">"LOKE"</code>.
+            <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Handshake & Ping</h3>
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+              Host sends ASCII string <code class="text-blue-500 font-bold">"ODIN"</code> (4 bytes). Bootloader verifies cable and echoes <code class="text-emerald-500 font-bold">"LOKE"</code>.
             </p>
           </div>
 
           <!-- Step 2 -->
-          <div class="glass-card rounded-2xl p-4 space-y-2">
+          <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-400 font-mono text-xs font-bold flex items-center justify-center">02</span>
-              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Opcode 0x64</span>
+              <span class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-500 font-mono text-xs font-bold flex items-center justify-center">02</span>
+              <span class="text-xs font-mono text-[var(--muted-foreground)] font-semibold">Opcode 0x64</span>
             </div>
-            <h3 class="text-sm font-semibold text-[var(--foreground)]">Session Setup</h3>
-            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Negotiates protocol tier: Odin v3 (1MB sequence buffer) or Odin v4 (8MB sequence). Hardware NAND erase (subcmd <code class="text-amber-400">0x07</code>).
+            <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Session Setup</h3>
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+              Negotiates protocol tier: Odin v3 (1MB sequence buffer) or Odin v4 (8MB sequence). Hardware NAND erase (subcmd <code class="text-amber-500 font-bold">0x07</code>).
             </p>
           </div>
 
           <!-- Step 3 -->
-          <div class="glass-card rounded-2xl p-4 space-y-2">
+          <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold flex items-center justify-center">03</span>
-              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Opcode 0x66</span>
+              <span class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-500 font-mono text-xs font-bold flex items-center justify-center">03</span>
+              <span class="text-xs font-mono text-[var(--muted-foreground)] font-semibold">Opcode 0x66</span>
             </div>
-            <h3 class="text-sm font-semibold text-[var(--foreground)]">Sequence Streaming</h3>
-            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+            <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Sequence Streaming</h3>
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
               Transmits 512-byte aligned macro buffers. On the final sequence block, bootloader validates SHA-256 and OEM RSA public keys.
             </p>
           </div>
 
           <!-- Step 4 -->
-          <div class="glass-card rounded-2xl p-4 space-y-2">
+          <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 font-mono text-xs font-bold flex items-center justify-center">04</span>
-              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Opcode 0x67</span>
+              <span class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-500 font-mono text-xs font-bold flex items-center justify-center">04</span>
+              <span class="text-xs font-mono text-[var(--muted-foreground)] font-semibold">Opcode 0x67</span>
             </div>
-            <h3 class="text-sm font-semibold text-[var(--foreground)]">Session Commit</h3>
-            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+            <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Session Commit</h3>
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
               Clears the emergency softbrick flag in secure param storage and executes device reset to One UI.
             </p>
           </div>
         </div>
 
-        <!-- Wire Packet Table -->
-        <div class="glass-card rounded-2xl p-5">
-          <h3 class="text-sm font-semibold text-[var(--foreground)] mb-3">Protocol Frame Structure (1024-Byte Control Block)</h3>
+        <!-- Wire Packet Table (High Contrast) -->
+        <div class="glass-card rounded-2xl p-5 sm:p-6">
+          <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)] mb-4">Protocol Frame Structure (1024-Byte Control Block)</h3>
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
+            <table class="w-full text-left text-xs sm:text-sm">
               <thead>
-                <tr class="border-b border-white/10 text-[var(--muted-foreground)]">
-                  <th class="pb-2.5 font-medium">Offset</th>
-                  <th class="pb-2.5 font-medium">Field</th>
-                  <th class="pb-2.5 font-medium">Size</th>
-                  <th class="pb-2.5 font-medium">Description</th>
+                <tr class="border-b border-[var(--glass-card-border)] text-[var(--muted-foreground)] font-semibold">
+                  <th class="pb-3 font-semibold">Offset</th>
+                  <th class="pb-3 font-semibold">Field</th>
+                  <th class="pb-3 font-semibold">Size</th>
+                  <th class="pb-3 font-semibold">Description</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-white/5 font-mono text-[var(--foreground)]">
+              <tbody class="divide-y divide-[var(--glass-card-border)] font-mono text-[var(--foreground)]">
                 <tr>
-                  <td class="py-2.5 text-blue-400">0x00 - 0x03</td>
-                  <td>cmd_id</td>
+                  <td class="py-3 text-blue-500 font-bold">0x00 - 0x03</td>
+                  <td class="font-bold">cmd_id</td>
                   <td>4 Bytes (u32 LE)</td>
                   <td class="font-sans text-[var(--muted-foreground)]">Primary opcode: 0x64 (Setup), 0x65 (PIT), 0x66 (Flash), 0x67 (End)</td>
                 </tr>
                 <tr>
-                  <td class="py-2.5 text-blue-400">0x04 - 0x07</td>
-                  <td>subcmd_id</td>
+                  <td class="py-3 text-blue-500 font-bold">0x04 - 0x07</td>
+                  <td class="font-bold">subcmd_id</td>
                   <td>4 Bytes (u32 LE)</td>
                   <td class="font-sans text-[var(--muted-foreground)]">Subcommand: 0x00 (Start sequence), 0x02 (Commit sequence), 0x07 (NAND wipe)</td>
                 </tr>
                 <tr>
-                  <td class="py-2.5 text-blue-400">0x08 - 0x0B</td>
-                  <td>arg1</td>
+                  <td class="py-3 text-blue-500 font-bold">0x08 - 0x0B</td>
+                  <td class="font-bold">arg1</td>
                   <td>4 Bytes (u32 LE)</td>
                   <td class="font-sans text-[var(--muted-foreground)]">Payload length or sequence byte count (aligned to 512-byte sector)</td>
                 </tr>
                 <tr>
-                  <td class="py-2.5 text-blue-400">0x0C - 0x0F</td>
-                  <td>arg2</td>
+                  <td class="py-3 text-blue-500 font-bold">0x0C - 0x0F</td>
+                  <td class="font-bold">arg2</td>
                   <td>4 Bytes (u32 LE)</td>
                   <td class="font-sans text-[var(--muted-foreground)]">Target partition ID from PIT table (e.g. 18 for BOOT, 30 for SUPER)</td>
                 </tr>
                 <tr>
-                  <td class="py-2.5 text-blue-400">0x10 - 0x13</td>
-                  <td>arg3</td>
+                  <td class="py-3 text-blue-500 font-bold">0x10 - 0x13</td>
+                  <td class="font-bold">arg3</td>
                   <td>4 Bytes (u32 LE)</td>
                   <td class="font-sans text-[var(--muted-foreground)]">Final block flag: 1 = verify signature & commit; 0 = stream next chunk</td>
                 </tr>
                 <tr>
-                  <td class="py-2.5 text-blue-400">0x14 - 0x3FF</td>
-                  <td>zero_pad</td>
+                  <td class="py-3 text-blue-500 font-bold">0x14 - 0x3FF</td>
+                  <td class="font-bold">zero_pad</td>
                   <td>1004 Bytes</td>
                   <td class="font-sans text-[var(--muted-foreground)]">Zero-filled padding to fulfill strict 1024-byte control packet size</td>
                 </tr>
@@ -439,86 +542,86 @@
     <!-- TAB 3: Guided Diagnostics                               -->
     <!-- ======================================================== -->
     <section id="content-tab-diagnostics" class="hidden space-y-6">
-      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         <div class="mb-6">
-          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Interactive Recovery Flowchart</h2>
-          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Diagnose symptoms and execute deterministic, hardware-tested recovery sequences</p>
+          <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Interactive Recovery Flowchart</h2>
+          <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Diagnose symptoms and execute deterministic, hardware-tested recovery sequences</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           
           <!-- Recipe 1 -->
-          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
-            <div class="space-y-2.5">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-500/20 text-blue-400 border border-blue-400/30">SCENARIO 1</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">Teal Emergency Recovery Softbrick</h3>
+          <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-blue-500/20 text-blue-500 border border-blue-400/30">SCENARIO 1</span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Teal Emergency Recovery Softbrick</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                Screen displays: <span class="font-mono text-blue-400">"An error has occurred while updating the device software."</span> Caused by interrupted flashing or invalid kernel signature.
+              <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Screen displays: <span class="font-mono text-blue-500 font-bold">"An error has occurred while updating the device software."</span> Caused by interrupted flashing or invalid kernel signature.
               </p>
-              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-blue-300 break-all select-all">
+              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-blue-400 break-all select-all font-semibold">
                 exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2 px-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-400/30 text-xs font-semibold transition-colors">
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 border border-blue-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
               Load Scenario in Command Studio
             </button>
           </div>
 
           <!-- Recipe 2 -->
-          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
-            <div class="space-y-2.5">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-400/30">SCENARIO 2</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">Broken Power Key Recovery Trap</h3>
+          <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/20 text-amber-500 border border-amber-400/30">SCENARIO 2</span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Broken Power Key Recovery Trap</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                Stock recovery prompts: <span class="font-mono text-amber-400">"Cannot load Android system. Your data may be corrupt."</span> but the physical power key is broken and cannot confirm the wipe.
+              <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Stock recovery prompts: <span class="font-mono text-amber-500 font-bold">"Cannot load Android system. Your data may be corrupt."</span> but the physical power key is broken and cannot confirm the wipe.
               </p>
-              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-amber-300 break-all select-all">
+              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-amber-400 break-all select-all font-semibold">
                 exynos-loke-rescue emergency-wipe-reboot
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('emergency-wipe-reboot')" class="w-full py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-semibold transition-colors">
+            <button onclick="applyDiagnosticMode('emergency-wipe-reboot')" class="w-full py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border border-amber-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
               Load Scenario in Command Studio
             </button>
           </div>
 
           <!-- Recipe 3 -->
-          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
-            <div class="space-y-2.5">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-400/30">SCENARIO 3</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">Full Stock OS Reinstallation</h3>
+          <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/20 text-emerald-500 border border-emerald-400/30">SCENARIO 3</span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Full Stock OS Reinstallation</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
                 Corrupt vendor/system dynamic partitions in `SUPER`, bootloops past Samsung logo, or returning to clean official One UI.
               </p>
-              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-emerald-300 break-all select-all">
+              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-emerald-400 break-all select-all font-semibold">
                 exynos-loke-rescue full-raw-restore -s ~/Downloads/stock -e
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('full-raw-restore')" class="w-full py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 text-xs font-semibold transition-colors">
+            <button onclick="applyDiagnosticMode('full-raw-restore')" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-500 border border-emerald-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
               Load Scenario in Command Studio
             </button>
           </div>
 
           <!-- Recipe 4 -->
-          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
-            <div class="space-y-2.5">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-400/30">SCENARIO 4</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Lock (-1)</h3>
+          <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-rose-500/20 text-rose-500 border border-rose-400/30">SCENARIO 4</span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Lock (-1)</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                Flashing custom binaries blocked by bootloader: <span class="font-mono text-rose-400">"Custom Binary Blocked by OEM Lock"</span>. VaultKeeper Prenormal lock is active.
+              <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Flashing custom binaries blocked by bootloader: <span class="font-mono text-rose-500 font-bold">"Custom Binary Blocked by OEM Lock"</span>. VaultKeeper Prenormal lock is active.
               </p>
-              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-rose-300 break-all select-all">
+              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-rose-400 break-all select-all font-semibold">
                 exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/30 text-xs font-semibold transition-colors">
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-500 border border-rose-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
               Load Scenario in Command Studio
             </button>
           </div>
@@ -531,10 +634,10 @@
     <!-- TAB 4: Command Studio (macOS Style Terminal)            -->
     <!-- ======================================================== -->
     <section id="content-tab-studio" class="hidden space-y-6">
-      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         <div class="mb-6">
-          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Interactive Command Studio</h2>
-          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Configure operational parameters to generate the exact terminal invocation string</p>
+          <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Interactive Command Studio</h2>
+          <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Configure operational parameters to generate the exact terminal invocation string</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -542,38 +645,38 @@
           <!-- Options Form (7 Cols) -->
           <div class="lg:col-span-7 space-y-5">
             <div>
-              <label class="block text-xs font-semibold text-[var(--foreground)] mb-2">Recovery Mode Selection</label>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <label class="block text-xs sm:text-sm font-bold text-[var(--foreground)] mb-2.5">Recovery Mode Selection</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm">
                 
-                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
-                  <input type="radio" name="mode" value="rescue-boot" checked onchange="updateCommand()" class="accent-blue-500">
+                <label class="flex items-center gap-3.5 p-3.5 rounded-xl glass-card cursor-pointer">
+                  <input type="radio" name="mode" value="rescue-boot" checked onchange="updateCommand()" class="w-4 h-4 accent-blue-500">
                   <div>
-                    <div class="font-semibold text-[var(--foreground)]">Mode 1: Boot Rescue</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Signed BOOT + VBMETA + REC</div>
+                    <div class="font-bold text-[var(--foreground)]">Mode 1: Boot Rescue</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Signed BOOT + VBMETA + REC</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
-                  <input type="radio" name="mode" value="emergency-wipe-reboot" onchange="updateCommand()" class="accent-blue-500">
+                <label class="flex items-center gap-3.5 p-3.5 rounded-xl glass-card cursor-pointer">
+                  <input type="radio" name="mode" value="emergency-wipe-reboot" onchange="updateCommand()" class="w-4 h-4 accent-blue-500">
                   <div>
-                    <div class="font-semibold text-[var(--foreground)]">Emergency Wipe</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Hardware NAND Wipe (Broken Key)</div>
+                    <div class="font-bold text-[var(--foreground)]">Emergency Wipe</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Hardware NAND Wipe (Broken Key)</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
-                  <input type="radio" name="mode" value="full-raw-restore" onchange="updateCommand()" class="accent-blue-500">
+                <label class="flex items-center gap-3.5 p-3.5 rounded-xl glass-card cursor-pointer">
+                  <input type="radio" name="mode" value="full-raw-restore" onchange="updateCommand()" class="w-4 h-4 accent-blue-500">
                   <div>
-                    <div class="font-semibold text-[var(--foreground)]">Mode 2: Full Restore</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">SUPER + DTBO + Kernel + OS</div>
+                    <div class="font-bold text-[var(--foreground)]">Mode 2: Full Restore</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">SUPER + DTBO + Kernel + OS</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
-                  <input type="radio" name="mode" value="probe" onchange="updateCommand()" class="accent-blue-500">
+                <label class="flex items-center gap-3.5 p-3.5 rounded-xl glass-card cursor-pointer">
+                  <input type="radio" name="mode" value="probe" onchange="updateCommand()" class="w-4 h-4 accent-blue-500">
                   <div>
-                    <div class="font-semibold text-[var(--foreground)]">Hardware Probe</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">ODIN Handshake & PIT Dump</div>
+                    <div class="font-bold text-[var(--foreground)]">Hardware Probe</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">ODIN Handshake & PIT Dump</div>
                   </div>
                 </label>
 
@@ -581,69 +684,69 @@
             </div>
 
             <!-- Path Field -->
-            <div id="path-input-group" class="space-y-1.5">
-              <label class="block text-xs font-semibold text-[var(--foreground)]">Firmware Path / Archive</label>
-              <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-[var(--foreground)] focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none transition-all">
+            <div id="path-input-group" class="space-y-2">
+              <label class="block text-xs sm:text-sm font-bold text-[var(--foreground)]">Firmware Path / Archive</label>
+              <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] text-xs sm:text-sm font-mono text-[var(--foreground)] font-medium focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none transition-all">
             </div>
 
-            <!-- Toggles -->
-            <div class="space-y-2.5 pt-3 border-t border-white/10 text-xs">
-              <label class="block font-semibold text-[var(--foreground)]">Safety & Execution Flags</label>
+            <!-- Toggles with High Contrast -->
+            <div class="space-y-3 pt-3 border-t border-[var(--glass-card-border)] text-xs sm:text-sm">
+              <label class="block font-bold text-[var(--foreground)]">Execution Options</label>
               
-              <label class="flex items-center justify-between p-3 rounded-xl glass-card cursor-pointer">
+              <label class="flex items-center justify-between p-3.5 rounded-xl glass-card cursor-pointer">
                 <div>
-                  <div class="font-medium text-[var(--foreground)]">Erase USERDATA partition (-e)</div>
-                  <div class="text-[11px] text-[var(--muted-foreground)]">Executes low-level hardware NAND wipe</div>
+                  <div class="font-bold text-[var(--foreground)]">Erase USERDATA partition (-e)</div>
+                  <div class="text-xs text-[var(--muted-foreground)] font-medium">Executes low-level hardware NAND wipe</div>
                 </div>
                 <input type="checkbox" id="flag-erase" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
               </label>
 
-              <label class="flex items-center justify-between p-3 rounded-xl glass-card cursor-pointer">
+              <label class="flex items-center justify-between p-3.5 rounded-xl glass-card cursor-pointer">
                 <div>
-                  <div class="font-medium text-[var(--foreground)]">Keep device in Download Mode (--no-reboot)</div>
-                  <div class="text-[11px] text-[var(--muted-foreground)]">Prevents automatic device reboot after session commit</div>
+                  <div class="font-bold text-[var(--foreground)]">Keep device in Download Mode (--no-reboot)</div>
+                  <div class="text-xs text-[var(--muted-foreground)] font-medium">Prevents automatic device reboot after session commit</div>
                 </div>
                 <input type="checkbox" id="flag-no-reboot" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
               </label>
 
-              <label class="flex items-center justify-between p-3 rounded-xl glass-card cursor-pointer">
+              <label class="flex items-center justify-between p-3.5 rounded-xl glass-card cursor-pointer">
                 <div>
-                  <div class="font-medium text-[var(--foreground)]">Verbose packet telemetry (-v)</div>
-                  <div class="text-[11px] text-[var(--muted-foreground)]">Logs raw 512/1024-byte USB bulk transfers</div>
+                  <div class="font-bold text-[var(--foreground)]">Verbose packet telemetry (-v)</div>
+                  <div class="text-xs text-[var(--muted-foreground)] font-medium">Logs raw 512/1024-byte USB bulk transfers</div>
                 </div>
                 <input type="checkbox" id="flag-verbose" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
               </label>
             </div>
           </div>
 
-          <!-- macOS Terminal Window Preview (5 Cols) -->
+          <!-- macOS Terminal Window Preview (5 Cols, High Contrast) -->
           <div class="lg:col-span-5 flex flex-col justify-between">
-            <div class="bg-zinc-950/90 text-zinc-100 rounded-2xl p-5 border border-zinc-800 shadow-2xl backdrop-blur-xl">
+            <div class="bg-zinc-950 text-zinc-100 rounded-2xl p-5 sm:p-6 border border-zinc-800 shadow-2xl">
               <!-- Traffic lights -->
               <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800">
                 <div class="flex items-center gap-2">
-                  <span class="w-3 h-3 rounded-full bg-rose-500/90 inline-block shadow-sm"></span>
-                  <span class="w-3 h-3 rounded-full bg-amber-500/90 inline-block shadow-sm"></span>
-                  <span class="w-3 h-3 rounded-full bg-emerald-500/90 inline-block shadow-sm"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shadow-sm"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-amber-500 inline-block shadow-sm"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span>
                 </div>
-                <span class="text-xs font-mono text-zinc-400">Terminal &mdash; zsh</span>
+                <span class="text-xs font-mono text-zinc-400 font-bold">Terminal &mdash; zsh</span>
               </div>
 
-              <!-- Terminal contents -->
-              <div class="font-mono text-xs text-zinc-300 space-y-2">
-                <div class="text-zinc-500"># Ready for execution in Fedora / Ubuntu shell</div>
-                <div class="text-blue-400 break-all select-all leading-relaxed" id="cmd-output">
+              <!-- Terminal contents (High Contrast) -->
+              <div class="font-mono text-xs sm:text-sm space-y-2.5">
+                <div class="text-zinc-400 font-medium"># Linux recovery execution command</div>
+                <div class="text-sky-300 font-bold break-all select-all leading-relaxed" id="cmd-output">
                   exynos-loke-rescue rescue-boot -a ~/Downloads/stock
                 </div>
               </div>
 
-              <div class="mt-5 pt-3 border-t border-zinc-800/80 text-xs text-zinc-400 leading-relaxed" id="cmd-explanation">
+              <div class="mt-5 pt-3.5 border-t border-zinc-800 text-xs sm:text-sm text-zinc-300 leading-relaxed font-medium" id="cmd-explanation">
                 Extracts signed boot, vbmeta, and recovery from the stock AP archive and commits them to clear emergency recovery screens.
               </div>
             </div>
 
             <div class="mt-4">
-              <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-3 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-md">
+              <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-3.5 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 transition-all shadow-md">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -660,13 +763,13 @@
     <!-- TAB 5: Live Interactive Flash Simulator                 -->
     <!-- ======================================================== -->
     <section id="content-tab-simulator" class="hidden space-y-6">
-      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Interactive LOKE Flash Streaming Simulator</h2>
-            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Visualize real-time USB sequence chunk transmission and bootloader signature checks</p>
+            <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Interactive LOKE Flash Streaming Simulator</h2>
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Visualize real-time USB sequence chunk transmission and bootloader signature checks</p>
           </div>
-          <button onclick="startSimulation()" id="btn-run-sim" class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md">
+          <button onclick="startSimulation()" id="btn-run-sim" class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs sm:text-sm font-bold flex items-center gap-2.5 transition-all shadow-md">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -674,41 +777,41 @@
           </button>
         </div>
 
-        <div class="glass-card rounded-2xl p-6 space-y-5">
-          <!-- Live Telemetry Bar -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
-              <div class="text-[var(--muted-foreground)]">Protocol State</div>
-              <div id="sim-state" class="font-mono font-bold text-blue-400 mt-0.5">READY</div>
+        <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-5">
+          <!-- Live Telemetry Bar (High Contrast) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs sm:text-sm">
+            <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)]">
+              <div class="text-[var(--muted-foreground)] font-semibold">Protocol State</div>
+              <div id="sim-state" class="font-mono font-bold text-blue-500 text-sm sm:text-base mt-1">READY</div>
             </div>
-            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
-              <div class="text-[var(--muted-foreground)]">Streaming Speed</div>
-              <div id="sim-speed" class="font-mono font-bold text-emerald-400 mt-0.5">0.00 MB/s</div>
+            <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)]">
+              <div class="text-[var(--muted-foreground)] font-semibold">Streaming Speed</div>
+              <div id="sim-speed" class="font-mono font-bold text-emerald-500 text-sm sm:text-base mt-1">0.00 MB/s</div>
             </div>
-            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
-              <div class="text-[var(--muted-foreground)]">Chunks Transmitted</div>
-              <div id="sim-chunks" class="font-mono font-bold text-purple-400 mt-0.5">0 / 256</div>
+            <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)]">
+              <div class="text-[var(--muted-foreground)] font-semibold">Chunks Transmitted</div>
+              <div id="sim-chunks" class="font-mono font-bold text-purple-500 text-sm sm:text-base mt-1">0 / 256</div>
             </div>
-            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
-              <div class="text-[var(--muted-foreground)]">Elapsed / ETA</div>
-              <div id="sim-eta" class="font-mono font-bold text-[var(--foreground)] mt-0.5">00:00 / 00:00</div>
+            <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)]">
+              <div class="text-[var(--muted-foreground)] font-semibold">Elapsed / ETA</div>
+              <div id="sim-eta" class="font-mono font-bold text-[var(--foreground)] text-sm sm:text-base mt-1">00:00 / 00:00</div>
             </div>
           </div>
 
           <!-- Progress Track -->
           <div class="space-y-2">
-            <div class="flex justify-between items-center text-xs">
-              <span id="sim-current-part" class="font-medium text-[var(--foreground)]">Target: boot.img (36.00 MiB)</span>
-              <span id="sim-pct" class="font-mono font-bold text-blue-400">0%</span>
+            <div class="flex justify-between items-center text-xs sm:text-sm font-semibold">
+              <span id="sim-current-part" class="text-[var(--foreground)]">Target: boot.img (36.00 MiB)</span>
+              <span id="sim-pct" class="font-mono font-bold text-blue-500">0%</span>
             </div>
-            <div class="w-full h-3 rounded-full bg-black/50 border border-white/10 p-0.5 overflow-hidden">
+            <div class="w-full h-3.5 rounded-full bg-black/50 border border-[var(--glass-card-border)] p-0.5 overflow-hidden">
               <div id="sim-progress-bar" style="width: 0%;" class="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-150"></div>
             </div>
           </div>
 
-          <!-- Simulated Console Feed -->
-          <div class="p-4 rounded-xl bg-zinc-950 font-mono text-[11px] text-zinc-300 h-32 overflow-y-auto space-y-1 border border-zinc-800" id="sim-log">
-            <div class="text-zinc-500">> Mock LOKE Device ready. Press "Start Live Simulation" to begin testbed session.</div>
+          <!-- Simulated Console Feed (High Contrast) -->
+          <div class="p-4 rounded-xl bg-zinc-950 font-mono text-xs text-zinc-200 h-36 overflow-y-auto space-y-1.5 border border-zinc-800" id="sim-log">
+            <div class="text-zinc-400 font-semibold">> Mock LOKE Device ready. Press "Start Live Simulation" to begin testbed session.</div>
           </div>
         </div>
       </div>
@@ -718,64 +821,64 @@
     <!-- TAB 6: Safety Invariants & Partition Matrix             -->
     <!-- ======================================================== -->
     <section id="content-tab-safety" class="hidden space-y-6">
-      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         <div class="mb-6">
-          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Flash Safety Protocol & Invariant Protections</h2>
-          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Transport-level verification preventing permanent radio hardware bricking or IMEI loss</p>
+          <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Flash Safety Protocol & Invariant Protections</h2>
+          <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Transport-level verification preventing permanent radio hardware bricking or IMEI loss</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs sm:text-sm">
           <!-- Protected -->
-          <div class="glass-card rounded-2xl p-5 border-rose-500/30 bg-rose-500/5 space-y-3">
-            <div class="flex items-center gap-2 text-rose-400 font-semibold text-sm">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="glass-card rounded-2xl p-5 sm:p-6 border-rose-500/35 bg-rose-500/10 space-y-3.5">
+            <div class="flex items-center gap-2 text-rose-500 font-bold text-sm sm:text-base">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
               <span>Strict Read-Only Partitions (Locked by Engine)</span>
             </div>
-            <p class="text-[var(--muted-foreground)] leading-relaxed">
+            <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">
               These partitions store factory baseband calibrations and cryptographically anchored device identifiers. Flash writes are blocked at the host level before packet generation.
             </p>
-            <ul class="space-y-2 text-[var(--foreground)]">
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-400">EFS / SEC_EFS:</strong> Radio calibrations, IMEI and cellular certificates.</span>
+            <ul class="space-y-2.5 text-[var(--foreground)]">
+              <li class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-rose-500 font-bold">EFS / SEC_EFS:</strong> Radio calibrations, IMEI and cellular certificates.</span>
               </li>
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-400">CPEFS / NVDATA:</strong> Cellular modem non-volatile parameter store.</span>
+              <li class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-rose-500 font-bold">CPEFS / NVDATA:</strong> Cellular modem non-volatile parameter store.</span>
               </li>
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-400">TNV / PERSDATA:</strong> Factory hardware keystore trust anchors.</span>
+              <li class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-rose-500 font-bold">TNV / PERSDATA:</strong> Factory hardware keystore trust anchors.</span>
               </li>
             </ul>
           </div>
 
           <!-- Permitted -->
-          <div class="glass-card rounded-2xl p-5 border-emerald-500/30 bg-emerald-500/5 space-y-3">
-            <div class="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="glass-card rounded-2xl p-5 sm:p-6 border-emerald-500/35 bg-emerald-500/10 space-y-3.5">
+            <div class="flex items-center gap-2 text-emerald-500 font-bold text-sm sm:text-base">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
               <span>Permitted Flash Targets (Deterministic Verification)</span>
             </div>
-            <p class="text-[var(--muted-foreground)] leading-relaxed">
+            <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">
               Verified operating system partitions eligible for sequence streaming and cryptographic signature verification by the LOKE bootloader.
             </p>
-            <ul class="space-y-2 text-[var(--foreground)]">
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-400">BOOT / RECOVERY / VBMETA:</strong> Kernel, ramdisk, and AVB 2.0 signatures.</span>
+            <ul class="space-y-2.5 text-[var(--foreground)]">
+              <li class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-emerald-500 font-bold">BOOT / RECOVERY / VBMETA:</strong> Kernel, ramdisk, and AVB 2.0 signatures.</span>
               </li>
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-400">SUPER:</strong> Dynamic system, vendor, product, and odm container.</span>
+              <li class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-emerald-500 font-bold">SUPER:</strong> Dynamic system, vendor, product, and odm container.</span>
               </li>
-              <li class="flex items-start gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-400">USERDATA:</strong> Low-level hardware erase (Opcode 0x64 Subcmd 0x07).</span>
+              <li class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-emerald-500 font-bold">USERDATA:</strong> Low-level hardware erase (Opcode 0x64 Subcmd 0x07).</span>
               </li>
             </ul>
           </div>
@@ -784,10 +887,10 @@
     </section>
 
     <!-- Footer -->
-    <footer class="text-center text-xs text-[var(--muted-foreground)] pt-3 pb-6 flex items-center justify-center gap-2">
+    <footer class="text-center text-xs sm:text-sm text-[var(--muted-foreground)] pt-4 pb-6 flex items-center justify-center gap-2 font-medium">
       <span>Exynos LOKE Rescue</span>
       <span>&bull;</span>
-      <span>Apple Liquid Glass Material Design</span>
+      <span>Liquid Glass Material Design</span>
       <span>&bull;</span>
       <span>Linux Native 04e8:685d Driver</span>
     </footer>
@@ -860,25 +963,25 @@
         const isProtected = p.category === 'nvram';
 
         const row = document.createElement('div');
-        row.className = "px-4 py-3 hover:bg-white/5 cursor-pointer flex items-center justify-between transition-colors";
+        row.className = "px-4 py-3 sm:py-3.5 hover:bg-black/10 dark:hover:bg-white/5 cursor-pointer flex items-center justify-between transition-colors";
         row.onclick = () => selectPartition(p.name, p.id, p.blocks, p.type, p.file, p.desc);
 
         row.innerHTML = `
           <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-lg ${isProtected ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : 'bg-blue-500/15 text-blue-400 border border-blue-400/30'} flex items-center justify-center font-mono text-xs font-semibold">
+            <span class="w-8 h-8 rounded-lg ${isProtected ? 'bg-rose-500/20 text-rose-500 border border-rose-500/35' : 'bg-blue-500/20 text-blue-500 border border-blue-400/35'} flex items-center justify-center font-mono text-xs font-bold">
               ${p.id}
             </span>
             <div>
-              <div class="text-sm font-semibold text-[var(--foreground)] flex items-center gap-1.5">
+              <div class="text-xs sm:text-sm font-bold text-[var(--foreground)] flex items-center gap-1.5">
                 <span>${p.name}</span>
-                ${isProtected ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400">LOCKED</span>' : ''}
+                ${isProtected ? '<span class="px-1.5 py-0.5 rounded text-xs font-bold bg-rose-500/20 text-rose-500">LOCKED</span>' : ''}
               </div>
-              <div class="text-xs text-[var(--muted-foreground)]">File: ${p.file}</div>
+              <div class="text-xs text-[var(--muted-foreground)] font-medium">File: ${p.file}</div>
             </div>
           </div>
           <div class="text-right">
-            <div class="text-xs font-mono font-medium text-[var(--foreground)]">${sizeDisplay}</div>
-            <div class="text-[11px] ${isProtected ? 'text-rose-400' : 'text-blue-400'}">${p.category.toUpperCase()}</div>
+            <div class="text-xs sm:text-sm font-mono font-bold text-[var(--foreground)]">${sizeDisplay}</div>
+            <div class="text-xs font-semibold ${isProtected ? 'text-rose-500' : 'text-blue-500'}">${p.category.toUpperCase()}</div>
           </div>
         `;
         container.appendChild(row);
@@ -887,10 +990,10 @@
 
     function filterPartitions(category) {
       document.querySelectorAll('.part-filter-btn').forEach(btn => {
-        btn.classList.remove('text-blue-400', 'border-blue-400/40');
-        btn.classList.add('text-[var(--muted-foreground)]');
+        btn.classList.remove('text-blue-500', 'border-blue-500/50', 'font-semibold');
+        btn.classList.add('text-[var(--muted-foreground)]', 'font-medium');
       });
-      event.target.classList.add('text-blue-400', 'border-blue-400/40');
+      event.target.classList.add('text-blue-500', 'border-blue-500/50', 'font-semibold');
       event.target.classList.remove('text-[var(--muted-foreground)]');
       renderPartitionList(category);
     }
@@ -913,11 +1016,11 @@
 
       if (isProtected) {
         safetyElem.innerText = "LOCKED: Hard Read-Only Invariant";
-        safetyElem.className = "font-medium text-rose-400";
+        safetyElem.className = "font-bold text-rose-500";
         ratElem.innerText = "Writing to this partition is blocked at the transport layer to prevent permanent radio corruption or IMEI erasure.";
       } else {
         safetyElem.innerText = "Safe for Direct Flashing";
-        safetyElem.className = "font-medium text-emerald-400";
+        safetyElem.className = "font-bold text-emerald-500";
         ratElem.innerText = "LOKE verifies the OEM RSA cryptographic signature on the final sequence block. Mismatches trigger error code -1.";
       }
     }
@@ -933,11 +1036,11 @@
 
     function switchTab(tabId) {
       document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.classList.remove('glass-pill-active');
+        btn.classList.remove('glass-pill-active', 'font-semibold');
         btn.classList.add('text-[var(--muted-foreground)]');
       });
       const activeBtn = document.getElementById('btn-' + tabId);
-      activeBtn.classList.add('glass-pill-active');
+      activeBtn.classList.add('glass-pill-active', 'font-semibold');
       activeBtn.classList.remove('text-[var(--muted-foreground)]');
 
       ['tab-storage', 'tab-protocol', 'tab-diagnostics', 'tab-studio', 'tab-simulator', 'tab-safety'].forEach(id => {
