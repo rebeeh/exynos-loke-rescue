@@ -36,7 +36,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::PrepUsb { no_systemd } => {
+        Commands::FixUsb { no_systemd } => {
             usb::sanitize_linux_usb(no_systemd)?;
         }
 

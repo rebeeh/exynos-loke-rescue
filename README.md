@@ -25,7 +25,7 @@
    - [Engine 1: 100% Native Rust LOKE Transport (`nusb`)](#engine-1-100-native-rust-loke-transport-nusb)
    - [Engine 2: Zero-Copy Archive Streamer & Supervisor](#engine-2-zero-copy-archive-streamer--supervisor)
 4. [Repository Hierarchy](#-repository-hierarchy)
-5. [Packaging & Installation](#-packaging--installation)
+5. [Installation & Setup](#-installation--setup)
 6. [Protocol Telemetry & Dissection](#-protocol-telemetry--dissection)
 7. [CLI Command Reference](#-cli-command-reference)
 8. [Operational Runbooks](#-operational-runbooks)
@@ -122,7 +122,7 @@ flowchart TD
 
 ```text
 exynos-loke-rescue/
-├── Cargo.toml                      # Package metadata, packaging configs & release profile
+├── Cargo.toml                      # Package metadata, pure Rust dependencies & release profile
 ├── Cargo.lock                      # Deterministic dependency lockfile
 ├── build.rs                        # Compile-time shell completions & man page generator
 ├── Makefile                        # Unified development, build, packaging & test driver
@@ -133,17 +133,13 @@ exynos-loke-rescue/
 ├── CHANGELOG.md                    # Keep a Changelog compliant release history
 ├── CONTRIBUTING.md                 # Development & contribution guidelines
 ├── SECURITY.md                     # Security policy & binary hardening documentation
+├── install.sh                      # Universal single-command installer
 ├── udev/
 │   └── 60-exynos-loke-rescue.rules # Kernel udev rules with ID_MM_DEVICE_IGNORE
-├── packaging/
-│   ├── debian/                     # Debian / Ubuntu packaging (control, rules, postinst)
-│   ├── rpm/                        # Fedora / RHEL spec file (exynos-loke-rescue.spec)
-│   └── arch/                       # Arch Linux PKGBUILD & AUR binary package
 ├── tools/
 │   └── wireshark/                  # Wireshark / TShark Lua dissector for LOKE wire protocol
 ├── scripts/
-│   ├── install.sh                  # Automated system-wide installer
-│   ├── package_tarball.sh          # Portable release tarball assembler
+│   ├── package_release.sh          # Standalone musl release packager (.zip and .tar.gz)
 │   ├── audit_release.sh            # REA release binary hardening & exposure audit
 │   ├── capture_usbmon.sh           # Live Odin wire telemetry capture via usbmon
 │   └── rea_extract_sboot.sh        # Unpacks sboot.bin for REA / Ghidra analysis
@@ -164,55 +160,44 @@ exynos-loke-rescue/
 
 ---
 
-## 🚀 Standard Installation (Recommended)
+## 🚀 Installation & Setup
 
-Like `samloader-rs`, `exynos-loke-rescue` is a self-contained, memory-safe pure-Rust binary with zero external C runtime dependencies. It runs on any Linux distribution without requiring complex package setup.
+Like `samloader-rs`, `exynos-loke-rescue` is distributed as portable standalone static musl binaries with zero glibc or dynamic C runtime dependencies. It runs on any Linux distribution without requiring complex package setup.
 
 ### Option 1: Universal 1-Line Installer (Recommended)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rebeeh/exynos-loke-rescue/main/install.sh | bash
 ```
-* Detects your Linux CPU architecture (`x86_64`, `aarch64`, `armv7`).
-* Installs the optimized, stripped release binary to `~/.local/bin/exynos-loke-rescue`.
+* Automatically detects your Linux CPU architecture (`x86_64` or `aarch64`).
+* Fetches the static musl prebuilt binary and installs it to `~/.local/bin/exynos-loke-rescue`.
 * Requires **zero root permissions** to install.
 
 ### Option 2: Cargo (Identical to samloader-rs)
+If you have a working Rust toolchain installed:
 ```bash
 cargo install --git https://github.com/rebeeh/exynos-loke-rescue
 ```
 
-### Step 2: Configure USB Permissions (One-Time Setup)
-Just like `sudo samloader fix-usb`, grant your Linux user permission to communicate with Samsung Download Mode devices (`04e8:685d`):
+### Option 3: Prebuilt Standalone Releases
+Download prebuilt static musl archives from the [latest GitHub release](https://github.com/rebeeh/exynos-loke-rescue/releases/latest):
+* `exynos-loke-rescue-v1.0.0-linux-x86_64.zip`
+* `exynos-loke-rescue-v1.0.0-linux-aarch64.zip`
+
+Extract and place anywhere on your PATH:
+```bash
+unzip exynos-loke-rescue-v1.0.0-linux-x86_64.zip
+chmod +x exynos-loke-rescue
+mv exynos-loke-rescue ~/.local/bin/
+```
+
+### USB Permissions Setup (`fix-usb`)
+Identical to `sudo samloader fix-usb`, configure Linux udev rules to grant your user permission to flash Samsung Download Mode devices (`04e8:685d`):
 ```bash
 sudo exynos-loke-rescue fix-usb
 ```
-*(Also available as `sudo exynos-loke-rescue prep-usb`)*
 
----
-
-## 📦 Alternative Distribution Formats
-
-For system administrators and package maintainers who prefer system package manager integration:
-
-### Debian & Ubuntu (`.deb`)
-Download the `.deb` release package from [GitHub Releases](https://github.com/rebeeh/exynos-loke-rescue/releases):
-```bash
-sudo dpkg -i exynos-loke-rescue_1.0.0_amd64.deb
-```
-
-### Fedora, RHEL & openSUSE (`.rpm`)
-```bash
-sudo dnf install ./exynos-loke-rescue-1.0.0-1.x86_64.rpm
-```
-
-### Arch Linux / Manjaro (AUR)
-```bash
-yay -S exynos-loke-rescue-bin
-# Or build locally: cd packaging/arch && makepkg -si
-```
-
-### OCI Container (Docker / Podman)
-Run without installing local dependencies via USB passthrough:
+### OCI Container (Optional)
+Run without installing local binaries via USB passthrough:
 ```bash
 podman run --rm -it --privileged \
     -v /dev/bus/usb:/dev/bus/usb \

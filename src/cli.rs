@@ -33,9 +33,9 @@ pub enum TransportEngine {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Configure Linux udev rules (04e8:685d), stop ModemManager, and sanitize USB stack (alias: fix-usb)
-    #[command(alias = "fix-usb")]
-    PrepUsb {
+    /// Configure Linux udev rules (04e8:685d), stop ModemManager, and sanitize USB stack
+    #[command(name = "fix-usb", alias = "prep-usb")]
+    FixUsb {
         /// Skip systemctl stop ModemManager (for non-systemd Linux hosts)
         #[arg(long)]
         no_systemd: bool,

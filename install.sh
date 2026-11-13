@@ -27,13 +27,10 @@ fi
 
 case "${ARCH}" in
     x86_64)
-        TARGET="x86_64-unknown-linux-gnu"
+        ARCH_TAG="x86_64"
         ;;
     aarch64|arm64)
-        TARGET="aarch64-unknown-linux-gnu"
-        ;;
-    armv7l)
-        TARGET="armv7-unknown-linux-gnueabihf"
+        ARCH_TAG="aarch64"
         ;;
     *)
         echo "ERROR: Unsupported architecture: ${ARCH}"
@@ -41,7 +38,7 @@ case "${ARCH}" in
         ;;
 esac
 
-echo "==> Detected Host: Linux (${TARGET})"
+echo "==> Detected Host: Linux (${ARCH_TAG})"
 mkdir -p "${INSTALL_DIR}"
 
 # 2. Check if running inside local source repository
@@ -50,32 +47,48 @@ if [[ -f "Cargo.toml" && -d "src" && -x "$(command -v cargo 2>/dev/null)" ]]; th
     cargo build --release
     install -m 0755 "target/release/${BIN_NAME}" "${INSTALL_DIR}/${BIN_NAME}"
 else
-    # 3. Download precompiled release binary or fallback to cargo
+    # 3. Download precompiled static musl release binary or fallback to cargo
     echo "==> Fetching latest release binary from GitHub (${REPO})..."
     TMP_DIR="$(mktemp -d)"
     trap 'rm -rf "${TMP_DIR}"' EXIT
 
-    RELEASE_URL="https://github.com/${REPO}/releases/latest/download/${BIN_NAME}-v1.0.0-${TARGET}.tar.gz"
-    
-    if curl -sSfL "${RELEASE_URL}" -o "${TMP_DIR}/release.tar.gz" 2>/dev/null; then
-        echo "==> Extracting release archive..."
+    TAR_URL="https://github.com/${REPO}/releases/latest/download/${BIN_NAME}-v1.0.0-linux-${ARCH_TAG}.tar.gz"
+    ZIP_URL="https://github.com/${REPO}/releases/latest/download/${BIN_NAME}-v1.0.0-linux-${ARCH_TAG}.zip"
+
+    INSTALLED=0
+    if curl -sSfL "${TAR_URL}" -o "${TMP_DIR}/release.tar.gz" 2>/dev/null; then
+        echo "==> Extracting release archive (.tar.gz)..."
         tar -xzf "${TMP_DIR}/release.tar.gz" -C "${TMP_DIR}"
         EXTRACTED_BIN="$(find "${TMP_DIR}" -type f -name "${BIN_NAME}" -perm -111 | head -n 1)"
         if [[ -n "${EXTRACTED_BIN}" && -f "${EXTRACTED_BIN}" ]]; then
             install -m 0755 "${EXTRACTED_BIN}" "${INSTALL_DIR}/${BIN_NAME}"
+            INSTALLED=1
+        fi
+    elif curl -sSfL "${ZIP_URL}" -o "${TMP_DIR}/release.zip" 2>/dev/null; then
+        echo "==> Extracting release archive (.zip)..."
+        if command -v unzip >/dev/null 2>&1; then
+            unzip -q -o "${TMP_DIR}/release.zip" -d "${TMP_DIR}"
+        elif command -v python3 >/dev/null 2>&1; then
+            python3 -c "import zipfile; zf = zipfile.ZipFile('${TMP_DIR}/release.zip'); zf.extractall('${TMP_DIR}')"
+        fi
+        EXTRACTED_BIN="$(find "${TMP_DIR}" -type f -name "${BIN_NAME}" -perm -111 | head -n 1)"
+        if [[ -n "${EXTRACTED_BIN}" && -f "${EXTRACTED_BIN}" ]]; then
+            install -m 0755 "${EXTRACTED_BIN}" "${INSTALL_DIR}/${BIN_NAME}"
+            INSTALLED=1
+        fi
+    fi
+
+    if [[ "${INSTALLED}" -eq 0 ]]; then
+        if command -v cargo >/dev/null 2>&1; then
+            echo "==> Precompiled archive not yet available on release. Installing via cargo..."
+            cargo install --git "https://github.com/${REPO}"
+            exit 0
         else
-            echo "ERROR: Binary not found in release archive."
+            echo "ERROR: Unable to download release binary and cargo is not installed."
+            echo "Please install cargo (rustup.rs) or download the prebuilt binary from:"
+            echo "https://github.com/${REPO}/releases"
             exit 1
         fi
-    elif command -v cargo >/dev/null 2>&1; then
-        echo "==> Precompiled archive not yet available on release. Installing via cargo..."
-        cargo install --git "https://github.com/${REPO}"
-        exit 0
-    else
-        echo "ERROR: Unable to download release binary and cargo is not installed."
-        echo "Please install cargo (rustup.rs) or download the prebuilt binary from:"
-        echo "https://github.com/${REPO}/releases"
-        exit 1
     fi
 fi
 

@@ -72,6 +72,14 @@ pub fn is_cdc_acm_loaded() -> bool {
         .unwrap_or(false)
 }
 
+extern "C" {
+    fn geteuid() -> u32;
+}
+
+pub fn is_root() -> bool {
+    unsafe { geteuid() == 0 }
+}
+
 pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
     println!(
         "{}",
@@ -80,55 +88,104 @@ pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
             .bold()
     );
 
-    let tmp = tempfile::NamedTempFile::new()?;
-    fs::write(tmp.path(), UDEV_RULE_PAYLOAD)?;
-
-    let cp_ok = Command::new("sudo")
-        .args(["cp", tmp.path().to_str().unwrap(), UDEV_RULE_DEST])
-        .status()
-        .context("Failed to execute sudo cp for udev rules")?
-        .success();
-
-    if !cp_ok {
-        bail!("Failed to install udev rule at {}", UDEV_RULE_DEST);
-    }
-
-    let _ = Command::new("sudo")
-        .args(["chmod", "0644", UDEV_RULE_DEST])
-        .status();
-    let _ = Command::new("sudo")
-        .args(["udevadm", "control", "--reload-rules"])
-        .status();
-    let _ = Command::new("sudo").args(["udevadm", "trigger"]).status();
-
-    println!("    {} Installed {}", "✓".green(), UDEV_RULE_DEST);
-
-    if !no_systemd {
-        let _ = Command::new("sudo")
-            .args(["systemctl", "stop", "ModemManager"])
+    if is_root() {
+        if let Some(parent) = Path::new(UDEV_RULE_DEST).parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        fs::write(UDEV_RULE_DEST, UDEV_RULE_PAYLOAD)
+            .context(format!("Failed to write {}", UDEV_RULE_DEST))?;
+        let _ = Command::new("chmod")
+            .args(["0644", UDEV_RULE_DEST])
             .status();
-        println!("    {} Stopped ModemManager daemon", "✓".green());
-    }
+        let _ = Command::new("udevadm")
+            .args(["control", "--reload-rules"])
+            .status();
+        let _ = Command::new("udevadm").args(["trigger"]).status();
+        println!("    {} Installed {}", "✓".green(), UDEV_RULE_DEST);
 
-    if is_cdc_acm_loaded() {
-        let rmmod_ok = Command::new("sudo")
-            .args(["modprobe", "-r", "cdc_acm"])
-            .status()
-            .map(|s| s.success())
-            .unwrap_or(false);
-        if rmmod_ok {
-            println!(
-                "    {} Unloaded conflicting `cdc_acm` kernel module",
-                "✓".green()
-            );
+        if !no_systemd {
+            let _ = Command::new("systemctl")
+                .args(["stop", "ModemManager"])
+                .status();
+            println!("    {} Stopped ModemManager daemon", "✓".green());
+        }
+
+        if is_cdc_acm_loaded() {
+            let rmmod_ok = Command::new("modprobe")
+                .args(["-r", "cdc_acm"])
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false);
+            if rmmod_ok {
+                println!(
+                    "    {} Unloaded conflicting `cdc_acm` kernel module",
+                    "✓".green()
+                );
+            } else {
+                println!(
+                    "    {} Could not unload `cdc_acm` (may be built-in or bound)",
+                    "!".yellow()
+                );
+            }
         } else {
-            println!(
-                "    {} Could not unload `cdc_acm` (may be built-in or bound)",
-                "!".yellow()
-            );
+            println!("    {} `cdc_acm` kernel module is not loaded", "✓".green());
         }
     } else {
-        println!("    {} `cdc_acm` kernel module is not loaded", "✓".green());
+        println!(
+            "{}",
+            "    Notice: Elevating via sudo to write udev rules. Alternatively run: sudo exynos-loke-rescue fix-usb"
+                .yellow()
+        );
+        let tmp = tempfile::NamedTempFile::new()?;
+        fs::write(tmp.path(), UDEV_RULE_PAYLOAD)?;
+
+        let cp_ok = Command::new("sudo")
+            .args(["cp", tmp.path().to_str().unwrap(), UDEV_RULE_DEST])
+            .status()
+            .context("Failed to execute sudo cp for udev rules")?
+            .success();
+
+        if !cp_ok {
+            bail!("Failed to install udev rule at {}. Please run:\n    sudo exynos-loke-rescue fix-usb", UDEV_RULE_DEST);
+        }
+
+        let _ = Command::new("sudo")
+            .args(["chmod", "0644", UDEV_RULE_DEST])
+            .status();
+        let _ = Command::new("sudo")
+            .args(["udevadm", "control", "--reload-rules"])
+            .status();
+        let _ = Command::new("sudo").args(["udevadm", "trigger"]).status();
+
+        println!("    {} Installed {}", "✓".green(), UDEV_RULE_DEST);
+
+        if !no_systemd {
+            let _ = Command::new("sudo")
+                .args(["systemctl", "stop", "ModemManager"])
+                .status();
+            println!("    {} Stopped ModemManager daemon", "✓".green());
+        }
+
+        if is_cdc_acm_loaded() {
+            let rmmod_ok = Command::new("sudo")
+                .args(["modprobe", "-r", "cdc_acm"])
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false);
+            if rmmod_ok {
+                println!(
+                    "    {} Unloaded conflicting `cdc_acm` kernel module",
+                    "✓".green()
+                );
+            } else {
+                println!(
+                    "    {} Could not unload `cdc_acm` (may be built-in or bound)",
+                    "!".yellow()
+                );
+            }
+        } else {
+            println!("    {} `cdc_acm` kernel module is not loaded", "✓".green());
+        }
     }
 
     match scan_sysfs_for_samsung_download()? {
