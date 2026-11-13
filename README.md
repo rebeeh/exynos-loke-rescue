@@ -164,53 +164,60 @@ exynos-loke-rescue/
 
 ---
 
-## 📦 Packaging & Installation
+## 🚀 Standard Installation (Recommended)
 
-### Option 1: Debian & Ubuntu (`.deb`)
-Download the latest `.deb` release package from [GitHub Releases](https://github.com/rebeeh/exynos-loke-rescue/releases):
+Like `samloader-rs`, `exynos-loke-rescue` is a self-contained, memory-safe pure-Rust binary with zero external C runtime dependencies. It runs on any Linux distribution without requiring complex package setup.
+
+### Option 1: Universal 1-Line Installer (Recommended)
+```bash
+curl -fsSL https://raw.githubusercontent.com/rebeeh/exynos-loke-rescue/main/install.sh | bash
+```
+* Detects your Linux CPU architecture (`x86_64`, `aarch64`, `armv7`).
+* Installs the optimized, stripped release binary to `~/.local/bin/exynos-loke-rescue`.
+* Requires **zero root permissions** to install.
+
+### Option 2: Cargo (Identical to samloader-rs)
+```bash
+cargo install --git https://github.com/rebeeh/exynos-loke-rescue
+```
+
+### Step 2: Configure USB Permissions (One-Time Setup)
+Just like `sudo samloader fix-usb`, grant your Linux user permission to communicate with Samsung Download Mode devices (`04e8:685d`):
+```bash
+sudo exynos-loke-rescue fix-usb
+```
+*(Also available as `sudo exynos-loke-rescue prep-usb`)*
+
+---
+
+## 📦 Alternative Distribution Formats
+
+For system administrators and package maintainers who prefer system package manager integration:
+
+### Debian & Ubuntu (`.deb`)
+Download the `.deb` release package from [GitHub Releases](https://github.com/rebeeh/exynos-loke-rescue/releases):
 ```bash
 sudo dpkg -i exynos-loke-rescue_1.0.0_amd64.deb
 ```
 
-### Option 2: Fedora, RHEL & openSUSE (`.rpm`)
-Download the latest `.rpm` release package:
+### Fedora, RHEL & openSUSE (`.rpm`)
 ```bash
 sudo dnf install ./exynos-loke-rescue-1.0.0-1.x86_64.rpm
 ```
 
-### Option 3: Arch Linux / Manjaro (AUR)
-Install using your preferred AUR helper:
+### Arch Linux / Manjaro (AUR)
 ```bash
 yay -S exynos-loke-rescue-bin
-```
-Or build from source PKGBUILD:
-```bash
-cd packaging/arch && makepkg -si
+# Or build locally: cd packaging/arch && makepkg -si
 ```
 
-### Option 4: Portable Standalone Archive (Any Linux Kernel 3.10+)
-Statically linked against musl libc—no glibc dependencies required:
-```bash
-curl -fsSL https://github.com/rebeeh/exynos-loke-rescue/releases/download/v1.0.0/exynos-loke-rescue-v1.0.0-x86_64-unknown-linux-musl.tar.gz | tar -xz
-cd exynos-loke-rescue-v1.0.0-*
-sudo ./install.sh
-```
-
-### Option 5: OCI Container (Docker / Podman)
+### OCI Container (Docker / Podman)
 Run without installing local dependencies via USB passthrough:
 ```bash
 podman run --rm -it --privileged \
     -v /dev/bus/usb:/dev/bus/usb \
     -v "$HOME/Downloads/stock:/firmware:ro" \
     ghcr.io/rebeeh/exynos-loke-rescue:latest probe
-```
-
-### Option 6: Build from Source
-```bash
-git clone https://github.com/rebeeh/exynos-loke-rescue.git
-cd exynos-loke-rescue
-make release
-sudo make install
 ```
 
 ---

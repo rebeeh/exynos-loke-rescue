@@ -33,7 +33,8 @@ pub enum TransportEngine {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Install ID_MM_DEVICE_IGNORE udev rules, stop ModemManager, unload cdc_acm, and verify 04e8:685d
+    /// Configure Linux udev rules (04e8:685d), stop ModemManager, and sanitize USB stack (alias: fix-usb)
+    #[command(alias = "fix-usb")]
     PrepUsb {
         /// Skip systemctl stop ModemManager (for non-systemd Linux hosts)
         #[arg(long)]
