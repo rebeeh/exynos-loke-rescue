@@ -14,8 +14,9 @@ SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="6861", MODE="0666", 
 
 pub fn resolve_samloader(override_path: Option<&Path>) -> Result<PathBuf> {
     if let Some(p) = override_path {
-        if p.is_file() {
-            return Ok(p.to_path_buf());
+        let expanded = crate::archive::expand_tilde(p);
+        if expanded.is_file() {
+            return Ok(expanded);
         }
         bail!(
             "Explicit --samloader-bin path does not exist: {}",
@@ -26,6 +27,20 @@ pub fn resolve_samloader(override_path: Option<&Path>) -> Result<PathBuf> {
     let cwd_bin = PathBuf::from("./samloader");
     if cwd_bin.is_file() {
         return Ok(cwd_bin);
+    }
+
+    if let Ok(home) = std::env::var("HOME") {
+        let home_path = Path::new(&home);
+        let candidates = [
+            home_path.join("Downloads/samloader"),
+            home_path.join(".local/bin/samloader"),
+            home_path.join("bin/samloader"),
+        ];
+        for c in candidates {
+            if c.is_file() {
+                return Ok(c);
+            }
+        }
     }
 
     which::which("samloader").map_err(|_| RescueError::SamloaderNotFound.into())

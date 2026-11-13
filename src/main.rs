@@ -13,9 +13,7 @@ use flasher::{FlashOptions, PartitionTarget};
 use loke_proto::SessionEndSubcmd;
 use nusb_transport::NativeLokeSession;
 use pit::PitTable;
-use std::fs;
-use std::path::PathBuf;
-use tempfile::TempDir;
+use std::path::Path;
 
 fn resolve_reboot_mode(no_reboot: bool, redownload: bool) -> SessionEndSubcmd {
     if redownload {
@@ -156,31 +154,31 @@ fn main() -> Result<()> {
             if let Some(b) = boot {
                 plan.push(PartitionTarget {
                     name: "BOOT".to_string(),
-                    path: b,
+                    path: archive::expand_tilde(&b),
                 });
             }
             if let Some(r) = recovery {
                 plan.push(PartitionTarget {
                     name: "RECOVERY".to_string(),
-                    path: r,
+                    path: archive::expand_tilde(&r),
                 });
             }
             if let Some(v) = vbmeta {
                 plan.push(PartitionTarget {
                     name: "VBMETA".to_string(),
-                    path: v,
+                    path: archive::expand_tilde(&v),
                 });
             }
             if let Some(d) = dtbo {
                 plan.push(PartitionTarget {
                     name: "DTBO".to_string(),
-                    path: d,
+                    path: archive::expand_tilde(&d),
                 });
             }
             if let Some(s) = super_img {
                 plan.push(PartitionTarget {
                     name: "SUPER".to_string(),
-                    path: s,
+                    path: archive::expand_tilde(&s),
                 });
             }
 
@@ -188,7 +186,7 @@ fn main() -> Result<()> {
                 if chunk.len() == 2 {
                     plan.push(PartitionTarget {
                         name: chunk[0].to_uppercase(),
-                        path: PathBuf::from(&chunk[1]),
+                        path: archive::expand_tilde(Path::new(&chunk[1])),
                     });
                 }
             }
@@ -229,17 +227,7 @@ fn main() -> Result<()> {
         }) => {
             ui::badge_step(1, 3, "Locating stock AP archive...");
             let ap_archive = archive::locate_ap_archive(&ap)?;
-            let (_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
-                Some(d) => {
-                    fs::create_dir_all(&d)?;
-                    (None, d)
-                }
-                None => {
-                    let tmp = TempDir::new()?;
-                    let p = tmp.path().to_path_buf();
-                    (Some(tmp), p)
-                }
-            };
+            let (_guard, work_dir) = archive::resolve_work_dir(keep_extracted, &ap_archive)?;
 
             ui::badge_step(2, 3, "Decompressing signed boot, vbmeta, and recovery images...");
             let targets = ["boot.img", "vbmeta.img", "recovery.img"];
@@ -289,17 +277,7 @@ fn main() -> Result<()> {
         }) => {
             ui::badge_step(1, 3, "Locating stock firmware directory...");
             let ap_archive = archive::locate_ap_archive(&stock_dir)?;
-            let (_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
-                Some(d) => {
-                    fs::create_dir_all(&d)?;
-                    (None, d)
-                }
-                None => {
-                    let tmp = TempDir::new()?;
-                    let p = tmp.path().to_path_buf();
-                    (Some(tmp), p)
-                }
-            };
+            let (_guard, work_dir) = archive::resolve_work_dir(keep_extracted, &ap_archive)?;
 
             ui::badge_step(2, 3, "Extracting full stock partitions (including dynamic SUPER container)...");
             let targets = [

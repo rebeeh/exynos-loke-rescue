@@ -872,8 +872,7 @@ fn prepare_boot_images(path: &Path) -> Result<(Vec<PartitionTarget>, Option<Temp
     }
 
     let ap_archive = archive::locate_ap_archive(path)?;
-    let tmp = TempDir::new()?;
-    let work_dir = tmp.path().to_path_buf();
+    let (tmp, work_dir) = archive::resolve_work_dir(None, &ap_archive)?;
     let targets = ["boot.img", "vbmeta.img", "recovery.img"];
     let extracted = archive::extract_and_decompress_images(&ap_archive, &work_dir, &targets)?;
 
@@ -882,7 +881,7 @@ fn prepare_boot_images(path: &Path) -> Result<(Vec<PartitionTarget>, Option<Temp
         PartitionTarget { name: "VBMETA".to_string(), path: extracted["vbmeta.img"].clone() },
         PartitionTarget { name: "RECOVERY".to_string(), path: extracted["recovery.img"].clone() },
     ];
-    Ok((plan, Some(tmp)))
+    Ok((plan, tmp))
 }
 
 /// Helper: Prepare full restore images from directory or AP archive
@@ -908,8 +907,7 @@ fn prepare_full_restore_images(path: &Path) -> Result<(Vec<PartitionTarget>, Opt
     }
 
     let ap_archive = archive::locate_ap_archive(path)?;
-    let tmp = TempDir::new()?;
-    let work_dir = tmp.path().to_path_buf();
+    let (tmp, work_dir) = archive::resolve_work_dir(None, &ap_archive)?;
     let targets = ["boot.img", "vbmeta.img", "recovery.img", "dtbo.img", "super.img"];
     let extracted = archive::extract_and_decompress_images(&ap_archive, &work_dir, &targets)?;
 
@@ -920,5 +918,5 @@ fn prepare_full_restore_images(path: &Path) -> Result<(Vec<PartitionTarget>, Opt
         PartitionTarget { name: "DTBO".to_string(), path: extracted["dtbo.img"].clone() },
         PartitionTarget { name: "SUPER".to_string(), path: extracted["super.img"].clone() },
     ];
-    Ok((plan, Some(tmp)))
+    Ok((plan, tmp))
 }

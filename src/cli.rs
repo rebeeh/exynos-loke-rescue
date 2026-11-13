@@ -73,11 +73,11 @@ pub enum Commands {
     /// Mode 1: Clear Emergency Recovery screen by flashing signed stock BOOT, VBMETA, and RECOVERY
     RescueBoot {
         /// Path to stock AP_*.tar.md5 file or directory containing it
-        #[arg(short, long)]
+        #[arg(short, long, alias = "ap-dir", alias = "ap-file")]
         ap: PathBuf,
 
         /// Retain decompressed raw .img files in this directory
-        #[arg(long)]
+        #[arg(long, alias = "keep")]
         keep_extracted: Option<PathBuf>,
 
         /// Perform low-level NAND hardware erase on USERDATA before flashing
@@ -100,11 +100,11 @@ pub enum Commands {
     /// Mode 2: Full raw stock OS restore (BOOT + VBMETA + RECOVERY + DTBO + SUPER) bypassing super metadata bugs
     FullRawRestore {
         /// Directory containing stock AP_*.tar.md5 archive
-        #[arg(short, long)]
+        #[arg(short, long, alias = "stock")]
         stock_dir: PathBuf,
 
         /// Retain decompressed raw .img files in this directory
-        #[arg(long)]
+        #[arg(long, alias = "keep")]
         keep_extracted: Option<PathBuf>,
 
         /// Perform low-level NAND hardware erase on USERDATA before flashing
@@ -131,23 +131,23 @@ pub enum Commands {
         partitions: Vec<String>,
 
         /// Direct shortcut for BOOT image
-        #[arg(long)]
+        #[arg(long, alias = "boot-img", alias = "boot_img")]
         boot: Option<PathBuf>,
 
         /// Direct shortcut for RECOVERY image
-        #[arg(long)]
+        #[arg(long, alias = "recovery-img", alias = "recovery_img")]
         recovery: Option<PathBuf>,
 
         /// Direct shortcut for VBMETA image
-        #[arg(short = 'm', long)]
+        #[arg(short = 'm', long, alias = "vbmeta-img", alias = "vbmeta_img")]
         vbmeta: Option<PathBuf>,
 
         /// Direct shortcut for DTBO image
-        #[arg(long)]
+        #[arg(long, alias = "dtbo-img", alias = "dtbo_img")]
         dtbo: Option<PathBuf>,
 
         /// Direct shortcut for SUPER image (dynamic partitions container)
-        #[arg(long)]
+        #[arg(long = "super", alias = "super-img", alias = "super_img")]
         super_img: Option<PathBuf>,
 
         /// Perform low-level NAND hardware erase on USERDATA before flashing

@@ -4,9 +4,10 @@ use crate::loke_proto::{
     SessionEndSubcmd, SessionSetupSubcmd, ACK_PACKET_SIZE, HANDSHAKE_REQUEST, HANDSHAKE_RESPONSE,
 };
 use crate::pit::PitTable;
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use colored::*;
-use futures_lite::future::block_on;
+use futures_lite::future::{block_on, race};
+use futures_timer::Delay;
 use indicatif::{ProgressBar, ProgressStyle};
 use nusb::transfer::RequestBuffer;
 use nusb::Interface;
@@ -21,6 +22,7 @@ const LOKE_INTERFACE_NUM: u8 = 1;
 const EP_OUT: u8 = 0x01;
 const EP_IN: u8 = 0x81;
 const USB_MAX_PACKET_SIZE: usize = 512;
+const PIT_CHUNK_SIZE: usize = 500;
 
 pub struct NativeLokeSession {
     iface: Interface,
@@ -60,7 +62,7 @@ impl NativeLokeSession {
     }
 
     fn bulk_write(&self, data: &[u8], timeout_ms: u64) -> Result<()> {
-        let fut = async {
+        let op_fut = async {
             let comp = self.iface.bulk_out(EP_OUT, data.to_vec()).await;
             comp.status.map_err(|_| RescueError::UsbBulkTimeout {
                 endpoint: EP_OUT,
@@ -78,11 +80,20 @@ impl NativeLokeSession {
             Ok::<(), anyhow::Error>(())
         };
 
-        block_on(fut)
+        let timeout_fut = async {
+            Delay::new(Duration::from_millis(timeout_ms)).await;
+            Err(RescueError::UsbBulkTimeout {
+                endpoint: EP_OUT,
+                timeout_ms,
+            }
+            .into())
+        };
+
+        block_on(race(op_fut, timeout_fut))
     }
 
     fn bulk_read(&self, len: usize, timeout_ms: u64) -> Result<Vec<u8>> {
-        let fut = async {
+        let op_fut = async {
             let comp = self.iface.bulk_in(EP_IN, RequestBuffer::new(len)).await;
             comp.status.map_err(|_| RescueError::UsbBulkTimeout {
                 endpoint: EP_IN,
@@ -91,7 +102,16 @@ impl NativeLokeSession {
             Ok::<Vec<u8>, anyhow::Error>(comp.data)
         };
 
-        block_on(fut)
+        let timeout_fut = async {
+            Delay::new(Duration::from_millis(timeout_ms)).await;
+            Err(RescueError::UsbBulkTimeout {
+                endpoint: EP_IN,
+                timeout_ms,
+            }
+            .into())
+        };
+
+        block_on(race(op_fut, timeout_fut))
     }
 
     fn send_control_and_ack(&self, frame: &ControlFrame, timeout_ms: u64) -> Result<LokeAck> {
@@ -137,6 +157,9 @@ impl NativeLokeSession {
             self.tier = ProtocolTier::OdinV3;
         }
 
+        // Allow Samsung bootloader internal USB FIFO to stabilize after session begin
+        std::thread::sleep(Duration::from_millis(500));
+
         if self.verbose {
             println!(
                 "    {} Negotiated LOKE transport tier: {:?}",
@@ -147,21 +170,34 @@ impl NativeLokeSession {
         Ok(())
     }
 
-    /// Dumps the live Partition Information Table directly from bootloader memory.
+    /// Dumps the live Partition Information Table directly from bootloader memory
+    /// using wire-level PIT slice requests (0x65, subcmd 0x02).
     pub fn fetch_pit(&self) -> Result<PitTable> {
         let start = ControlFrame::new(LokeCommand::PitTransfer, PitSubcmd::DumpStart as u32);
         let ack = self.send_control_and_ack(&start, 5000)?;
+        if ack.status <= 0 {
+            bail!("LOKE rejected PIT dump initiation (status code: {})", ack.status);
+        }
         let total_bytes = ack.status as usize;
 
+        let transfer_count = total_bytes.div_ceil(PIT_CHUNK_SIZE);
         let mut pit_bytes = Vec::with_capacity(total_bytes);
-        while pit_bytes.len() < total_bytes {
-            let remaining = total_bytes - pit_bytes.len();
-            let read_len = remaining.min(USB_MAX_PACKET_SIZE);
-            let chunk = self.bulk_read(USB_MAX_PACKET_SIZE, 5000)?;
-            pit_bytes.extend_from_slice(&chunk[..read_len.min(chunk.len())]);
+
+        for i in 0..transfer_count {
+            let cmd = ControlFrame::new(LokeCommand::PitTransfer, PitSubcmd::DumpChunk as u32)
+                .with_args(i as u32, 0, 0, 0);
+            self.bulk_write(&cmd.to_bytes(), 5000)?;
+
+            let expected_size = (total_bytes - pit_bytes.len()).min(PIT_CHUNK_SIZE);
+            let chunk = self.bulk_read(expected_size, 5000)?;
+            pit_bytes.extend_from_slice(&chunk[..expected_size.min(chunk.len())]);
         }
 
-        let end = ControlFrame::new(LokeCommand::PitTransfer, PitSubcmd::DumpEnd as u32);
+        // Drain any empty packet / ZLP
+        let _ = self.bulk_read(1, 100);
+
+        let end = ControlFrame::new(LokeCommand::PitTransfer, PitSubcmd::DumpEnd as u32)
+            .with_args(total_bytes as u32, 0, 0, 0);
         let _ = self.send_control_and_ack(&end, 5000)?;
 
         PitTable::from_bytes(&pit_bytes)

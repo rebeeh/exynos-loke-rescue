@@ -17,6 +17,7 @@ clap = { version = "4.5", features = ["derive", "env"] }
 colored = "2.1"
 console = "0.15"
 futures-lite = "2.3"
+futures-timer = "3.0"
 indicatif = "0.17"
 lz4_flex = "0.11"
 md5 = "0.8.1"

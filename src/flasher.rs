@@ -31,7 +31,22 @@ pub fn execute_partition_flash(
     options: FlashOptions,
 ) -> Result<()> {
     let result = match engine {
-        TransportEngine::Native => flash_via_native_nusb(targets, options),
+        TransportEngine::Native => {
+            let res = flash_via_native_nusb(targets, options);
+            if let Err(ref e) = res {
+                if let Ok(samloader_bin) = usb::resolve_samloader(samloader_override) {
+                    eprintln!(
+                        "\n{} Native transport encountered: {}\n{} Falling back to samloader-rs ({})",
+                        "[WARN]".yellow().bold(),
+                        e,
+                        "==>".cyan().bold(),
+                        samloader_bin.display()
+                    );
+                    return flash_via_samloader_subprocess(&samloader_bin, targets, options);
+                }
+            }
+            res
+        }
         TransportEngine::Samloader => {
             let bin = usb::resolve_samloader(samloader_override)?;
             flash_via_samloader_subprocess(&bin, targets, options)
@@ -141,14 +156,12 @@ fn flash_via_samloader_subprocess(
         cmd.arg("-p").arg(&t.name).arg(&t.path);
     }
 
-    let output = cmd.output().context("Failed to execute samloader-rs")?;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    print!("{}", stdout);
-    eprint!("{}", stderr);
+    let status = cmd
+        .status()
+        .with_context(|| format!("Failed to execute samloader-rs: {}", samloader_bin.display()))?;
 
-    if !output.status.success() {
-        bail!("{}\n{}", stdout, stderr);
+    if !status.success() {
+        bail!("samloader-rs process exited with error status: {:?}", status.code());
     }
     Ok(())
 }
