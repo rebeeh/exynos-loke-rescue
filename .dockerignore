@@ -1,0 +1,10 @@
+target/
+dist/
+*.tar.gz
+*.pcapng
+stock_fw/
+firmware/
+extracted*/
+.git/
+.github/
+.vscode/

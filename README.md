@@ -120,21 +120,31 @@ flowchart TD
 
 ```text
 exynos-loke-rescue/
-├── Cargo.toml                      # Package metadata & optimized release profile
+├── Cargo.toml                      # Package metadata, packaging configs & release profile
+├── Cargo.lock                      # Deterministic dependency lockfile
+├── build.rs                        # Compile-time shell completions & man page generator
+├── Makefile                        # Unified development, build, packaging & test driver
+├── Dockerfile                      # Multi-stage lightweight OCI container (< 15 MB)
 ├── LICENSE                         # MIT License
-├── PROTOCOL.md                     # Clean-room wire protocol specification
-├── README.md                       # Comprehensive guide & operational runbooks
-├── .gitignore                      # Ignore build targets, archives, and images
+├── PROTOCOL.md                     # Clean-room Odin v3/v4 wire protocol specification
+├── README.md                       # Comprehensive reference manual & runbooks
+├── CHANGELOG.md                    # Keep a Changelog compliant release history
+├── CONTRIBUTING.md                 # Development & contribution guidelines
+├── SECURITY.md                     # Security policy & binary hardening documentation
 ├── udev/
 │   └── 60-exynos-loke-rescue.rules # Kernel udev rules with ID_MM_DEVICE_IGNORE
+├── packaging/
+│   ├── debian/                     # Debian / Ubuntu packaging (control, rules, postinst)
+│   ├── rpm/                        # Fedora / RHEL spec file (exynos-loke-rescue.spec)
+│   └── arch/                       # Arch Linux PKGBUILD & AUR binary package
+├── tools/
+│   └── wireshark/                  # Wireshark / TShark Lua dissector for LOKE wire protocol
 ├── scripts/
-│   ├── install.sh                  # Automated toolchain installer
-│   ├── capture_usbmon.sh           # Live Odin wire telemetry capture
-│   ├── rea_extract_sboot.sh        # Unpacks sboot.bin for REA / Ghidra analysis
-│   ├── 01_setup_usb.sh             # Standalone bash USB sanitizer
-│   ├── 02_extract_img.sh           # Standalone bash lz4 extractor
-│   ├── 03_flash_signed.sh          # Standalone bash boot component flasher
-│   └── 04_flash_stock_os.sh        # Standalone bash raw SUPER & DTBO flasher
+│   ├── install.sh                  # Automated system-wide installer
+│   ├── package_tarball.sh          # Portable release tarball assembler
+│   ├── audit_release.sh            # REA release binary hardening & exposure audit
+│   ├── capture_usbmon.sh           # Live Odin wire telemetry capture via usbmon
+│   └── rea_extract_sboot.sh        # Unpacks sboot.bin for REA / Ghidra analysis
 ├── src/
 │   ├── main.rs                     # Primary CLI coordinator & state machine
 │   ├── cli.rs                      # Clap v4 argument parser & subcommands
@@ -152,17 +162,54 @@ exynos-loke-rescue/
 
 ---
 
-## 🛠️ Installation & Build Guide
+## 📦 Packaging & Installation
 
-### Automated Quick Install (Fedora, Debian, Ubuntu, Arch)
+### Option 1: Debian & Ubuntu (`.deb`)
+Download the latest `.deb` release package from [GitHub Releases](https://github.com/rebeeh/exynos-loke-rescue/releases):
+```bash
+sudo dpkg -i exynos-loke-rescue_1.0.0_amd64.deb
+```
+
+### Option 2: Fedora, RHEL & openSUSE (`.rpm`)
+Download the latest `.rpm` release package:
+```bash
+sudo dnf install ./exynos-loke-rescue-1.0.0-1.x86_64.rpm
+```
+
+### Option 3: Arch Linux / Manjaro (AUR)
+Install using your preferred AUR helper:
+```bash
+yay -S exynos-loke-rescue-bin
+```
+Or build from source PKGBUILD:
+```bash
+cd packaging/arch && makepkg -si
+```
+
+### Option 4: Portable Standalone Archive (Any Linux Kernel 3.10+)
+Statically linked against musl libc—no glibc dependencies required:
+```bash
+curl -fsSL https://github.com/rebeeh/exynos-loke-rescue/releases/download/v1.0.0/exynos-loke-rescue-v1.0.0-x86_64-unknown-linux-musl.tar.gz | tar -xz
+cd exynos-loke-rescue-v1.0.0-*
+sudo ./install.sh
+```
+
+### Option 5: OCI Container (Docker / Podman)
+Run without installing local dependencies via USB passthrough:
+```bash
+podman run --rm -it --privileged \
+    -v /dev/bus/usb:/dev/bus/usb \
+    -v "$HOME/Downloads/stock:/firmware:ro" \
+    ghcr.io/rebeeh/exynos-loke-rescue:latest probe
+```
+
+### Option 6: Build from Source
 ```bash
 git clone https://github.com/rebeeh/exynos-loke-rescue.git
 cd exynos-loke-rescue
-./scripts/install.sh
+make release
+sudo make install
 ```
-
-### Manual Build
-```bash
 # 1. Install system prerequisites
 sudo dnf install -y rust cargo curl unzip usbutils lz4   # Fedora
 # sudo apt install -y cargo rustc curl unzip usbutils liblz4-tool  # Ubuntu/Debian
@@ -255,6 +302,34 @@ exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock
    ```bash
    adb sideload ~/Downloads/lineage-*.zip
    ```
+
+### Runbook E: Resolving the "Dynamic partition pre-flight check failed" Error
+
+If you see this error when flashing with samloader:
+```text
+ERROR: Dynamic partition pre-flight check failed: insufficient free space in Super partition
+or metadata corrupted. When flashing HOME_CSC without wipe, the Super partition must have
+enough space for the target OS image. (Try flashing the CSC binary to perform a clean flash)
+```
+
+**Root Cause:**
+`samloader-rs` attempts to parse Android `liblp` dynamic partition metadata on your device and inside `super.img` to ensure all logical partitions fit. When recovering from a corrupted or custom partition table (e.g. LineageOS `super`), this client-side pre-flight assertion fails and halts the session before transmission.
+
+**Solution 1: Bypass Pre-flight Check with samloader (`--skip-size-check`)**
+Include `--skip-size-check` and pass the PIT file to re-partition:
+```bash
+./samloader flash \
+    --skip-size-check \
+    --pit ~/Downloads/stock/A21S_EUR_OPEN.pit \
+    -p SUPER ~/Downloads/stock/super.img \
+    -p DTBO ~/Downloads/stock/dtbo.img
+```
+
+**Solution 2: Use Native `exynos-loke-rescue` (Bypasses Pre-Flight Checks Automatically)**
+`exynos-loke-rescue` writes raw blocks directly to the flash controller without brittle client-side metadata constraints:
+```bash
+exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock
+```
 
 ---
 

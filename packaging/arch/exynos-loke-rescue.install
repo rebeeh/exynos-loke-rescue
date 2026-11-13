@@ -1,0 +1,13 @@
+post_install() {
+    udevadm control --reload-rules || true
+    udevadm trigger --subsystem-match=usb || true
+    echo "==> To flash without root privileges, ensure your user is in the 'plugdev' or 'wheel' group."
+}
+
+post_upgrade() {
+    post_install
+}
+
+post_remove() {
+    udevadm control --reload-rules || true
+}

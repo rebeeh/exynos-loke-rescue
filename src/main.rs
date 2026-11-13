@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod archive;
 mod cli;
 mod diagnostics;

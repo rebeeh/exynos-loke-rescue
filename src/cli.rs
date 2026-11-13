@@ -102,7 +102,7 @@ pub enum Commands {
         recovery: PathBuf,
 
         /// Path to custom or disabled vbmeta.img
-        #[arg(short, long)]
+        #[arg(short = 'm', long)]
         vbmeta: PathBuf,
 
         /// Optional custom boot.img

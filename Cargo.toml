@@ -6,8 +6,9 @@ authors = ["Rabeeh Fouz Ahammad VK"]
 description = "Native Linux LOKE protocol driver and deterministic firmware recovery engine for Samsung Exynos devices."
 license = "MIT"
 repository = "https://github.com/rebeeh/exynos-loke-rescue"
+readme = "README.md"
 keywords = ["samsung", "exynos", "odin", "loke", "unbrick", "nusb"]
-categories = ["command-line-utilities", "os::linux-apis"]
+categories = ["command-line-utilities", "os::linux-apis", "hardware-support"]
 
 [dependencies]
 anyhow = "1.0"
@@ -18,11 +19,15 @@ futures-lite = "2.3"
 indicatif = "0.17"
 lz4_flex = "0.11"
 nusb = "0.1"
-regex = "1.10"
 tar = "0.4"
 tempfile = "3.10"
 thiserror = "1.0"
 which = "6.0"
+
+[build-dependencies]
+clap = { version = "4.5", features = ["derive"] }
+clap_complete = "4.5"
+clap_mangen = "0.2"
 
 [dev-dependencies]
 assert_cmd = "2.0"
@@ -30,6 +35,41 @@ predicates = "3.1"
 
 [profile.release]
 opt-level = 3
-lto = true
+lto = "fat"
 codegen-units = 1
+panic = "abort"
 strip = true
+
+[package.metadata.deb]
+maintainer = "Rabeeh Fouz Ahammad VK"
+copyright = "2024-2026, Rabeeh Fouz Ahammad VK <MIT>"
+license-file = ["LICENSE", "4"]
+extended-description = """\
+Clean-room, memory-safe, Linux-native firmware flashing engine and deterministic \
+partition recovery tool for Samsung Exynos SoCs. Bypasses Heimdall timeouts, \
+Odin4 proprietary bulk read crashes, and samloader-rs dynamic partition size verification \
+failures on modern Android 10-14 devices."""
+depends = "$auto"
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/exynos-loke-rescue", "usr/bin/", "755"],
+    ["udev/60-exynos-loke-rescue.rules", "usr/lib/udev/rules.d/", "644"],
+    ["README.md", "usr/share/doc/exynos-loke-rescue/README.md", "644"],
+    ["LICENSE", "usr/share/doc/exynos-loke-rescue/copyright", "644"],
+    ["target/man/exynos-loke-rescue.1", "usr/share/man/man1/exynos-loke-rescue.1", "644"],
+    ["target/completions/exynos-loke-rescue.bash", "usr/share/bash-completion/completions/exynos-loke-rescue", "644"],
+    ["target/completions/_exynos-loke-rescue", "usr/share/zsh/vendor-completions/_exynos-loke-rescue", "644"],
+    ["target/completions/exynos-loke-rescue.fish", "usr/share/fish/vendor_completions.d/exynos-loke-rescue.fish", "644"],
+]
+maintainer-scripts = "packaging/debian"
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/exynos-loke-rescue", dest = "/usr/bin/exynos-loke-rescue", mode = "755" },
+    { source = "udev/60-exynos-loke-rescue.rules", dest = "/usr/lib/udev/rules.d/60-exynos-loke-rescue.rules", mode = "644" },
+    { source = "target/man/exynos-loke-rescue.1", dest = "/usr/share/man/man1/exynos-loke-rescue.1", mode = "644" },
+    { source = "target/completions/exynos-loke-rescue.bash", dest = "/usr/share/bash-completion/completions/exynos-loke-rescue", mode = "644" },
+    { source = "target/completions/_exynos-loke-rescue", dest = "/usr/share/zsh/site-functions/_exynos-loke-rescue", mode = "644" },
+    { source = "target/completions/exynos-loke-rescue.fish", dest = "/usr/share/fish/vendor_completions.d/exynos-loke-rescue.fish", mode = "644" },
+]
