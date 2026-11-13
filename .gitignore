@@ -1,19 +1,48 @@
+# Rust / Cargo Build Artifacts
 /target/
 **/*.rs.bk
+*.pdb
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# Samsung Firmware Archives & Partition Images
 *.zip
 *.tar
 *.tar.md5
 *.lz4
 *.img
+*.bin
 *.pit
+
+# Firmware Working & Extracted Directories
 stock_fw/
 firmware/
 extracted*/
+tmp/
+
+# Local samloader binaries & download archives
+samloader
+samloader*.tar.gz
+
+# Logs & Debug Traces
 *.log
 samloader.log
 
-# System & editor files
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Metadata
 .DS_Store
 Thumbs.db
-*~
-*.swp
