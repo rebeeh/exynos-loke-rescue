@@ -74,7 +74,7 @@ install: release
 		udevadm control --reload-rules || true; \
 		udevadm trigger --subsystem-match=usb || true; \
 	fi
-	@echo "✓ Successfully installed exynos-loke-rescue to $(DESTDIR)$(BINDIR)"
+	@echo "[OK] Successfully installed exynos-loke-rescue to $(DESTDIR)$(BINDIR)"
 
 docker-build:
 	podman build -t ghcr.io/rebeeh/exynos-loke-rescue:latest -t ghcr.io/rebeeh/exynos-loke-rescue:v$(VERSION) .
