@@ -1,19 +1,14 @@
-# Firmware archives and compressed packages
+/target/
+**/*.rs.bk
 *.zip
 *.tar
 *.tar.md5
-
-# Extracted partitions and images
 *.lz4
 *.img
-*.bin
-
-# Firmware download working directories
+*.pit
 stock_fw/
 firmware/
-extracted/
-
-# Logs and debug traces
+extracted*/
 *.log
 samloader.log
 

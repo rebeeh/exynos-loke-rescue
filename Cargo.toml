@@ -1,0 +1,27 @@
+[package]
+name = "exynos-loke-rescue"
+version = "0.1.0"
+edition = "2021"
+authors = ["Rabeeh Fouz Ahammad VK"]
+description = "Linux CLI recovery orchestrator for Samsung Exynos devices—bypasses Heimdall session hangs, Odin4 protocol timeouts, and samloader-rs dynamic super partition crashes."
+license = "MIT"
+repository = "https://github.com/rebeeh/exynos-loke-rescue"
+keywords = ["samsung", "exynos", "odin", "unbrick", "samloader"]
+categories = ["command-line-utilities", "os::linux-apis"]
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+colored = "2.1"
+indicatif = "0.17"
+lz4_flex = "0.11"
+regex = "1.10"
+tar = "0.4"
+tempfile = "3.10"
+which = "6.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
