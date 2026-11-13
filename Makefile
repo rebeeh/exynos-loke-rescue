@@ -12,7 +12,7 @@ FISHCOMPDIR ?= /usr/share/fish/vendor_completions.d
 
 VERSION ?= $(shell sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)
 
-.PHONY: all build release test check fmt lint clean install package-tarball audit docker-build help
+.PHONY: all build release test check fmt lint clean install package-tarball package-deb package-rpm package-appimage audit docker-build help
 
 all: build
 
@@ -26,6 +26,9 @@ help:
 	@echo "  lint            Run cargo clippy with strict warnings"
 	@echo "  audit           Run release binary hardening and REA exposure audit"
 	@echo "  package-tarball Assemble portable distribution archive (.tar.gz)"
+	@echo "  package-deb     Build standalone Debian package (.deb)"
+	@echo "  package-rpm     Build standalone RPM package (.rpm)"
+	@echo "  package-appimage Prepare standalone AppImage bundle"
 	@echo "  install         Install binary and udev rules to system (requires root)"
 	@echo "  docker-build    Build minimal multi-stage container image"
 	@echo "  clean           Clean target/ and dist/ artifacts"
@@ -53,6 +56,15 @@ audit: release
 
 package-tarball: release
 	./scripts/package_tarball.sh $(VERSION)
+
+package-deb: release
+	./packaging/build-deb.sh $(VERSION) amd64
+
+package-rpm: release
+	./packaging/build-rpm.sh $(VERSION)
+
+package-appimage: release
+	./packaging/build-appimage.sh $(VERSION)
 
 install: release
 	install -D -m 0755 target/release/exynos-loke-rescue $(DESTDIR)$(BINDIR)/exynos-loke-rescue

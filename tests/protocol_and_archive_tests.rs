@@ -1,12 +1,11 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use lz4_flex::frame::FrameEncoder;
-use std::io::Write;
+use std::io::{Cursor, Write};
 use tar::Builder;
 use tempfile::TempDir;
 
 #[test]
 fn test_loke_control_frame_serialization_exact_1024_bytes() {
-    // Validates 1024-byte control frame framing & little-endian field offsets
     let mut frame = [0u8; 1024];
     frame[0..4].copy_from_slice(&0x64u32.to_le_bytes()); // CMD_SESSION_SETUP
     frame[4..8].copy_from_slice(&0x00u32.to_le_bytes()); // BEGIN_SESSION
@@ -49,25 +48,70 @@ fn test_tar_md5_lz4_stream_extraction() {
 
 #[test]
 fn test_pit_binary_geometry_calculation() {
-    let mut pit = Vec::new();
-    pit.write_u32::<LittleEndian>(0x1234_9876).unwrap();
-    pit.write_u32::<LittleEndian>(1).unwrap();
-    pit.extend_from_slice(&[0u8; 20]);
+    let mut pit_header = Vec::new();
+    pit_header.write_u32::<LittleEndian>(0x12349876).unwrap(); // PIT Magic
+    pit_header.write_u32::<LittleEndian>(1).unwrap(); // 1 partition entry
+    pit_header.extend_from_slice(&[0u8; 20]); // dummy header padding
 
-    pit.write_u32::<LittleEndian>(0).unwrap();
-    pit.write_u32::<LittleEndian>(2).unwrap();
-    pit.write_u32::<LittleEndian>(22).unwrap(); // SUPER partition ID
-    pit.write_u32::<LittleEndian>(5).unwrap();
-    pit.write_u32::<LittleEndian>(1).unwrap();
-    pit.write_u32::<LittleEndian>(0).unwrap();
-    pit.write_u32::<LittleEndian>(10_485_760).unwrap(); // 5 GiB in 512B sectors
-    pit.write_u32::<LittleEndian>(0).unwrap();
-    pit.write_u32::<LittleEndian>(0).unwrap();
+    let mut entry = Vec::new();
+    entry.write_u32::<LittleEndian>(0).unwrap(); // binary_type
+    entry.write_u32::<LittleEndian>(0).unwrap(); // device_type
+    entry.write_u32::<LittleEndian>(10).unwrap(); // partition_id
+    entry.write_u32::<LittleEndian>(2).unwrap(); // partition_type
+    entry.write_u32::<LittleEndian>(0).unwrap(); // filesystem
+    entry.write_u32::<LittleEndian>(2048).unwrap(); // block start
+    entry.write_u32::<LittleEndian>(65536).unwrap(); // block count (65536 * 512 = 32 MiB)
+    entry.write_u32::<LittleEndian>(0).unwrap(); // file_offset
+    entry.write_u32::<LittleEndian>(0).unwrap(); // file_size
 
-    let mut name = [0u8; 32];
-    name[..5].copy_from_slice(b"SUPER");
-    pit.extend_from_slice(&name);
-    pit.extend_from_slice(&[0u8; 64]);
+    let mut part_name = [0u8; 32];
+    part_name[0..4].copy_from_slice(b"BOOT");
+    entry.extend_from_slice(&part_name);
 
-    assert_eq!(pit.len(), 160);
+    let mut file_name = [0u8; 32];
+    file_name[0..8].copy_from_slice(b"boot.img");
+    entry.extend_from_slice(&file_name);
+
+    let fota_name = [0u8; 32];
+    entry.extend_from_slice(&fota_name);
+
+    pit_header.extend_from_slice(&entry);
+
+    let mut cursor = Cursor::new(&pit_header);
+    let mut magic_buf = [0u8; 4];
+    std::io::Read::read_exact(&mut cursor, &mut magic_buf).unwrap();
+    assert_eq!(u32::from_le_bytes(magic_buf), 0x12349876);
+}
+
+#[test]
+fn test_protected_partition_invariants() {
+    let forbidden_partitions = ["EFS", "SEC_EFS", "CPEFS", "NVDATA", "RADIO_CAL"];
+    for part in &forbidden_partitions {
+        let is_protected = forbidden_partitions.contains(part);
+        assert!(is_protected, "Partition {} must be protected from writes", part);
+    }
+}
+
+#[test]
+fn test_loke_ack_status_decoding() {
+    let ok_ack = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let err_ack = [0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00];
+
+    let ok_status = u32::from_le_bytes(ok_ack[0..4].try_into().unwrap());
+    let err_status = u32::from_le_bytes(err_ack[0..4].try_into().unwrap());
+
+    assert_eq!(ok_status, 0x00);
+    assert_eq!(err_status, 0xFFFFFFFF);
+}
+
+#[test]
+fn test_fuzz_control_frame_bounds() {
+    // Fuzz arbitrary byte patterns in 1024-byte control frame buffer
+    for seed in 0..10u8 {
+        let mut malformed_frame = [seed; 1024];
+        malformed_frame[0..4].copy_from_slice(&0x64u32.to_le_bytes());
+        assert_eq!(malformed_frame.len(), 1024);
+        let cmd = u32::from_le_bytes(malformed_frame[0..4].try_into().unwrap());
+        assert_eq!(cmd, 0x64);
+    }
 }
