@@ -1,12 +1,12 @@
 [package]
 name = "exynos-loke-rescue"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Rabeeh Fouz Ahammad VK"]
-description = "Deterministic Linux recovery and partition orchestration engine for Samsung Exynos devices."
+description = "Native Linux LOKE protocol driver and deterministic firmware recovery engine for Samsung Exynos devices."
 license = "MIT"
 repository = "https://github.com/rebeeh/exynos-loke-rescue"
-keywords = ["samsung", "exynos", "odin", "loke", "unbrick", "samloader"]
+keywords = ["samsung", "exynos", "odin", "loke", "unbrick", "nusb"]
 categories = ["command-line-utilities", "os::linux-apis"]
 
 [dependencies]
@@ -14,10 +14,11 @@ anyhow = "1.0"
 byteorder = "1.5"
 clap = { version = "4.5", features = ["derive", "env"] }
 colored = "2.1"
+futures-lite = "2.3"
 indicatif = "0.17"
 lz4_flex = "0.11"
+nusb = "0.1"
 regex = "1.10"
-sha2 = "0.10"
 tar = "0.4"
 tempfile = "3.10"
 thiserror = "1.0"

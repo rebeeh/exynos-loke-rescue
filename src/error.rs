@@ -3,29 +3,42 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum RescueError {
-    #[error("samloader-rs binary not found in ./samloader or $PATH")]
-    SamloaderNotFound,
-
-    #[error("USB device 04e8:685d not detected on host bus (check cable, battery, or replug)")]
+    #[error("Samsung Download Mode device (04e8:685d) not found on USB bus")]
     DeviceNotDetected,
 
-    #[error("LOKE handshake or USB bulk transfer stalled on endpoint 0x81/0x01")]
-    UsbEndpointHung,
+    #[error("Failed to claim USB Interface 1 on 04e8:685d (ensure cdc_acm is unloaded and ModemManager is stopped): {0}")]
+    UsbInterfaceClaimFailed(String),
 
-    #[error("LOKE rejected flash with general failure (FAIL!) [code: -1] (VaultKeeper / signature check)")]
-    LokeRejectedBinary,
+    #[error("LOKE ASCII handshake failed: expected `LOKE`, received `{0:?}`")]
+    HandshakeFailed(Vec<u8>),
+
+    #[error("USB bulk transfer timed out on endpoint {endpoint:#04x} after {timeout_ms}ms")]
+    UsbBulkTimeout { endpoint: u8, timeout_ms: u64 },
+
+    #[error("LOKE bootloader rejected operation with FAIL! [code: {code}]")]
+    LokeFailure { code: i32 },
+
+    #[error("Partition `{0}` not found in device PIT table")]
+    PartitionNotInPit(String),
+
+    #[error("Payload size ({payload_bytes} bytes) exceeds PIT partition `{partition}` capacity ({capacity_bytes} bytes)")]
+    PartitionOverflow {
+        partition: String,
+        payload_bytes: u64,
+        capacity_bytes: u64,
+    },
 
     #[error("Archive `{0}` not found or unreadable")]
     ArchiveMissing(PathBuf),
 
-    #[error("Partition image `{image}` not found inside archive `{archive}`")]
+    #[error("Partition image `{image}` missing from archive `{archive}`")]
     PartitionImageMissing { image: String, archive: PathBuf },
 
-    #[error("PIT binary header magic mismatch (expected 0x12349876, got {0:#010x})")]
+    #[error("Invalid Samsung PIT header magic: expected 0x12349876, got {0:#010x}")]
     InvalidPitMagic(u32),
 
-    #[error("External command `{cmd}` exited with non-zero status: {code}")]
-    SubprocessFailed { cmd: String, code: i32 },
+    #[error("samloader-rs binary not found in ./samloader or $PATH")]
+    SamloaderNotFound,
 
     #[error(transparent)]
     Io(#[from] std::io::Error),

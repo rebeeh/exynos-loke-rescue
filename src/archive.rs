@@ -9,7 +9,6 @@ use std::io::{self, BufReader, BufWriter};
 use std::path::{Path, PathBuf};
 use tar::Archive;
 
-/// Resolves an `AP_*.tar.md5` file from either a direct file path or a firmware directory.
 pub fn locate_ap_archive(path: &Path) -> Result<PathBuf> {
     if path.is_file() {
         return Ok(path.to_path_buf());
@@ -29,15 +28,12 @@ pub fn locate_ap_archive(path: &Path) -> Result<PathBuf> {
     Err(RescueError::ArchiveMissing(path.to_path_buf()).into())
 }
 
-/// Streams target `.img.lz4` (or uncompressed `.img`) entries directly from a Samsung `.tar.md5`
-/// archive into `out_dir` without extracting unrelated multi-gigabyte images.
 pub fn extract_and_decompress_images(
     tar_path: &Path,
     out_dir: &Path,
     targets: &[&str],
 ) -> Result<HashMap<String, PathBuf>> {
-    fs::create_dir_all(out_dir)
-        .with_context(|| format!("Failed to create directory {}", out_dir.display()))?;
+    fs::create_dir_all(out_dir)?;
 
     let file = File::open(tar_path)
         .with_context(|| format!("Failed to open archive {}", tar_path.display()))?;
@@ -55,10 +51,8 @@ pub fn extract_and_decompress_images(
     for entry_result in archive.entries()? {
         let mut entry = match entry_result {
             Ok(e) => e,
-            // Samsung `.tar.md5` appends an ASCII MD5 digest line after the two 512-byte
-            // zero EOF blocks; once all targets are extracted, safely stop iterating.
             Err(_) if extracted.len() == targets.len() => break,
-            Err(e) => return Err(e).context("Failed while reading tar archive entries"),
+            Err(e) => return Err(e).context("Failed reading tar archive entries"),
         };
 
         let entry_path = entry.path()?.to_path_buf();
@@ -82,22 +76,19 @@ pub fn extract_and_decompress_images(
                 );
                 pb.set_message(target.to_string());
 
-                let out_file = File::create(&dest_path)
-                    .with_context(|| format!("Failed to create output file {}", dest_path.display()))?;
+                let out_file = File::create(&dest_path)?;
                 let mut writer = BufWriter::with_capacity(16 * 1024 * 1024, out_file);
 
                 if file_name.ends_with(".lz4") {
                     let progress_reader = pb.wrap_read(&mut entry);
                     let mut decoder = FrameDecoder::new(progress_reader);
-                    io::copy(&mut decoder, &mut writer)
-                        .with_context(|| format!("LZ4 frame decompression error on {}", file_name))?;
+                    io::copy(&mut decoder, &mut writer)?;
                 } else {
                     let mut progress_reader = pb.wrap_read(&mut entry);
-                    io::copy(&mut progress_reader, &mut writer)
-                        .with_context(|| format!("Raw copy error on {}", file_name))?;
+                    io::copy(&mut progress_reader, &mut writer)?;
                 }
 
-                pb.finish_with_message(format!("{} (decompressed)", target));
+                pb.finish_with_message(format!("{} (ready)", target));
                 extracted.insert(target.to_string(), dest_path);
             }
         }

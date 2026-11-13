@@ -3,6 +3,8 @@ mod cli;
 mod diagnostics;
 mod error;
 mod flasher;
+mod loke_proto;
+mod nusb_transport;
 mod pit;
 mod usb;
 
@@ -10,7 +12,8 @@ use anyhow::{bail, Result};
 use clap::Parser;
 use cli::{Cli, Commands};
 use colored::*;
-use flasher::PartitionMapping;
+use flasher::PartitionTarget;
+use nusb_transport::NativeLokeSession;
 use pit::PitTable;
 use std::fs;
 use std::path::PathBuf;
@@ -18,60 +21,44 @@ use tempfile::TempDir;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let samloader_bin = usb::resolve_samloader(cli.samloader_bin.as_deref())?;
-    let backend = cli.backend.as_str();
 
     match cli.command {
         Commands::PrepUsb { no_systemd } => {
-            usb::sanitize_linux_usb(&samloader_bin, no_systemd)?;
+            usb::sanitize_linux_usb(no_systemd)?;
         }
 
-        Commands::Inspect => {
-            let info = usb::detect_device(&samloader_bin, backend)?;
-            println!("{}", "==> Connected Samsung Exynos Device:".green().bold());
-            println!("    Model:              {}", info.model);
-            println!("    Serial Number:      {}", info.serial);
-            println!("    Bootloader Version: {}", info.bootloader);
-            println!("    Sales Code (CSC):   {}", info.sales_code);
-            println!("    Storage Hardware:   {}", info.storage);
+        Commands::Probe => {
+            let session = NativeLokeSession::connect(cli.verbose)?;
+            println!(
+                "{} {:?}",
+                "✓ LOKE Handshake Successful | Negotiated Protocol Tier:".green().bold(),
+                session.tier
+            );
+            let pit = session.fetch_pit()?;
+            pit.print_summary();
         }
 
-        Commands::InspectPit { pit } => {
-            match pit {
-                Some(pit_path) => {
-                    let table = PitTable::from_file(&pit_path)?;
-                    table.print_summary();
-                }
-                None => {
-                    let _ = usb::detect_device(&samloader_bin, backend)?;
-                    let tmp = TempDir::new()?;
-                    let dump_path = tmp.path().join("device.pit");
-                    flasher::dump_device_pit(&samloader_bin, backend, &dump_path)?;
-                    let table = PitTable::from_file(&dump_path)?;
-                    table.print_summary();
-                }
+        Commands::InspectPit { pit } => match pit {
+            Some(path) => {
+                let table = PitTable::from_file(&path)?;
+                table.print_summary();
             }
-        }
+            None => {
+                let session = NativeLokeSession::connect(cli.verbose)?;
+                let table = session.fetch_pit()?;
+                table.print_summary();
+            }
+        },
 
         Commands::FetchStock {
             model,
             region,
             out_dir,
         } => {
-            let (target_model, target_region) = match (model, region) {
-                (Some(m), Some(r)) => (m, r),
-                (m_opt, r_opt) => {
-                    let info = usb::detect_device(&samloader_bin, backend)?;
-                    (
-                        m_opt.unwrap_or(info.model),
-                        r_opt.unwrap_or(info.sales_code),
-                    )
-                }
-            };
             flasher::download_stock_firmware(
-                &samloader_bin,
-                &target_model,
-                &target_region,
+                cli.samloader_bin.as_deref(),
+                &model,
+                &region,
                 &out_dir,
             )?;
         }
@@ -81,13 +68,11 @@ fn main() -> Result<()> {
             keep_extracted,
             no_reboot,
         } => {
-            let _ = usb::detect_device(&samloader_bin, backend)?;
             let ap_archive = archive::locate_ap_archive(&ap)?;
-
-            let (_tmp_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
-                Some(dir) => {
-                    fs::create_dir_all(&dir)?;
-                    (None, dir)
+            let (_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
+                Some(d) => {
+                    fs::create_dir_all(&d)?;
+                    (None, d)
                 }
                 None => {
                     let tmp = TempDir::new()?;
@@ -100,32 +85,29 @@ fn main() -> Result<()> {
             let extracted =
                 archive::extract_and_decompress_images(&ap_archive, &work_dir, &targets)?;
 
-            let mappings = vec![
-                PartitionMapping {
-                    partition_name: "BOOT".to_string(),
-                    image_path: extracted["boot.img"].clone(),
+            let plan = vec![
+                PartitionTarget {
+                    name: "BOOT".to_string(),
+                    path: extracted["boot.img"].clone(),
                 },
-                PartitionMapping {
-                    partition_name: "VBMETA".to_string(),
-                    image_path: extracted["vbmeta.img"].clone(),
+                PartitionTarget {
+                    name: "VBMETA".to_string(),
+                    path: extracted["vbmeta.img"].clone(),
                 },
-                PartitionMapping {
-                    partition_name: "RECOVERY".to_string(),
-                    image_path: extracted["recovery.img"].clone(),
+                PartitionTarget {
+                    name: "RECOVERY".to_string(),
+                    path: extracted["recovery.img"].clone(),
                 },
             ];
 
-            flasher::flash_raw_partitions(&samloader_bin, backend, &mappings, no_reboot, false)?;
-
-            println!(
-                "\n{}",
-                "Next Steps:\n\
-                 1. If the phone enters Samsung Stock Recovery due to leftover custom ROM partitions,\n\
-                    select `Wipe data/factory reset` -> `Reboot to bootloader`.\n\
-                 2. If the phone bootloops because `super` still contains a custom ROM, run:\n\
-                    `exynos-loke-rescue full-raw-restore --stock-dir <DIR>`"
-                    .cyan()
-            );
+            flasher::execute_partition_flash(
+                cli.transport,
+                cli.samloader_bin.as_deref(),
+                &plan,
+                no_reboot,
+                false,
+                cli.verbose,
+            )?;
         }
 
         Commands::FullRawRestore {
@@ -133,13 +115,11 @@ fn main() -> Result<()> {
             keep_extracted,
             no_reboot,
         } => {
-            let _ = usb::detect_device(&samloader_bin, backend)?;
             let ap_archive = archive::locate_ap_archive(&stock_dir)?;
-
-            let (_tmp_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
-                Some(dir) => {
-                    fs::create_dir_all(&dir)?;
-                    (None, dir)
+            let (_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
+                Some(d) => {
+                    fs::create_dir_all(&d)?;
+                    (None, d)
                 }
                 None => {
                     let tmp = TempDir::new()?;
@@ -158,38 +138,37 @@ fn main() -> Result<()> {
             let extracted =
                 archive::extract_and_decompress_images(&ap_archive, &work_dir, &targets)?;
 
-            let mappings = vec![
-                PartitionMapping {
-                    partition_name: "BOOT".to_string(),
-                    image_path: extracted["boot.img"].clone(),
+            let plan = vec![
+                PartitionTarget {
+                    name: "BOOT".to_string(),
+                    path: extracted["boot.img"].clone(),
                 },
-                PartitionMapping {
-                    partition_name: "VBMETA".to_string(),
-                    image_path: extracted["vbmeta.img"].clone(),
+                PartitionTarget {
+                    name: "VBMETA".to_string(),
+                    path: extracted["vbmeta.img"].clone(),
                 },
-                PartitionMapping {
-                    partition_name: "RECOVERY".to_string(),
-                    image_path: extracted["recovery.img"].clone(),
+                PartitionTarget {
+                    name: "RECOVERY".to_string(),
+                    path: extracted["recovery.img"].clone(),
                 },
-                PartitionMapping {
-                    partition_name: "DTBO".to_string(),
-                    image_path: extracted["dtbo.img"].clone(),
+                PartitionTarget {
+                    name: "DTBO".to_string(),
+                    path: extracted["dtbo.img"].clone(),
                 },
-                PartitionMapping {
-                    partition_name: "SUPER".to_string(),
-                    image_path: extracted["super.img"].clone(),
+                PartitionTarget {
+                    name: "SUPER".to_string(),
+                    path: extracted["super.img"].clone(),
                 },
             ];
 
-            flasher::flash_raw_partitions(&samloader_bin, backend, &mappings, no_reboot, false)?;
-
-            println!(
-                "\n{}",
-                "✓ Raw stock OS partitions flashed successfully!\n\
-                 1. If the phone boots into Samsung Stock Recovery, select `Wipe data/factory reset`.\n\
-                 2. Boot into One UI, connect to Wi-Fi, and confirm `OEM unlocking` in Developer Options."
-                    .green()
-            );
+            flasher::execute_partition_flash(
+                cli.transport,
+                cli.samloader_bin.as_deref(),
+                &plan,
+                no_reboot,
+                false,
+                cli.verbose,
+            )?;
         }
 
         Commands::FlashCustomRecovery {
@@ -200,33 +179,39 @@ fn main() -> Result<()> {
         } => {
             for p in [&recovery, &vbmeta] {
                 if !p.exists() {
-                    bail!("Custom image file not found: {}", p.display());
+                    bail!("Custom image not found: {}", p.display());
                 }
             }
 
-            let _ = usb::detect_device(&samloader_bin, backend)?;
-            let mut mappings = vec![
-                PartitionMapping {
-                    partition_name: "RECOVERY".to_string(),
-                    image_path: recovery,
+            let mut plan = vec![
+                PartitionTarget {
+                    name: "RECOVERY".to_string(),
+                    path: recovery,
                 },
-                PartitionMapping {
-                    partition_name: "VBMETA".to_string(),
-                    image_path: vbmeta,
+                PartitionTarget {
+                    name: "VBMETA".to_string(),
+                    path: vbmeta,
                 },
             ];
 
             if let Some(b) = boot {
                 if !b.exists() {
-                    bail!("Custom boot image file not found: {}", b.display());
+                    bail!("Custom boot image not found: {}", b.display());
                 }
-                mappings.push(PartitionMapping {
-                    partition_name: "BOOT".to_string(),
-                    image_path: b,
+                plan.push(PartitionTarget {
+                    name: "BOOT".to_string(),
+                    path: b,
                 });
             }
 
-            flasher::flash_raw_partitions(&samloader_bin, backend, &mappings, no_reboot, true)?;
+            flasher::execute_partition_flash(
+                cli.transport,
+                cli.samloader_bin.as_deref(),
+                &plan,
+                no_reboot,
+                true,
+                cli.verbose,
+            )?;
         }
     }
 

@@ -27,7 +27,6 @@ pub struct PitEntry {
 }
 
 impl PitEntry {
-    /// Calculates partition size in bytes (Samsung PIT block units are 512-byte sectors).
     pub fn size_bytes(&self) -> u64 {
         (self.block_count as u64) * 512
     }
@@ -40,17 +39,14 @@ pub struct PitTable {
 }
 
 impl PitTable {
-    /// Parses a binary Samsung `.pit` file from disk.
     pub fn from_file(path: &Path) -> Result<Self> {
         let file = File::open(path)
             .with_context(|| format!("Failed to open PIT file {}", path.display()))?;
-        let mut reader = BufReader::new(file);
         let mut buf = Vec::new();
-        reader.read_to_end(&mut buf)?;
+        BufReader::new(file).read_to_end(&mut buf)?;
         Self::from_bytes(&buf)
     }
 
-    /// Parses a binary Samsung `.pit` buffer according to the 132-byte entry layout.
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < PIT_HEADER_SIZE {
             anyhow::bail!("PIT buffer truncated ({} bytes)", data.len());
@@ -63,17 +59,16 @@ impl PitTable {
         }
 
         let entry_count = cursor.read_u32::<LittleEndian>()?;
-        // Skip 20 bytes of header metadata (com_tar2, cpu_bl_id, etc.)
         cursor.seek(SeekFrom::Current(20))?;
 
         let mut entries = Vec::with_capacity(entry_count as usize);
 
         for idx in 0..entry_count {
-            let expected_offset = PIT_HEADER_SIZE + (idx as usize) * PIT_ENTRY_SIZE;
-            if expected_offset + PIT_ENTRY_SIZE > data.len() {
+            let offset = PIT_HEADER_SIZE + (idx as usize) * PIT_ENTRY_SIZE;
+            if offset + PIT_ENTRY_SIZE > data.len() {
                 anyhow::bail!("PIT truncated at entry {}", idx);
             }
-            cursor.set_position(expected_offset as u64);
+            cursor.set_position(offset as u64);
 
             let binary_type = cursor.read_u32::<LittleEndian>()?;
             let device_type = cursor.read_u32::<LittleEndian>()?;
@@ -85,9 +80,9 @@ impl PitTable {
             let file_offset = cursor.read_u32::<LittleEndian>()?;
             let file_size = cursor.read_u32::<LittleEndian>()?;
 
-            let partition_name = read_fixed_cstring(&mut cursor, 32)?;
-            let flash_filename = read_fixed_cstring(&mut cursor, 32)?;
-            let fota_filename = read_fixed_cstring(&mut cursor, 32)?;
+            let partition_name = read_cstring(&mut cursor, 32)?;
+            let flash_filename = read_cstring(&mut cursor, 32)?;
+            let fota_filename = read_cstring(&mut cursor, 32)?;
 
             entries.push(PitEntry {
                 binary_type,
@@ -120,7 +115,7 @@ impl PitTable {
     pub fn print_summary(&self) {
         println!(
             "{} ({} partitions)",
-            "==> Parsed Binary PIT Geometry".cyan().bold(),
+            "==> Samsung Binary PIT Geometry".cyan().bold(),
             self.entry_count
         );
         println!(
@@ -138,9 +133,9 @@ impl PitTable {
     }
 }
 
-fn read_fixed_cstring<R: Read>(reader: &mut R, len: usize) -> Result<String> {
+fn read_cstring<R: Read>(reader: &mut R, len: usize) -> Result<String> {
     let mut buf = vec![0u8; len];
     reader.read_exact(&mut buf)?;
-    let nul_pos = buf.iter().position(|&b| b == 0).unwrap_or(len);
-    Ok(String::from_utf8_lossy(&buf[..nul_pos]).trim().to_string())
+    let nul = buf.iter().position(|&b| b == 0).unwrap_or(len);
+    Ok(String::from_utf8_lossy(&buf[..nul]).trim().to_string())
 }

@@ -1,130 +1,128 @@
-use crate::diagnostics::diagnose_flash_failure;
+use crate::cli::TransportEngine;
+use crate::diagnostics::print_diagnostic_guidance;
 use crate::error::RescueError;
+use crate::nusb_transport::NativeLokeSession;
+use crate::usb;
 use anyhow::{bail, Context, Result};
 use colored::*;
-use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 #[derive(Debug, Clone)]
-pub struct PartitionMapping {
-    pub partition_name: String,
-    pub image_path: PathBuf,
+pub struct PartitionTarget {
+    pub name: String,
+    pub path: PathBuf,
 }
 
-/// Invokes `samloader-rs flash -p <PART> <FILE> ...` while streaming live output
-/// and running post-mortem LOKE diagnostics on failure.
-pub fn flash_raw_partitions(
-    samloader_bin: &Path,
-    backend: &str,
-    partitions: &[PartitionMapping],
+pub fn execute_partition_flash(
+    engine: TransportEngine,
+    samloader_override: Option<&Path>,
+    targets: &[PartitionTarget],
     no_reboot: bool,
     is_custom_binary: bool,
+    verbose: bool,
 ) -> Result<()> {
-    let mut cmd = Command::new(samloader_bin);
-    cmd.args(["--usb-backend", backend, "flash"]);
-
-    if no_reboot {
-        cmd.arg("--no-reboot");
-    }
-
-    for part in partitions {
-        cmd.arg("-p")
-            .arg(&part.partition_name)
-            .arg(&part.image_path);
-    }
-
-    println!("{}", "==> Initiating LOKE raw partition transfer:".cyan().bold());
-    for part in partitions {
-        let size_mib = std::fs::metadata(&part.image_path)
-            .map(|m| (m.len() as f64) / (1024.0 * 1024.0))
-            .unwrap_or(0.0);
-        println!(
-            "    - {:<10} ({:>7.2} MiB) <- {}",
-            part.partition_name.green(),
-            size_mib,
-            part.image_path.display()
-        );
-    }
-
-    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
-
-    let mut child = cmd
-        .spawn()
-        .context("Failed to spawn `samloader flash` subprocess")?;
-
-    let stdout = child.stdout.take().unwrap();
-    let stderr = child.stderr.take().unwrap();
-
-    let mut captured_log = String::new();
-
-    for line in BufReader::new(stdout).lines().map_while(Result::ok) {
-        println!("    {}", line);
-        captured_log.push_str(&line);
-        captured_log.push('\n');
-    }
-
-    for line in BufReader::new(stderr).lines().map_while(Result::ok) {
-        eprintln!("    {}", line.red());
-        captured_log.push_str(&line);
-        captured_log.push('\n');
-    }
-
-    let status = child.wait()?;
-    if !status.success() {
-        diagnose_flash_failure(&captured_log, is_custom_binary);
-        return Err(RescueError::SubprocessFailed {
-            cmd: "samloader flash".to_string(),
-            code: status.code().unwrap_or(-1),
+    let result = match engine {
+        TransportEngine::Native => {
+            flash_via_native_nusb(targets, no_reboot, verbose)
         }
-        .into());
-    }
+        TransportEngine::Samloader => {
+            let bin = usb::resolve_samloader(samloader_override)?;
+            flash_via_samloader_subprocess(&bin, targets, no_reboot)
+        }
+    };
 
+    if let Err(ref e) = result {
+        print_diagnostic_guidance(&format!("{:#}", e), is_custom_binary);
+    }
+    result
+}
+
+fn flash_via_native_nusb(
+    targets: &[PartitionTarget],
+    no_reboot: bool,
+    verbose: bool,
+) -> Result<()> {
     println!(
         "{}",
-        "✓ LOKE session committed cleanly (PASS). Emergency Recovery state cleared."
+        "==> Connecting via Native Rust LOKE Transport (nusb)...".cyan().bold()
+    );
+    let session = NativeLokeSession::connect(verbose)?;
+    let pit = session.fetch_pit()?;
+
+    let mut total_bytes: u64 = 0;
+    let mut resolved: Vec<(&PartitionTarget, u32)> = Vec::new();
+
+    for t in targets {
+        let entry = pit
+            .find_partition(&t.name)
+            .ok_or_else(|| RescueError::PartitionNotInPit(t.name.clone()))?;
+        let payload_len = std::fs::metadata(&t.path)?.len();
+        if payload_len > entry.size_bytes() {
+            return Err(RescueError::PartitionOverflow {
+                partition: t.name.clone(),
+                payload_bytes: payload_len,
+                capacity_bytes: entry.size_bytes(),
+            }
+            .into());
+        }
+        total_bytes += payload_len;
+        resolved.push((t, entry.partition_id));
+    }
+
+    session.set_total_bytes(total_bytes)?;
+
+    for (target, part_id) in resolved {
+        session.flash_partition_file(&target.name, part_id, &target.path)?;
+    }
+
+    session.end_session(no_reboot)?;
+    println!(
+        "{}",
+        "✓ Native LOKE session closed cleanly (PASS). Emergency Recovery flag cleared."
             .green()
             .bold()
     );
     Ok(())
 }
 
-/// Dumps the live PIT from the connected device to a temporary file via `samloader dump-pit`.
-pub fn dump_device_pit(samloader_bin: &Path, backend: &str, out_pit: &Path) -> Result<()> {
-    let status = Command::new(samloader_bin)
-        .args([
-            "--usb-backend",
-            backend,
-            "dump-pit",
-            out_pit.to_str().unwrap(),
-        ])
-        .status()
-        .context("Failed to run `samloader dump-pit`")?;
+fn flash_via_samloader_subprocess(
+    samloader_bin: &Path,
+    targets: &[PartitionTarget],
+    no_reboot: bool,
+) -> Result<()> {
+    let mut cmd = Command::new(samloader_bin);
+    cmd.args(["--usb-backend", "nusb", "flash"]);
+    if no_reboot {
+        cmd.arg("--no-reboot");
+    }
+    for t in targets {
+        cmd.arg("-p").arg(&t.name).arg(&t.path);
+    }
 
-    if !status.success() {
-        bail!("`samloader dump-pit` failed");
+    let output = cmd.output().context("Failed to execute samloader-rs")?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    print!("{}", stdout);
+    eprint!("{}", stderr);
+
+    if !output.status.success() {
+        bail!("{}\n{}", stdout, stderr);
     }
     Ok(())
 }
 
-/// Downloads and unpacks official signed firmware matching `model` and `region`.
 pub fn download_stock_firmware(
-    samloader_bin: &Path,
+    samloader_override: Option<&Path>,
     model: &str,
     region: &str,
     out_dir: &Path,
 ) -> Result<()> {
+    let bin = usb::resolve_samloader(samloader_override)?;
     std::fs::create_dir_all(out_dir)?;
     let zip_path = out_dir.join(format!("{}_{}_official.zip", model, region));
 
-    println!(
-        "{} {} (CSC: {})",
-        "==> Downloading official signed firmware for".cyan().bold(),
-        model.green(),
-        region.green()
-    );
-
-    let dl_status = Command::new(samloader_bin)
+    let dl = Command::new(&bin)
         .args([
             "download",
             "-m",
@@ -134,32 +132,23 @@ pub fn download_stock_firmware(
             "-o",
             zip_path.to_str().unwrap(),
         ])
-        .status()
-        .context("Failed to execute `samloader download`")?;
+        .status()?;
 
-    if !dl_status.success() {
+    if !dl.success() {
         bail!("Firmware download failed for {} ({})", model, region);
     }
 
-    println!("{}", "==> Unpacking firmware zip archive...".cyan().bold());
-    let unzip_status = Command::new("unzip")
+    let unzip = Command::new("unzip")
         .args([
             "-o",
             zip_path.to_str().unwrap(),
             "-d",
             out_dir.to_str().unwrap(),
         ])
-        .status()
-        .context("Failed to run `unzip` (install via `sudo dnf install unzip`)")?;
+        .status()?;
 
-    if !unzip_status.success() {
+    if !unzip.success() {
         bail!("Failed to unzip {}", zip_path.display());
     }
-
-    println!(
-        "{} {}",
-        "✓ Official firmware ready in:".green().bold(),
-        out_dir.display()
-    );
     Ok(())
 }
