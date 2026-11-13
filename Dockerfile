@@ -1,6 +1,6 @@
 # Multi-stage minimal OCI image for exynos-loke-rescue
-# Stage 1: Build static musl binary
-FROM rust:1.80-alpine AS builder
+# Stage 1: Build static musl binary using latest stable Rust Alpine
+FROM rust:alpine AS builder
 
 RUN apk add --no-cache musl-dev
 
