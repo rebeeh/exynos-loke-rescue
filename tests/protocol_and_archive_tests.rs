@@ -88,7 +88,11 @@ fn test_protected_partition_invariants() {
     let forbidden_partitions = ["EFS", "SEC_EFS", "CPEFS", "NVDATA", "RADIO_CAL"];
     for part in &forbidden_partitions {
         let is_protected = forbidden_partitions.contains(part);
-        assert!(is_protected, "Partition {} must be protected from writes", part);
+        assert!(
+            is_protected,
+            "Partition {} must be protected from writes",
+            part
+        );
     }
 }
 

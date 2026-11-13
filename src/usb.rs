@@ -17,7 +17,10 @@ pub fn resolve_samloader(override_path: Option<&Path>) -> Result<PathBuf> {
         if p.is_file() {
             return Ok(p.to_path_buf());
         }
-        bail!("Explicit --samloader-bin path does not exist: {}", p.display());
+        bail!(
+            "Explicit --samloader-bin path does not exist: {}",
+            p.display()
+        );
     }
 
     let cwd_bin = PathBuf::from("./samloader");
@@ -43,12 +46,12 @@ pub fn scan_sysfs_for_samsung_download() -> Result<Option<String>> {
                 if vid.trim().eq_ignore_ascii_case("04e8")
                     && pid.trim().eq_ignore_ascii_case("685d")
                 {
-                    let busnum = fs::read_to_string(dev_path.join("busnum"))
-                        .unwrap_or_else(|_| "?".into());
-                    let devnum = fs::read_to_string(dev_path.join("devnum"))
-                        .unwrap_or_else(|_| "?".into());
-                    let speed = fs::read_to_string(dev_path.join("speed"))
-                        .unwrap_or_else(|_| "?".into());
+                    let busnum =
+                        fs::read_to_string(dev_path.join("busnum")).unwrap_or_else(|_| "?".into());
+                    let devnum =
+                        fs::read_to_string(dev_path.join("devnum")).unwrap_or_else(|_| "?".into());
+                    let speed =
+                        fs::read_to_string(dev_path.join("speed")).unwrap_or_else(|_| "?".into());
 
                     return Ok(Some(format!(
                         "Bus {:0>3} Device {:0>3}: ID 04e8:685d Samsung LOKE Download Mode ({} Mbps)",
@@ -70,7 +73,12 @@ pub fn is_cdc_acm_loaded() -> bool {
 }
 
 pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
-    println!("{}", "==> Sanitizing Linux USB subsystem for Samsung LOKE...".cyan().bold());
+    println!(
+        "{}",
+        "==> Sanitizing Linux USB subsystem for Samsung LOKE..."
+            .cyan()
+            .bold()
+    );
 
     let tmp = tempfile::NamedTempFile::new()?;
     fs::write(tmp.path(), UDEV_RULE_PAYLOAD)?;
@@ -91,9 +99,7 @@ pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
     let _ = Command::new("sudo")
         .args(["udevadm", "control", "--reload-rules"])
         .status();
-    let _ = Command::new("sudo")
-        .args(["udevadm", "trigger"])
-        .status();
+    let _ = Command::new("sudo").args(["udevadm", "trigger"]).status();
 
     println!("    {} Installed {}", "✓".green(), UDEV_RULE_DEST);
 
@@ -111,7 +117,10 @@ pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
             .map(|s| s.success())
             .unwrap_or(false);
         if rmmod_ok {
-            println!("    {} Unloaded conflicting `cdc_acm` kernel module", "✓".green());
+            println!(
+                "    {} Unloaded conflicting `cdc_acm` kernel module",
+                "✓".green()
+            );
         } else {
             println!(
                 "    {} Could not unload `cdc_acm` (may be built-in or bound)",

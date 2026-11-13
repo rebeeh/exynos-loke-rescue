@@ -33,7 +33,9 @@ fn main() -> Result<()> {
             let session = NativeLokeSession::connect(cli.verbose)?;
             println!(
                 "{} {:?}",
-                "✓ LOKE Handshake Successful | Negotiated Protocol Tier:".green().bold(),
+                "✓ LOKE Handshake Successful | Negotiated Protocol Tier:"
+                    .green()
+                    .bold(),
                 session.tier
             );
             let pit = session.fetch_pit()?;

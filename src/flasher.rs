@@ -23,9 +23,7 @@ pub fn execute_partition_flash(
     verbose: bool,
 ) -> Result<()> {
     let result = match engine {
-        TransportEngine::Native => {
-            flash_via_native_nusb(targets, no_reboot, verbose)
-        }
+        TransportEngine::Native => flash_via_native_nusb(targets, no_reboot, verbose),
         TransportEngine::Samloader => {
             let bin = usb::resolve_samloader(samloader_override)?;
             flash_via_samloader_subprocess(&bin, targets, no_reboot)
@@ -45,7 +43,9 @@ fn flash_via_native_nusb(
 ) -> Result<()> {
     println!(
         "{}",
-        "==> Connecting via Native Rust LOKE Transport (nusb)...".cyan().bold()
+        "==> Connecting via Native Rust LOKE Transport (nusb)..."
+            .cyan()
+            .bold()
     );
     let session = NativeLokeSession::connect(verbose)?;
     let pit = session.fetch_pit()?;

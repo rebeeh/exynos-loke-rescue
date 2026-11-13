@@ -17,8 +17,7 @@ pub fn locate_ap_archive(path: &Path) -> Result<PathBuf> {
         for entry in fs::read_dir(path)? {
             let p = entry?.path();
             if let Some(name) = p.file_name().and_then(|n| n.to_str()) {
-                if name.starts_with("AP_")
-                    && (name.ends_with(".tar.md5") || name.ends_with(".tar"))
+                if name.starts_with("AP_") && (name.ends_with(".tar.md5") || name.ends_with(".tar"))
                 {
                     return Ok(p);
                 }

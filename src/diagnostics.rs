@@ -3,7 +3,9 @@ use colored::*;
 pub fn print_diagnostic_guidance(err_msg: &str, is_custom_binary: bool) {
     println!(
         "\n{}",
-        "==================== LOKE DIAGNOSTIC ENGINE ====================".red().bold()
+        "==================== LOKE DIAGNOSTIC ENGINE ===================="
+            .red()
+            .bold()
     );
 
     if err_msg.contains("FAIL! [code: -1]") || err_msg.contains("LokeFailure") {
@@ -45,6 +47,8 @@ pub fn print_diagnostic_guidance(err_msg: &str, is_custom_binary: bool) {
 
     println!(
         "{}\n",
-        "================================================================".red().bold()
+        "================================================================"
+            .red()
+            .bold()
     );
 }

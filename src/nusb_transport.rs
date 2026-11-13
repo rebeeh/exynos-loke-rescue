@@ -1,8 +1,7 @@
 use crate::error::RescueError;
 use crate::loke_proto::{
     ControlFrame, FileTransferSubcmd, LokeAck, LokeCommand, PitSubcmd, ProtocolTier,
-    SessionEndSubcmd, SessionSetupSubcmd, ACK_PACKET_SIZE, HANDSHAKE_REQUEST,
-    HANDSHAKE_RESPONSE,
+    SessionEndSubcmd, SessionSetupSubcmd, ACK_PACKET_SIZE, HANDSHAKE_REQUEST, HANDSHAKE_RESPONSE,
 };
 use crate::pit::PitTable;
 use anyhow::{Context, Result};
@@ -63,20 +62,18 @@ impl NativeLokeSession {
     fn bulk_write(&self, data: &[u8], timeout_ms: u64) -> Result<()> {
         let fut = async {
             let comp = self.iface.bulk_out(EP_OUT, data.to_vec()).await;
-            comp.status
-                .map_err(|_| RescueError::UsbBulkTimeout {
+            comp.status.map_err(|_| RescueError::UsbBulkTimeout {
+                endpoint: EP_OUT,
+                timeout_ms,
+            })?;
+
+            // Transmit Zero-Length Packet (ZLP) if payload is an exact multiple of 512B
+            if !data.is_empty() && data.len().is_multiple_of(USB_MAX_PACKET_SIZE) {
+                let zlp = self.iface.bulk_out(EP_OUT, Vec::new()).await;
+                zlp.status.map_err(|_| RescueError::UsbBulkTimeout {
                     endpoint: EP_OUT,
                     timeout_ms,
                 })?;
-
-            // Transmit Zero-Length Packet (ZLP) if payload is an exact multiple of 512B
-            if !data.is_empty() && data.len() % USB_MAX_PACKET_SIZE == 0 {
-                let zlp = self.iface.bulk_out(EP_OUT, Vec::new()).await;
-                zlp.status
-                    .map_err(|_| RescueError::UsbBulkTimeout {
-                        endpoint: EP_OUT,
-                        timeout_ms,
-                    })?;
             }
             Ok::<(), anyhow::Error>(())
         };
@@ -109,10 +106,7 @@ impl NativeLokeSession {
         let raw_ack = self.bulk_read(ACK_PACKET_SIZE, timeout_ms)?;
         let ack = LokeAck::parse(&raw_ack)?;
         if self.verbose {
-            println!(
-                "    [RX] cmd={:#04x} status={}",
-                ack.cmd_id, ack.status
-            );
+            println!("    [RX] cmd={:#04x} status={}", ack.cmd_id, ack.status);
         }
         Ok(ack)
     }
@@ -200,7 +194,9 @@ impl NativeLokeSession {
         let pb = ProgressBar::new(total_size);
         pb.set_style(
             ProgressStyle::default_bar()
-                .template("    {msg:<12} [{bar:34.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec})")
+                .template(
+                    "    {msg:<12} [{bar:34.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec})",
+                )
                 .unwrap()
                 .progress_chars("█▉▊▋▌▍▎▏ "),
         );
