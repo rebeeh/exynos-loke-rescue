@@ -272,6 +272,27 @@ exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock
 ```
 * Flashes `BOOT`, `VBMETA`, `RECOVERY`, `DTBO`, and `SUPER` partition-by-partition.
 * Completely bypasses `samloader-rs`'s dynamic partition pre-flight crash.
+* Supports `-e, --erase` to wipe USERDATA at the hardware level before flashing.
+
+### 6. Mode 3: Direct Raw Partition Flashing (`flash-raw`)
+```bash
+# Flash arbitrary partition files directly:
+exynos-loke-rescue flash-raw --super ~/Downloads/stock/super.img --dtbo ~/Downloads/stock/dtbo.img
+
+# Or using explicit partition names:
+exynos-loke-rescue flash-raw -p SUPER super.img -p DTBO dtbo.img --skip-size-check
+```
+
+### 7. Mode 4: Hardware NAND Erase (`erase-userdata` / `emergency-wipe-reboot`)
+```bash
+# Erase USERDATA at the hardware NAND controller layer and auto-reboot to One UI:
+exynos-loke-rescue erase-userdata
+
+# Or single-command unbrick for broken power button recovery bypass:
+exynos-loke-rescue emergency-wipe-reboot
+```
+* Issues LOKE command `0x64:0x07` (hardware NAND erase of USERDATA/cache).
+* Bypasses the broken power-button limitation where the user cannot confirm the stock recovery factory reset prompt!
 
 ---
 
@@ -288,9 +309,8 @@ exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock
 1. If the device clears the emergency screen but bootloops on the Samsung logo:
    * Hold **Volume Down + Power** for 8 seconds until the screen goes black.
    * Immediately hold **Volume Up + Volume Down** with USB connected to enter Download Mode.
-2. Run `exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock`.
-3. In Samsung Stock Recovery, select **Wipe data / factory reset**.
-4. Select **Reboot system now** and allow 5–8 minutes for One UI first boot.
+2. Run `exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock -e`.
+3. Device automatically erases corrupt leftover userdata and reboots directly into One UI!
 
 ### Runbook C: Resolving `LOKE FAIL! [code: -1]` & VaultKeeper Prenormal Locks
 1. If custom recovery flashing is rejected with `[code: -1]`, VaultKeeper has locked `KG State` to `Prenormal`.
@@ -338,6 +358,27 @@ Include `--skip-size-check` and pass the PIT file to re-partition:
 **Solution 2: Use Native `exynos-loke-rescue` (Bypasses Pre-Flight Checks Automatically)**
 `exynos-loke-rescue` writes raw blocks directly to the flash controller without brittle client-side metadata constraints:
 ```bash
+exynos-loke-rescue flash-raw \
+    --super ~/Downloads/stock/super.img \
+    --dtbo ~/Downloads/stock/dtbo.img \
+    --skip-size-check
+```
+
+### Runbook F: Bypassing Stock Recovery Factory Reset When Physical Power Button Is Broken
+
+If your device is stuck in a bootloop displaying:
+$$\text{"Cannot load Android system. Your data may be corrupt. Try factory data reset."}$$
+...and your physical Power button is physically broken or non-functional, you cannot confirm menu options in Samsung Stock Recovery because it only maps `KEY_POWER` as the confirmation trigger.
+
+**Solution:**
+1. Boot into Download Mode without the power key: Allow the battery to drain until the screen shuts off completely. Plug into a wall charger for 5 minutes, then unplug.
+2. Hold **Volume Up + Volume Down** simultaneously, and plug the USB cable connected to your PC into the phone.
+3. When the teal Warning screen appears, press **Volume Up** once.
+4. Execute:
+   ```bash
+   exynos-loke-rescue emergency-wipe-reboot
+   ```
+5. `exynos-loke-rescue` transmits opcode `0x64:0x07` (hardware NAND format of USERDATA) and `0x67:0x01` (reboot). The phone restarts straight into One UI, completely bypassing Stock Recovery!
 exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock
 ```
 

@@ -12,8 +12,18 @@ local f_cmd = ProtoField.uint32("loke.cmd", "Command Opcode", base.HEX, {
     [0x65] = "CMD_PIT_TRANSFER (0x65)",
     [0x66] = "CMD_FILE_TRANSFER (0x66)",
     [0x67] = "CMD_SESSION_END (0x67)",
+    [0x69] = "CMD_DEVICE_INFO / DVIF (0x69)",
+    [0x6a] = "CMD_DYNAMIC_SUPER_CHECK (0x6a)",
 })
-local f_subcmd = ProtoField.uint32("loke.subcmd", "Subcommand ID", base.HEX)
+local f_subcmd = ProtoField.uint32("loke.subcmd", "Subcommand ID", base.HEX, {
+    -- 0x64 Subcommands
+    [0x00] = "BEGIN_SESSION / CLOSE_NO_REBOOT / PIT_FLASH",
+    [0x01] = "SET_TOTAL_BYTES / REBOOT_NORMAL / PIT_DUMP",
+    [0x02] = "SET_TFLASH_MODE / REBOOT_DOWNLOAD / COMMIT_FILE",
+    [0x03] = "DUMP_PIT_END",
+    [0x05] = "SET_SALES_CODE / QUERY_DEVICE_TYPE",
+    [0x07] = "NAND_ERASE (USERDATA WIPE)",
+})
 local f_arg0 = ProtoField.uint32("loke.arg0", "Argument 0", base.HEX)
 local f_arg1 = ProtoField.uint32("loke.arg1", "Argument 1", base.HEX)
 local f_arg2 = ProtoField.uint32("loke.arg2", "Argument 2", base.HEX)

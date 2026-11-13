@@ -14,12 +14,23 @@ use anyhow::{bail, Result};
 use clap::Parser;
 use cli::{Cli, Commands};
 use colored::*;
-use flasher::PartitionTarget;
+use flasher::{FlashOptions, PartitionTarget};
+use loke_proto::SessionEndSubcmd;
 use nusb_transport::NativeLokeSession;
 use pit::PitTable;
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
+
+fn resolve_reboot_mode(no_reboot: bool, redownload: bool) -> SessionEndSubcmd {
+    if redownload {
+        SessionEndSubcmd::RebootDownload
+    } else if no_reboot {
+        SessionEndSubcmd::CloseNoReboot
+    } else {
+        SessionEndSubcmd::RebootNormal
+    }
+}
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -67,10 +78,132 @@ fn main() -> Result<()> {
             )?;
         }
 
+        Commands::EraseUserdata {
+            no_reboot,
+            redownload,
+        } => {
+            let reboot_mode = resolve_reboot_mode(no_reboot, redownload);
+            flasher::execute_nand_erase(
+                cli.transport,
+                cli.samloader_bin.as_deref(),
+                reboot_mode,
+                cli.verbose,
+            )?;
+        }
+
+        Commands::EmergencyWipeReboot => {
+            println!(
+                "{}",
+                "==> Emergency Unbrick Triggered (Broken Power Button Recovery Bypass)"
+                    .yellow()
+                    .bold()
+            );
+            println!(
+                "{}",
+                "==> Executing hardware NAND erase on USERDATA directly from Download Mode..."
+                    .cyan()
+            );
+            flasher::execute_nand_erase(
+                cli.transport,
+                cli.samloader_bin.as_deref(),
+                SessionEndSubcmd::RebootNormal,
+                cli.verbose,
+            )?;
+            println!(
+                "{}",
+                "✓ Wipe complete. Device auto-rebooting to One UI without requiring physical power key confirmation!"
+                    .green()
+                    .bold()
+            );
+        }
+
+        Commands::FlashRaw {
+            partitions,
+            boot,
+            recovery,
+            vbmeta,
+            dtbo,
+            super_img,
+            erase_userdata,
+            skip_size_check,
+            no_reboot,
+            redownload,
+        } => {
+            let mut plan = Vec::new();
+
+            if let Some(b) = boot {
+                plan.push(PartitionTarget {
+                    name: "BOOT".to_string(),
+                    path: b,
+                });
+            }
+            if let Some(r) = recovery {
+                plan.push(PartitionTarget {
+                    name: "RECOVERY".to_string(),
+                    path: r,
+                });
+            }
+            if let Some(v) = vbmeta {
+                plan.push(PartitionTarget {
+                    name: "VBMETA".to_string(),
+                    path: v,
+                });
+            }
+            if let Some(d) = dtbo {
+                plan.push(PartitionTarget {
+                    name: "DTBO".to_string(),
+                    path: d,
+                });
+            }
+            if let Some(s) = super_img {
+                plan.push(PartitionTarget {
+                    name: "SUPER".to_string(),
+                    path: s,
+                });
+            }
+
+            for chunk in partitions.chunks(2) {
+                if chunk.len() == 2 {
+                    plan.push(PartitionTarget {
+                        name: chunk[0].to_uppercase(),
+                        path: PathBuf::from(&chunk[1]),
+                    });
+                }
+            }
+
+            if plan.is_empty() && !erase_userdata {
+                bail!("No partition targets or erase flag specified. Use -p <NAME> <FILE> or -e to erase.");
+            }
+
+            for target in &plan {
+                if !target.path.exists() {
+                    bail!("Partition image file not found: {}", target.path.display());
+                }
+            }
+
+            let reboot_mode = resolve_reboot_mode(no_reboot, redownload);
+            let options = FlashOptions {
+                erase_userdata,
+                skip_size_check,
+                reboot_mode,
+                is_custom_binary: false,
+                verbose: cli.verbose,
+            };
+            flasher::execute_partition_flash(
+                cli.transport,
+                cli.samloader_bin.as_deref(),
+                &plan,
+                options,
+            )?;
+        }
+
         Commands::RescueBoot {
             ap,
             keep_extracted,
+            erase_userdata,
+            skip_size_check,
             no_reboot,
+            redownload,
         } => {
             let ap_archive = archive::locate_ap_archive(&ap)?;
             let (_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
@@ -104,20 +237,29 @@ fn main() -> Result<()> {
                 },
             ];
 
+            let reboot_mode = resolve_reboot_mode(no_reboot, redownload);
+            let options = FlashOptions {
+                erase_userdata,
+                skip_size_check,
+                reboot_mode,
+                is_custom_binary: false,
+                verbose: cli.verbose,
+            };
             flasher::execute_partition_flash(
                 cli.transport,
                 cli.samloader_bin.as_deref(),
                 &plan,
-                no_reboot,
-                false,
-                cli.verbose,
+                options,
             )?;
         }
 
         Commands::FullRawRestore {
             stock_dir,
             keep_extracted,
+            erase_userdata,
+            skip_size_check,
             no_reboot,
+            redownload,
         } => {
             let ap_archive = archive::locate_ap_archive(&stock_dir)?;
             let (_guard, work_dir): (Option<TempDir>, PathBuf) = match keep_extracted {
@@ -165,13 +307,19 @@ fn main() -> Result<()> {
                 },
             ];
 
+            let reboot_mode = resolve_reboot_mode(no_reboot, redownload);
+            let options = FlashOptions {
+                erase_userdata,
+                skip_size_check,
+                reboot_mode,
+                is_custom_binary: false,
+                verbose: cli.verbose,
+            };
             flasher::execute_partition_flash(
                 cli.transport,
                 cli.samloader_bin.as_deref(),
                 &plan,
-                no_reboot,
-                false,
-                cli.verbose,
+                options,
             )?;
         }
 
@@ -208,13 +356,24 @@ fn main() -> Result<()> {
                 });
             }
 
+            let reboot_mode = if no_reboot {
+                SessionEndSubcmd::CloseNoReboot
+            } else {
+                SessionEndSubcmd::RebootNormal
+            };
+            let options = FlashOptions {
+                erase_userdata: false,
+                skip_size_check: false,
+                reboot_mode,
+                is_custom_binary: true,
+                verbose: cli.verbose,
+            };
+
             flasher::execute_partition_flash(
                 cli.transport,
                 cli.samloader_bin.as_deref(),
                 &plan,
-                no_reboot,
-                true,
-                cli.verbose,
+                options,
             )?;
         }
     }

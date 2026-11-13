@@ -18,6 +18,8 @@ pub enum LokeCommand {
     PitTransfer = 0x65,
     FileTransfer = 0x66,
     SessionEnd = 0x67,
+    DeviceInfo = 0x69, // Odin v4 DVIF query (causes error: -7 timeout on Exynos 850)
+    DynamicSuperCheck = 0x6a, // Dynamic partition pre-flight sizing check
 }
 
 /// Subcommands for `LokeCommand::SessionSetup` (`0x64`).
@@ -27,17 +29,17 @@ pub enum SessionSetupSubcmd {
     BeginSession = 0x00,
     SetTotalBytes = 0x01,
     SetTflashMode = 0x02,
-    QueryDeviceType = 0x05, // Odin v4 only; omitted on v3 to avoid `-7` timeout
-    SetSalesCode = 0x08,
+    SetSalesCode = 0x05, // Set 3-letter CSC / Sales Code in device storage
+    NandErase = 0x07,    // Low-level hardware NAND storage erase of USERDATA/cache
 }
 
 /// Subcommands for `LokeCommand::PitTransfer` (`0x65`).
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum PitSubcmd {
-    DumpStart = 0x00,
-    FlashStart = 0x01,
-    FlashEnd = 0x02,
+    FlashStart = 0x00,
+    DumpStart = 0x01,
+    DumpChunk = 0x02,
     DumpEnd = 0x03,
 }
 
@@ -52,11 +54,12 @@ pub enum FileTransferSubcmd {
 
 /// Subcommands for `LokeCommand::SessionEnd` (`0x67`).
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum SessionEndSubcmd {
-    CloseNoReboot = 0x00,
-    RebootNormal = 0x01,
-    RebootDownload = 0x02,
+    CloseNoReboot = 0x00, // Keep device in Download Mode
+    #[default]
+    RebootNormal = 0x01, // Normal reboot into Android OS
+    RebootDownload = 0x02, // Redownload: reboot back into Download Mode
 }
 
 /// Negotiated protocol tier governing chunk sizes and v4 query eligibility.
@@ -160,5 +163,10 @@ impl LokeAck {
         }
 
         Ok(Self { cmd_id, status })
+    }
+
+    /// Returns the positive payload / sector count or data volume returned by LOKE.
+    pub fn payload(&self) -> u32 {
+        self.status.max(0) as u32
     }
 }

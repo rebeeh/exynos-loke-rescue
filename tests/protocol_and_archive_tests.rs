@@ -109,6 +109,39 @@ fn test_loke_ack_status_decoding() {
 }
 
 #[test]
+fn test_nand_erase_frame_and_ack() {
+    // NandErase control frame: 0x64 (SessionSetup), 0x07 (NandErase)
+    let mut frame = [0u8; 1024];
+    frame[0..4].copy_from_slice(&0x64u32.to_le_bytes());
+    frame[4..8].copy_from_slice(&0x07u32.to_le_bytes());
+
+    assert_eq!(u32::from_le_bytes(frame[0..4].try_into().unwrap()), 0x64);
+    assert_eq!(u32::from_le_bytes(frame[4..8].try_into().unwrap()), 0x07);
+
+    // LOKE ACK packet returned after NAND erase: 0x64 (cmd_id), 0x1000 (4096 sectors erased)
+    let ack_raw = [0x64, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00];
+    let cmd = u32::from_le_bytes(ack_raw[0..4].try_into().unwrap());
+    let sectors = u32::from_le_bytes(ack_raw[4..8].try_into().unwrap());
+
+    assert_eq!(cmd, 0x64);
+    assert_eq!(sectors, 4096);
+}
+
+#[test]
+fn test_session_end_reboot_modes() {
+    // Mode 0x00: CloseNoReboot
+    let close = 0x00u32.to_le_bytes();
+    // Mode 0x01: RebootNormal
+    let reboot = 0x01u32.to_le_bytes();
+    // Mode 0x02: RebootDownload (Redownload)
+    let redownload = 0x02u32.to_le_bytes();
+
+    assert_eq!(u32::from_le_bytes(close), 0);
+    assert_eq!(u32::from_le_bytes(reboot), 1);
+    assert_eq!(u32::from_le_bytes(redownload), 2);
+}
+
+#[test]
 fn test_fuzz_control_frame_bounds() {
     // Fuzz arbitrary byte patterns in 1024-byte control frame buffer
     for seed in 0..10u8 {

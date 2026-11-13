@@ -75,9 +75,21 @@ pub enum Commands {
         #[arg(long)]
         keep_extracted: Option<PathBuf>,
 
+        /// Perform low-level NAND hardware erase on USERDATA before flashing
+        #[arg(short = 'e', long = "erase")]
+        erase_userdata: bool,
+
+        /// Skip verifying that partition image file size fits within PIT partition boundary
+        #[arg(long)]
+        skip_size_check: bool,
+
         /// Keep device in Download Mode after session commit instead of rebooting
         #[arg(long)]
         no_reboot: bool,
+
+        /// Reboot the device back into Download Mode after flashing
+        #[arg(long)]
+        redownload: bool,
     },
 
     /// Mode 2: Full raw stock OS restore (BOOT + VBMETA + RECOVERY + DTBO + SUPER) bypassing super metadata bugs
@@ -90,10 +102,81 @@ pub enum Commands {
         #[arg(long)]
         keep_extracted: Option<PathBuf>,
 
+        /// Perform low-level NAND hardware erase on USERDATA before flashing
+        #[arg(short = 'e', long = "erase")]
+        erase_userdata: bool,
+
+        /// Skip verifying that partition image file size fits within PIT partition boundary
+        #[arg(long)]
+        skip_size_check: bool,
+
         /// Keep device in Download Mode after session commit
         #[arg(long)]
         no_reboot: bool,
+
+        /// Reboot the device back into Download Mode after flashing
+        #[arg(long)]
+        redownload: bool,
     },
+
+    /// Flash arbitrary raw partition images (BOOT, VBMETA, RECOVERY, DTBO, SUPER, etc.) directly by partition name
+    FlashRaw {
+        /// Explicit partition name and image file (e.g. -p SUPER super.img -p DTBO dtbo.img)
+        #[arg(short = 'p', long = "partition", num_args = 2, value_names = ["NAME", "FILE"])]
+        partitions: Vec<String>,
+
+        /// Direct shortcut for BOOT image
+        #[arg(long)]
+        boot: Option<PathBuf>,
+
+        /// Direct shortcut for RECOVERY image
+        #[arg(long)]
+        recovery: Option<PathBuf>,
+
+        /// Direct shortcut for VBMETA image
+        #[arg(short = 'm', long)]
+        vbmeta: Option<PathBuf>,
+
+        /// Direct shortcut for DTBO image
+        #[arg(long)]
+        dtbo: Option<PathBuf>,
+
+        /// Direct shortcut for SUPER image (dynamic partitions container)
+        #[arg(long)]
+        super_img: Option<PathBuf>,
+
+        /// Perform low-level NAND hardware erase on USERDATA before flashing
+        #[arg(short = 'e', long = "erase")]
+        erase_userdata: bool,
+
+        /// Skip verifying that partition image file size fits within PIT partition boundary
+        #[arg(long)]
+        skip_size_check: bool,
+
+        /// Keep device in Download Mode after flashing
+        #[arg(long)]
+        no_reboot: bool,
+
+        /// Reboot the device back into Download Mode after flashing
+        #[arg(long)]
+        redownload: bool,
+    },
+
+    /// Perform low-level hardware NAND storage erase on USERDATA directly from Download Mode
+    /// (Bypasses broken physical power buttons and corrupt stock recovery wipe prompts)
+    EraseUserdata {
+        /// Keep device in Download Mode after erasing instead of rebooting
+        #[arg(long)]
+        no_reboot: bool,
+
+        /// Reboot the device back into Download Mode after erasing
+        #[arg(long)]
+        redownload: bool,
+    },
+
+    /// Emergency unbrick for devices stuck in Stock Recovery with a broken Power Button:
+    /// Executes low-level NAND erase on USERDATA from Download Mode and auto-reboots to One UI
+    EmergencyWipeReboot,
 
     /// Flash custom recovery + vbmeta (LineageOS / TWRP) with VaultKeeper (LOKE -1) failure diagnosis
     FlashCustomRecovery {

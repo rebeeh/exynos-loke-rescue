@@ -250,18 +250,68 @@ impl NativeLokeSession {
         Ok(())
     }
 
-    /// Sends `CMD_SESSION_END (0x67)` to clear Emergency Recovery flag `0x01` -> `0x00`
-    /// and optionally trigger warm reboot.
-    pub fn end_session(&self, no_reboot: bool) -> Result<()> {
-        let subcmd = if no_reboot {
-            SessionEndSubcmd::CloseNoReboot as u32
-        } else {
-            SessionEndSubcmd::RebootNormal as u32
-        };
+    /// Performs low-level hardware NAND storage erase on USERDATA / cache (`0x64`, subcommand `0x07`).
+    /// Essential for unbricking devices stuck at Samsung Stock Recovery wipe prompts with broken physical power buttons.
+    pub fn nand_erase(&self) -> Result<u32> {
+        println!("{}", "==> Erasing storage (USERDATA)...".yellow().bold());
+        let frame = ControlFrame::new(
+            LokeCommand::SessionSetup,
+            SessionSetupSubcmd::NandErase as u32,
+        );
+        // NAND hardware erase on eMMC / UFS flash can take up to 60 seconds
+        let ack = self.send_control_and_ack(&frame, 60_000)?;
+        let sectors = ack.payload();
+        println!(
+            "{}",
+            format!("✓ Storage erased successfully ({} sectors)", sectors)
+                .green()
+                .bold()
+        );
+        Ok(sectors)
+    }
 
-        let end_frame = ControlFrame::new(LokeCommand::SessionEnd, subcmd);
+    /// Sets the 3-letter CSC / Sales Code in device storage (e.g. BTU, INS, TUR, XAA).
+    pub fn set_sales_code(&self, code: &str) -> Result<()> {
+        let mut chars = [0u32; 3];
+        for (i, c) in code.chars().take(3).enumerate() {
+            chars[i] = c as u32;
+        }
+        let frame = ControlFrame::new(
+            LokeCommand::SessionSetup,
+            SessionSetupSubcmd::SetSalesCode as u32,
+        )
+        .with_args(4, chars[0], chars[1], chars[2])
+        .with_string(code);
+        let _ = self.send_control_and_ack(&frame, 5_000)?;
+        Ok(())
+    }
+
+    /// Sends `CMD_SESSION_END (0x67)` to clear Emergency Recovery flag `0x01` -> `0x00`
+    /// and optionally trigger warm reboot or redownload.
+    pub fn end_session_with_mode(&self, mode: SessionEndSubcmd) -> Result<()> {
+        let msg = match mode {
+            SessionEndSubcmd::CloseNoReboot => {
+                "Ending session (keeping device in Download Mode)..."
+            }
+            SessionEndSubcmd::RebootNormal => "Ending session... Rebooting device...",
+            SessionEndSubcmd::RebootDownload => "Ending session... Rebooting to Download Mode...",
+        };
+        println!("{}", msg.cyan());
+
+        let end_frame = ControlFrame::new(LokeCommand::SessionEnd, mode as u32);
         let _ = self.send_control_and_ack(&end_frame, 10_000)?;
         std::thread::sleep(Duration::from_millis(250));
         Ok(())
+    }
+
+    /// Sends `CMD_SESSION_END (0x67)` to clear Emergency Recovery flag `0x01` -> `0x00`
+    /// and optionally trigger warm reboot.
+    pub fn end_session(&self, no_reboot: bool) -> Result<()> {
+        let mode = if no_reboot {
+            SessionEndSubcmd::CloseNoReboot
+        } else {
+            SessionEndSubcmd::RebootNormal
+        };
+        self.end_session_with_mode(mode)
     }
 }

@@ -124,18 +124,22 @@ Offset    Size      Type        Field Name          Description
   * Updates on-screen Download Mode progress bar scaling.
 * **Subcommand `0x02` (`SET_TFLASH_MODE`):**
   * `arg0 = 0x01`. Directs flashing to external SD storage for dead-boot unbricking.
-* **Subcommand `0x05` (`QUERY_DEVICE_TYPE`):**
-  * **Interoperability Rule:** ONLY send if `negotiated_version >= 4`. Sending on v3 causes the bootloader to ignore the frame, resulting in `LIBUSB_ERROR_TIMEOUT / -7`.
-* **Subcommand `0x08` (`SET_SALES_CODE`):**
-  * `string_arg = "INS\0"` (3-letter regional CSC code).
+* **Subcommand `0x05` (`SET_SALES_CODE` / `QUERY_DEVICE_TYPE`):**
+  * `arg0 = 0x04`, `arg1 = char0`, `arg2 = char1`, `arg3 = char2` with `string_arg = "INS\0"` (sets 3-letter regional CSC code).
+  * In Odin v4, also used as device type query. **Interoperability Rule:** ONLY send if `negotiated_version >= 4`. Sending on v3 causes the bootloader to ignore the frame, resulting in `LIBUSB_ERROR_TIMEOUT / -7`.
+* **Subcommand `0x07` (`NAND_ERASE` / Low-Level Storage Wipe):**
+  * **Payload:** Opcode `0x64`, Subcommand `0x07`, all parameter fields `0x00`.
+  * **Timeout Requirement:** 60,000 ms (60 seconds), as hardware NAND erase of UFS/eMMC blocks is an asynchronous hardware operation.
+  * **Response ACK (8 Bytes):** `[0x64, sectors_erased_u32]`.
+  * **Hardware Effect:** Formats the `USERDATA` and `CACHE` block devices at the low-level flash controller layer. Clears corrupt userdata, encryption state, and factory reset flags without requiring Android Stock Recovery confirmation.
 
 ### 5.2 `0x65` (`CMD_PIT_TRANSFER` / Partition Information Table)
-* **Subcommand `0x00` (`DUMP_PIT_START`):**
+* **Subcommand `0x00` (`FLASH_PIT_START`):**
+  * `arg0 = pit_size_bytes`. Prepares bootloader to repartition flash.
+* **Subcommand `0x01` (`DUMP_PIT_START`):**
   * Device returns `resp_status = pit_size_bytes`.
   * Host reads `ceil(pit_size_bytes / 512)` 512-byte blocks from `EP_IN (0x81)`.
-* **Subcommand `0x01` (`FLASH_PIT_START`):**
-  * `arg0 = pit_size_bytes`. Prepares bootloader to repartition flash.
-* **Subcommand `0x02` (`FLASH_PIT_END`):** Commits uploaded PIT.
+* **Subcommand `0x02` (`DUMP_CHUNK` / `FLASH_PIT_END`):** Commits uploaded PIT.
 * **Subcommand `0x03` (`DUMP_PIT_END`):** Finalizes PIT read.
 
 #### Binary PIT Layout
@@ -176,6 +180,50 @@ Offset    Size      Type        Field Name          Description
   * `0x00` (`CLOSE_NO_REBOOT`): Clears flag and leaves device in Download Mode.
   * `0x01` (`REBOOT_NORMAL`): Clears flag and triggers normal boot (`boot.img`).
   * `0x02` (`REBOOT_DOWNLOAD`): Clears flag and warm-reboots back into Download Mode.
+
+### 5.5 `0x69` (`CMD_DEVICE_INFO` / Odin v4 DVIF Query)
+* **Subcommand `0x01` / `0x02`:** Queries hardware platform identification string (DVIF).
+* **Flaw in Odin4:** Odin4 unconditionally issues `0x69` after handshake. On Exynos 850 / modern midrange devices in Download Mode, `sboot` ignores `0x69`, causing Odin4 to repeat 5 times and crash with `USB bulk read failed (error: -7)`. `exynos-loke-rescue` intentionally omits `0x69` when v3 tier is negotiated.
+
+### 5.6 `0x6a` (`CMD_DYNAMIC_SUPER_CHECK` / Dynamic Sizing Preflight)
+* **Argument:** `arg1 = super_image_size_in_sectors`.
+* **Flaw in samloader-rs:** Causes pre-flight failure: `Dynamic partition pre-flight check failed: insufficient free space in Super partition` when flashing stock ROMs over custom ROMs (e.g., LineageOS). Heimdall and `exynos-loke-rescue` bypass this command via `--skip-size-check`, writing `super.img` directly to raw flash.
+
+---
+
+## 8. Comparative Architecture Matrix
+
+| Feature | Odin 3 (Win32) | Odin 4 (Linux ELF) | Heimdall (C++) | samloader-rs (Rust) | exynos-loke-rescue (Native Rust) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Language & Safety** | C++ / Win32 (Proprietary) | C++ / GCC (Proprietary) | C++ / libusb (Open-source) | Rust / safe (Open-source) | **100% Safe Pure Rust (`nusb`)** |
+| **Kernel Stack** | Windows USB Driver | Linux `libusb-1.0` (synchronous) | Linux `libusb-1.0` | Linux `nusb` / `vcom` | **Direct Linux ioctl (`/dev/bus/usb`)** |
+| **Bulk Chunk Size** | 128 KiB | 1 MiB | 128 KiB | Adaptive | **Adaptive (128 KiB v3 / 1 MiB v4)** |
+| **Zero-Length Packet (ZLP)** | Automatic (WDM) | Inconsistent | Partial | Implemented | **Strict 512B Multiple ZLP Signaling** |
+| **Exynos 850 Handshake** | OK | **Fails (error: -7)** | OK | OK | **100% Deterministic (Zero Timeout)** |
+| **Dynamic Super Restore** | N/A (Legacy) | Checks metadata | **Bypasses (Works)** | **Fails (Metadata crash)** | **Bypasses (`--skip-size-check` / raw)** |
+| **Streaming LZ4 Engine** | Proprietary | Proprietary | None (Unpack to disk) | Memory streaming | **Pure Streaming LZ4 (Zero Spooling)** |
+| **NAND Erase (`0x64:0x07`)** | Internal flag | In `-u` (UMS) | Incomplete | `-e` flag | **`erase-userdata` & `-e` & Auto-Reboot** |
+| **Protected Partitions** | Server-enforced | Server-enforced | Blind write (Unsafe) | None | **Hardware Invariant Guard (EFS Lock)** |
+| **Distribution** | `.zip` (Windows only) | Raw binary (x86_64) | Source / PPA | Cargo install | **Deb, RPM, Arch, AppImage, Tarball, OCI** |
+
+---
+
+## 9. Broken Power-Button Hardware Recovery Playbook
+
+When an Exynos device gets stuck in a bootloop or on the Samsung Stock Recovery screen:
+$$\text{"Cannot load Android system. Your data may be corrupt. Try factory data reset."}$$
+...if the physical Power button is broken, the user **cannot confirm** menu selections in Android Stock Recovery because Samsung stock recovery hardcodes `KEY_POWER` as the only confirmation trigger (touch input and Volume-key confirmations are disabled).
+
+### Deterministic Recovery Workflow:
+1. **Force Power-Off:** Allow battery to drain or disconnect USB until screen turns off. Charge for 5 minutes.
+2. **Enter Download Mode:** Hold `Vol Up + Vol Down` simultaneously and plug in USB cable. When the teal screen appears, press `Vol Up` once.
+3. **Execute Low-Level NAND Erase:**
+   ```bash
+   exynos-loke-rescue emergency-wipe-reboot
+   # Or with raw boot flash:
+   exynos-loke-rescue flash-raw --boot boot.img -e
+   ```
+4. **Result:** LOKE sends `0x64:0x07` (hardware NAND format of USERDATA) followed by `0x67:0x01` (reboot). The phone restarts directly into the One UI setup wizard, completely bypassing Stock Recovery!
 
 ---
 
