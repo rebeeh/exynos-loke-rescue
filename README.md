@@ -1,68 +1,82 @@
-# Exynos LOKE Rescue 📱⚡
+# ExynosRescue (odin-unbrick-cli) 📱⚡
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)]()
+[![Language: Python 3](https://img.shields.io/badge/Language-Python%203-3776AB.svg?logo=python&logoColor=white)]()
 [![Shell: Bash](https://img.shields.io/badge/Shell-Bash-4EAA25.svg?logo=gnu-bash&logoColor=white)]()
 [![Target: Exynos 850](https://img.shields.io/badge/Target-Samsung%20Exynos%20850-9cf.svg)]()
 [![Device: Galaxy A21s](https://img.shields.io/badge/Device-Galaxy%20A21s%20(SM--A217F)-blueviolet.svg)]()
 
-> **A Linux-native protocol to bypass Heimdall timeouts and samloader-rs dynamic partition crashes to unbrick Samsung Exynos devices.**
+> **A zero-friction Linux CLI recovery orchestrator that wraps `samloader-rs`, `lz4`, and `tar` to automatically detect, extract, and flash raw signed partitions—bypassing dynamic `super` metadata crashes, Heimdall timeouts, and LOKE USB session hangs on Samsung Exynos devices.**
 
 ---
 
-## 📌 Overview
+## 📌 The Problem: The Flashing Nightmare
 
-This repository provides a battle-tested, Linux-native emergency recovery protocol for Samsung Exynos devices (specifically verified on **Exynos 850 / Galaxy A21s `SM-A217F`**) stuck in the notorious emergency recovery loop:
+Flashing modern Samsung Exynos devices (e.g. Galaxy A21s `SM-A217F` / Exynos 850) on Linux often turns into an unbricking deadlock where every existing open-source tool breaks on a different edge case:
 
-```
-An error has occurred while updating the device software.
-Use the Smart Switch PC software to emergency recovery function.
-```
-
-When transitioning between custom ROMs (such as LineageOS) and stock firmware, standard Linux flashing tools (Heimdall, Llucs/odin4) frequently fail: they either fail to complete the proprietary Samsung LOKE protocol session-close handshake, or abort due to false-positive dynamic partition errors (`insufficient free space in Super partition`).
-
-This project documents and automates:
-1. **Phase 1 (Emergency Unbrick):** Using **[samloader-rs](https://github.com/topjohnwu/samloader-rs)** to flash only the cryptographically signed stock boot components (`boot`, `vbmeta`, `recovery`), satisfying bootloader integrity checks and clearing the emergency recovery lock.
-2. **Phase 2 (Post-Rescue Decision):** Resolving the subsequent bootloop caused by stock boot images paired with a custom/scrambled dynamic `super` partition, providing tested paths to either **fully restore Samsung One UI** or **jump directly back to LineageOS**.
+* **Heimdall:** Speaks Odin v3 protocol but fails to transmit session-end confirmation packets on newer Exynos chips, resulting in frozen LOKE sessions.
+* **Llucs / odin4:** Triggers bulk read timeouts (`error: -7`) on USB endpoints because older and mid-range Exynos bootloaders reject Odin v4 protocol packets.
+* **`samloader-rs`:** While an excellent tool, its full firmware flasher (`AP_*.tar.md5`) contains a strict pre-flight partition assertion bug: when reverting from LineageOS or another custom ROM, it reads the scrambled dynamic partition metadata inside `super` and aborts with a false-positive `insufficient partition space` error.
+* **LOKE Emergency Lock (`FAIL! [code: -1]`):** Once an error occurs, the bootloader locks into the screen:
+  ```
+  An error has occurred while updating the device software.
+  Use the Smart Switch PC software to emergency recovery function.
+  ```
+  In this state, Samsung Knox / VaultKeeper rejects session-close attempts if custom or unsigned images (TWRP, Lineage Recovery) are uploaded.
 
 ---
 
-## 🔬 The Root Cause & Protocol Workflow
+## 💡 The Solution: Intelligent Orchestration
+
+Rather than writing a fragile low-level USB stack from scratch, **ExynosRescue** serves as an intelligent orchestration layer. It automates Linux USB port sanitization, extracts signed boot and OS components directly from official firmware archives, streams them through `lz4`, and invokes targeted partition flashes (`-p`) that completely sidestep dynamic partition pre-flight crashes.
 
 ```mermaid
 flowchart TD
-    A["Device in Emergency Recovery\n(LOKE FAIL! code: -1)"] --> B{"Attempt Flashing"}
+    A["Phone in Emergency Recovery or Bootloop\n(LOKE FAIL! code: -1 / Odin Timeout)"] --> B["exynos-rescue fix-usb"]
+    B --> C["Automated USB Sanitization\n(Pause ModemManager, Unload cdc_acm, Reload udev)"]
     
-    B -->|"Heimdall / Odin v4"| C["Bulk Read Timeout (error: -7)\nSession-end packet rejected"]
-    B -->|"Full Stock AP Tarball (samloader-rs)"| D["Dynamic Super Partition Pre-flight Crash\n(Scrambled logical geometry from Custom ROM)"]
-    B -->|"Custom Recovery (TWRP/Lineage)"| E["Signature Verification Failure\nLOKE rejects session close"]
+    C --> D{"Choose Recovery Mode"}
     
-    C --> F["Device Remains Bricked"]
-    D --> F
-    E --> F
+    D -->|"Mode 1: Clear Emergency Screen"| E["exynos-rescue rescue-boot --ap <AP_file>"]
+    E --> F["Extracts & Decompresses\nboot, vbmeta, recovery"]
+    F --> G["Flashes Signed Images (-p)\nSatisfies VaultKeeper Signature Check"]
+    G --> H["LOKE Session Closes Cleanly\nEmergency Lock Dropped! 🎉"]
     
-    B -->|"Phase 1: Minimal Signed Boot Flash\n(boot + vbmeta + recovery)"| G["Cryptographic Signatures Verified"]
-    G --> H["LOKE Session Closes Cleanly"]
-    H --> I["Emergency Recovery Flag Cleared"]
+    D -->|"Mode 2: Full Stock Restore"| I["exynos-rescue raw-stock --ap <AP_file>"]
+    I --> J["Extracts & Decompresses\nsuper (~4.5GB), dtbo, boot, vbmeta, recovery"]
+    J --> K["Flashes Raw Partitions Directly (-p)\nBypasses dynamic super metadata crash!"]
+    K --> L["Reboot to Stock Recovery\nFactory Reset & Boot One UI"]
     
-    I --> J{"Phase 2: Post-Rescue Bootloop\n(Stock Boot + Scrambled Super Partition)"}
-    
-    J -->|"Path A: Restore Stock One UI"| K["Flash Raw SUPER + DTBO via samloader-rs\n(Bypasses Tarball Bug)"]
-    K --> L["Factory Reset in Stock Recovery"]
-    L --> M["Boot One UI & Verify OEM Unlocking"]
-    
-    J -->|"Path B: Return to Custom ROM"| N["Factory Reset in Stock Recovery"]
-    N --> O["Reboot to Bootloader"]
-    O --> P["Flash Lineage Recovery & Sideload ROM"]
+    H --> M{"Post-Rescue Decision"}
+    M -->|"Option 1: Boot One UI"| I
+    M -->|"Option 2: Re-flash LineageOS"| N["Factory Reset in Recovery\nReboot to Bootloader\nFlash Custom Recovery via -p RECOVERY"]
 ```
 
-### Why Standard Linux Tools Fail:
-1. **The Heimdall / Odin4 Timeout:** Older and mid-range Exynos bootloaders reject Odin v4 protocol packets, resulting in bulk read timeouts (`error: -7`). While Heimdall uses Odin v3, it fails to send the explicit session-end confirmation packet required by newer Exynos bootloaders (such as Exynos 850).
-2. **The LOKE FAIL! `[code: -1]`:** The bootloader locks into an Emergency Recovery state. It rejects session-close attempts whenever custom/unsigned images (like TWRP or Lineage recovery) are uploaded.
-3. **The `samloader-rs` Pre-flight Tarball Bug:** Flashing a full stock firmware archive (`AP_*.tar.md5`) directly causes `samloader-rs` to inspect the dynamic partition layout inside `super`. Because custom ROMs repartition the dynamic logical space, `samloader-rs` hits an "insufficient partition space" calculation error and aborts before flashing.
-4. **The Bypass Solution:** 
-   * Flashing **only** signed `boot.img`, `vbmeta.img`, and `recovery.img` satisfies Samsung's Knox security check and terminates the session cleanly.
-   * Flashing **raw** `super.img` and `dtbo.img` directly (rather than passing the AP tarball) bypasses the partition calculation crash completely.
+---
+
+## ✨ Core Features
+
+### 1. 🔌 Automated Linux USB Sanitizer (`fix-usb`)
+* Automatically detects if `ModemManager` is running and pauses it during flashing so it doesn't seize the Samsung serial interface (`04e8:685d`).
+* Unloads conflicting `cdc_acm` kernel drivers.
+* Configures and reloads udev rules (`/etc/udev/rules.d/99-samsung-download-mode.rules`) for non-root USB access.
+* Scans the USB bus and monitors for unresponsive endpoints, advising on cable replug when the host xHCI controller is hung.
+
+### 2. ⚡ Smart Archive & Pre-Flight Bypass (`rescue-boot` / `raw-stock`)
+* **Mode 1 (`rescue-boot`):** Streams `boot.img.lz4`, `recovery.img.lz4`, and `vbmeta.img.lz4` out of the stock `AP` tarball, decompresses them, and flashes them via `samloader flash -p` to clear the `"An error has occurred..."` screen in seconds.
+* **Mode 2 (`raw-stock`):** Streams and decompresses `super.img.lz4` (~4.5 GB), `dtbo.img.lz4`, and boot components, flashing them partition-by-partition. This completely avoids `samloader-rs`'s tarball parsing crash when transitioning from custom ROMs.
+
+### 3. 🔍 Live Diagnostic Interpreter
+* Wraps `samloader-rs`'s standard output and error streams in real time.
+* Intercepts cryptic error signatures and translates them into plain English solutions:
+  * `FAIL! [code: -1]` $\rightarrow$ Explains VaultKeeper / KG State lock and prompts to flash signed stock images.
+  * `bulk read error: -7` $\rightarrow$ Advises a 5-second cable replug to reset the xHCI USB controller.
+  * `dynamic partition / insufficient space` $\rightarrow$ Recommends raw partition flashing (`raw-stock`).
+
+### 4. 🌐 One-Command Firmware Fetch & Cache (`fetch`)
+* Automatically parses device model (`SM-A217F`) and CSC sales code (`INS`) from `samloader detect`.
+* Queries Samsung FUS servers and downloads the matching firmware zip without manual lookup.
 
 ---
 
@@ -70,25 +84,26 @@ flowchart TD
 
 ```
 exynos-loke-rescue/
-├── README.md               # Complete documentation and guide
+├── exynos_rescue.py        # Core Python CLI orchestrator (Zero external dependencies)
+├── exynos-rescue           # Executable wrapper / entrypoint
+├── README.md               # Complete project guide and architecture documentation
 ├── LICENSE                 # MIT License
-├── .gitignore              # Ignores archives, raw images, and temporary files
-└── scripts/
-    ├── 01_setup_usb.sh     # Automates ModemManager stop, cdc_acm unload & udev rules
-    ├── 02_extract_img.sh   # Extracts boot components or full OS (super/dtbo) with lz4
-    ├── 03_flash_signed.sh  # Flashes signed BOOT, VBMETA, and RECOVERY (Phase 1)
-    └── 04_flash_stock_os.sh # Flashes raw SUPER and DTBO to restore One UI (Phase 2)
+├── .gitignore              # Ignores downloaded firmware, tarballs, and raw images
+└── scripts/                # Modular standalone Bash scripts (Alternative)
+    ├── 01_setup_usb.sh     # Bash USB sanitizer & udev setup
+    ├── 02_extract_img.sh   # Bash lz4 component extractor (--full supported)
+    ├── 03_flash_signed.sh  # Bash boot component flasher
+    └── 04_flash_stock_os.sh # Bash raw SUPER & DTBO flasher
 ```
 
 ---
 
-## 🧰 Prerequisites & Dependencies
+## 🚀 Quick Start Guide
 
-- **Operating System:** Any modern Linux distribution (Fedora, Ubuntu, Debian, Arch).
-- **Core Utilities:** `bash`, `tar`, `lz4`, `curl`, `udev`.
-- **Flasher Utility:** [`samloader-rs`](https://github.com/topjohnwu/samloader-rs) (TopJohnWu's Rust-based Odin protocol implementation).
+### Prerequisites
+`exynos-rescue` is built in Python 3 using only the standard library—**no `pip install` required**.
 
-### Tool Installation
+You only need standard Linux utilities and `samloader-rs`:
 
 #### Fedora:
 ```bash
@@ -118,145 +133,87 @@ sudo mv samloader /usr/local/bin/
 
 ---
 
+## 💻 CLI Usage
+
+Clone the repository and make the CLI accessible:
+```bash
+git clone https://github.com/rebeeh/exynos-loke-rescue.git
+cd exynos-loke-rescue
+chmod +x exynos-rescue
+```
+
+### 1. Sanitize USB & Test Connection
+```bash
+sudo ./exynos-rescue fix-usb
+```
+
+### 2. Auto-Detect Connected Device
+```bash
+./exynos-rescue detect
+```
+*Output:*
+```text
+Connected Device Profile:
+  • Model:       SM-A217F
+  • Sales Code:  INS
+  • Bootloader:  A217FXXUBCVG1
+```
+
+### 3. Fetch Stock Firmware Automatically
+```bash
+./exynos-rescue fetch --unzip
+```
+*(Or specify manually: `./exynos-rescue fetch -m SM-A217F -r INS --unzip`)*
+
+### 4. Mode 1: Clear Emergency Recovery Lock (Unbrick)
+```bash
+./exynos-rescue rescue-boot --ap firmware/AP_*.tar.md5
+```
+This extracts `boot`, `vbmeta`, and `recovery`, decompresses them with `lz4`, and flashes them directly to reset the LOKE session flag.
+
+### 5. Mode 2: Restore Full Stock One UI (Bypass Dynamic Partition Crash)
+```bash
+./exynos-rescue raw-stock --ap firmware/AP_*.tar.md5
+```
+This extracts and flashes `super.img` (~4.5 GB) and `dtbo.img` along with the boot components, writing clean partitions without triggering pre-flight metadata assertion errors.
+
+### 6. Interactive Error Diagnostics
+```bash
+./exynos-rescue diagnose
+```
+
+---
+
 ## 🕹️ Hardware Key Combinations (Download Mode)
 
-When your phone is stuck in an emergency loop or bootloop, use this exact sequence to enter Download Mode:
+When your phone is bootlooping or stuck in an emergency screen, use this sequence:
 
 1. Keep the phone plugged into your PC via USB.
-2. Hold **Volume Down + Power** simultaneously for **~8 seconds** until the screen turns completely black (forcing a hard power-off).
+2. Hold **Volume Down + Power** simultaneously for **~8 seconds** until the screen goes completely black.
 3. **Immediately release both buttons** and hold **Volume Up + Volume Down** together.
 4. When the teal Samsung Warning screen appears, release all buttons and press **Volume Up** once.
-5. You are now in Samsung Download Mode (`04e8:685d`).
+5. The device is now in Download Mode (`04e8:685d`).
 
 ---
 
-## ⚡ The Step-by-Step Recovery Protocol
+## 🗺️ Suggested MVP Roadmap
 
-### Phase 1: Unbrick & Clear LOKE Emergency Lock
-
-#### 1. Setup Linux USB Environment
-ModemManager and the `cdc_acm` driver frequently lock Samsung's USB endpoints. Run the setup script to configure udev rules and release the ports:
-```bash
-sudo bash scripts/01_setup_usb.sh
-```
-
-#### 2. Download Official Stock Firmware
-Fetch the firmware matching your exact model number and CSC (e.g. `SM-A217F` and `INS`):
-```bash
-mkdir -p stock_fw && cd stock_fw
-samloader check-update -m SM-A217F -r INS
-samloader download -m SM-A217F -r INS -o stock_firmware.zip
-unzip stock_firmware.zip
-cd ..
-```
-
-#### 3. Extract Signed Boot Components
-Extract only the boot components needed to clear the LOKE security lock:
-```bash
-./scripts/02_extract_img.sh stock_fw/AP_*.tar.md5
-```
-*(Extracts and decompresses `boot.img.lz4`, `recovery.img.lz4`, and `vbmeta.img.lz4`).*
-
-#### 4. Flash Signed Boot Images
-```bash
-./scripts/03_flash_signed.sh
-```
-*Expected terminal output:*
-```text
-BOOT flash successful [100%]
-VBMETA flash successful [100%]
-RECOVERY flash successful [100%]
-Ending session...
-Rebooting device...
-```
-At this point, the LOKE emergency recovery lock is cleared! 🎉
+| Milestone | Target | Features & Deliverables | Status |
+| :---: | :---: | :--- | :---: |
+| **v0.1** | **Bash / Python MVP** | Clean USB sanitizer, `samloader detect` parsing, auto-extraction of signed `boot`/`recovery`/`vbmeta`, and targeted `-p` flash. | ✅ Complete |
+| **v0.2** | **Raw Stock Restore & Error Parser** | Mode 2 (`raw-stock`) to flash raw `super.img` + `dtbo.img`, diagnostic interpreter translating `LOKE -1`, timeouts, and dynamic partition crashes. | ✅ Complete |
+| **v0.3** | **Native Streaming & Rich TUI** | In-memory streaming decompression (tar $\rightarrow$ lz4 $\rightarrow$ pipe), `rich` / `ratatui` progress bars, and automatic firmware caching. | 🚧 In Progress |
 
 ---
 
-### Phase 2: Resolving the Post-Recovery Bootloop
+## 💡 Community Alternatives
 
-After completing Phase 1, the phone will bootloop or drop into recovery. This happens because the phone now has official Samsung boot and kernel images, but the underlying `super` partition still has the custom ROM's partition layout.
-
-Choose one of two paths forward:
-
----
-
-### Path A: Finish Restoring Full Samsung One UI (Recommended)
-
-Restoring full stock One UI is the safest way to cleanly boot the device, connect to Wi-Fi, and verify that **OEM Unlocking** is active before flashing custom software again.
-
-#### 1. Extract `super` and `dtbo` Partitions
-Run the extraction script with `--full`:
-```bash
-./scripts/02_extract_img.sh stock_fw/AP_*.tar.md5 --full
-```
-*(Or manually run `tar -xf stock_fw/AP_*.tar.md5 super.img.lz4 dtbo.img.lz4 && lz4 -d super.img.lz4 super.img && lz4 -d dtbo.img.lz4 dtbo.img`).*  
-> [!NOTE]  
-> `super.img` is over 4 GB. Extraction and decompression will take 1–3 minutes.
-
-#### 2. Put the Device in Download Mode
-Use the **Volume Down + Power** (~8s) $\rightarrow$ **Volume Up + Volume Down** key sequence with the USB cable connected.
-
-#### 3. Flash Raw SUPER and DTBO
-Flash the raw images directly (bypassing the `samloader-rs` AP tarball bug):
-```bash
-./scripts/04_flash_stock_os.sh
-```
-*(Or manually run `samloader flash -p SUPER super.img -p DTBO dtbo.img`).*
-
-#### 4. Factory Reset in Stock Recovery
-Once flashing finishes, the phone will reboot into **Samsung Stock Recovery** due to leftover user data encryption mismatches:
-1. Use Volume buttons to select **Wipe data / factory reset** and press Power to confirm.
-2. Select **Reboot system now**.
-3. Allow **5 to 10 minutes** for Samsung One UI to complete first-time setup.
-
-#### 5. Verify OEM Unlocking
-1. Complete the initial setup wizard and connect to Wi-Fi.
-2. Navigate to: **Settings $\rightarrow$ About phone $\rightarrow$ Software information**.
-3. Tap **Build number** 7 times to enable Developer options.
-4. Go to **Settings $\rightarrow$ Developer options** and confirm that **OEM Unlocking** is visible and toggled **ON**.
-5. With OEM Unlocking confirmed active, Samsung's bootloader will no longer reject custom recovery binaries with `FAIL! [code: -1]`.
-
----
-
-### Path B: Jump Straight Back to LineageOS
-
-If you prefer not to wait for One UI to install:
-
-1. When the device enters **Samsung Stock Recovery** after Phase 1:
-   * Select **Wipe data / factory reset** and confirm.
-   * Select **Reboot to bootloader** to enter a fresh, clean Download Mode.
-2. Flash your chosen custom recovery (e.g. Lineage Recovery):
-   ```bash
-   samloader flash -p RECOVERY lineage-recovery.img
-   ```
-3. Boot into Lineage Recovery, select **Apply Update $\rightarrow$ Apply from ADB**, and sideload your custom ROM:
-   ```bash
-   adb sideload lineage-20.0-*-nightly-a21s-signed.zip
-   ```
-
----
-
-## 💡 What Others in the Community Do
-
-When facing Samsung dynamic partition bugs or Odin protocol quirks on Linux, community members frequently use these alternative methods:
+When encountering Odin protocol quirks or partition assertion bugs on Linux, community developers also rely on:
 
 1. **Windows VM with USB Passthrough (GNOME Boxes / VirtualBox):**  
-   Instead of debugging Linux USB quirks, developers often spin up a lightweight Windows VM, attach the Samsung USB device (`04e8:685d`), and use the official **Samsung Odin3 v3.14.4** tool. Official Odin natively manages the full four-file flash (`BL`, `AP`, `CP`, `CSC`) without dynamic partition pre-flight crashes.
+   Pass the USB device (`04e8:685d`) to a lightweight Windows VM and flash using official **Samsung Odin3 v3.14.4**.
 2. **Thor / Galaxy Flasher:**  
-   Some Linux users rely on **[Thor](https://github.com/Samsung-Loke/Thor)**, an open-source C# implementation of the Odin protocol, often used alongside the **Galaxy Flasher** GUI. Thor implements dynamic partition chunking differently than `samloader-rs` and can flash full stock firmware without hitting pre-flight assertion errors.
-
----
-
-## 🔍 Troubleshooting Matrix
-
-| Issue | Cause | Fix |
-| :--- | :--- | :--- |
-| `samloader detect` hangs or prints nothing | `ModemManager` or `cdc_acm` kernel module claiming USB endpoints | Run `sudo bash scripts/01_setup_usb.sh` and re-plug USB |
-| `bulk read error: -7` (Heimdall) | Odin v4 / v3 protocol handshake mismatch | Use `samloader-rs` instead of Heimdall/odin4 on modern Exynos devices |
-| `LOKE FAIL! [code: -1]` | Bootloader rejected unsigned images while in Emergency Recovery state | Run `scripts/03_flash_signed.sh` to flash officially signed `boot`, `vbmeta`, and `recovery` |
-| `Pre-flight error: dynamic partition` | `samloader-rs` failed calculating partition geometry from full AP tarball | Flash raw extracted partitions (`-p SUPER super.img -p DTBO dtbo.img`) using `04_flash_stock_os.sh` |
-| Bootlooping after flashing signed boot images | Boot components are stock, but `super` partition is still scrambled | Follow **Path A** to flash `super.img` & `dtbo.img`, or **Path B** to wipe and install custom recovery |
+   [Thor](https://github.com/Samsung-Loke/Thor) is an open-source C# Odin implementation that uses different dynamic partition chunking logic than `samloader-rs`.
 
 ---
 
@@ -268,4 +225,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## ⚠️ Disclaimer
 
-Flashing partitions carries inherent risks. This protocol was tested on a Samsung Galaxy A21s (`SM-A217F`, Exynos 850). Always verify your exact device model and CSC region code before flashing. The authors are not responsible for bricked devices, data loss, or hardware damage.
+Flashing partitions carries inherent risks. This tool was verified on a Samsung Galaxy A21s (`SM-A217F`, Exynos 850). Always ensure firmware files match your exact device model and CSC region code. The authors are not liable for bricked hardware or data loss.
