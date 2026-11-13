@@ -1,7 +1,9 @@
 mod archive;
 mod cli;
 mod diagnostics;
+mod error;
 mod flasher;
+mod pit;
 mod usb;
 
 use anyhow::{bail, Result};
@@ -9,6 +11,7 @@ use clap::Parser;
 use cli::{Cli, Commands};
 use colored::*;
 use flasher::PartitionMapping;
+use pit::PitTable;
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -25,11 +28,29 @@ fn main() -> Result<()> {
 
         Commands::Inspect => {
             let info = usb::detect_device(&samloader_bin, backend)?;
-            println!("{}", "==> Connected Samsung Device:".green().bold());
+            println!("{}", "==> Connected Samsung Exynos Device:".green().bold());
             println!("    Model:              {}", info.model);
             println!("    Serial Number:      {}", info.serial);
             println!("    Bootloader Version: {}", info.bootloader);
             println!("    Sales Code (CSC):   {}", info.sales_code);
+            println!("    Storage Hardware:   {}", info.storage);
+        }
+
+        Commands::InspectPit { pit } => {
+            match pit {
+                Some(pit_path) => {
+                    let table = PitTable::from_file(&pit_path)?;
+                    table.print_summary();
+                }
+                None => {
+                    let _ = usb::detect_device(&samloader_bin, backend)?;
+                    let tmp = TempDir::new()?;
+                    let dump_path = tmp.path().join("device.pit");
+                    flasher::dump_device_pit(&samloader_bin, backend, &dump_path)?;
+                    let table = PitTable::from_file(&dump_path)?;
+                    table.print_summary();
+                }
+            }
         }
 
         Commands::FetchStock {
@@ -98,16 +119,19 @@ fn main() -> Result<()> {
 
             println!(
                 "\n{}",
-                "Next Step: If the device enters Samsung Stock Recovery due to leftover custom ROM partitions,\n\
-                 select `Wipe data/factory reset` -> `Reboot to bootloader`."
+                "Next Steps:\n\
+                 1. If the phone enters Samsung Stock Recovery due to leftover custom ROM partitions,\n\
+                    select `Wipe data/factory reset` -> `Reboot to bootloader`.\n\
+                 2. If the phone bootloops because `super` still contains a custom ROM, run:\n\
+                    `exynos-loke-rescue full-raw-restore --stock-dir <DIR>`"
                     .cyan()
             );
         }
 
         Commands::FullRawRestore {
             stock_dir,
-            include_bl_cp,
             keep_extracted,
+            no_reboot,
         } => {
             let _ = usb::detect_device(&samloader_bin, backend)?;
             let ap_archive = archive::locate_ap_archive(&stock_dir)?;
@@ -157,21 +181,13 @@ fn main() -> Result<()> {
                 },
             ];
 
-            flasher::flash_raw_partitions(&samloader_bin, backend, &mappings, false, false)?;
-
-            if include_bl_cp {
-                println!(
-                    "{}",
-                    "Note: Re-enter Download Mode if you also need to flash BL/CP baseband updates."
-                        .yellow()
-                );
-            }
+            flasher::flash_raw_partitions(&samloader_bin, backend, &mappings, no_reboot, false)?;
 
             println!(
                 "\n{}",
-                "✓ Full raw stock OS restored!\n\
-                 1. If prompted in Stock Recovery, select `Wipe data/factory reset`.\n\
-                 2. Boot into One UI, connect to Wi-Fi, and verify `OEM unlocking` in Developer Options."
+                "✓ Raw stock OS partitions flashed successfully!\n\
+                 1. If the phone boots into Samsung Stock Recovery, select `Wipe data/factory reset`.\n\
+                 2. Boot into One UI, connect to Wi-Fi, and confirm `OEM unlocking` in Developer Options."
                     .green()
             );
         }
@@ -184,7 +200,7 @@ fn main() -> Result<()> {
         } => {
             for p in [&recovery, &vbmeta] {
                 if !p.exists() {
-                    bail!("Image not found: {}", p.display());
+                    bail!("Custom image file not found: {}", p.display());
                 }
             }
 
@@ -202,7 +218,7 @@ fn main() -> Result<()> {
 
             if let Some(b) = boot {
                 if !b.exists() {
-                    bail!("Boot image not found: {}", b.display());
+                    bail!("Custom boot image file not found: {}", b.display());
                 }
                 mappings.push(PartitionMapping {
                     partition_name: "BOOT".to_string(),

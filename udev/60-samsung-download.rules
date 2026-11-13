@@ -1,5 +1,0 @@
-# Samsung Download Mode (LOKE / Odin)
-SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="685d", MODE="0666", GROUP="plugdev", TAG+="uaccess"
-# Samsung MTP / ADB / Composite Modes
-SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="6860", MODE="0666", GROUP="plugdev", TAG+="uaccess"
-SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="6861", MODE="0666", GROUP="plugdev", TAG+="uaccess"

@@ -1,65 +1,79 @@
 use colored::*;
 
-/// Analyzes stderr/stdout from `samloader-rs` and prints concrete, root-cause recovery advice.
-pub fn diagnose_flash_failure(combined_log: &str, is_custom_binary: bool) {
-    println!("\n{}", "==================== DIAGNOSTIC REPORT ====================".red().bold());
+/// Evaluates captured stdout/stderr from `samloader-rs` and prints deterministic
+/// root-cause diagnosis and recovery steps.
+pub fn diagnose_flash_failure(log: &str, is_custom_binary: bool) {
+    println!(
+        "\n{}",
+        "==================== LOKE FAILURE DIAGNOSTICS ====================".red().bold()
+    );
 
-    if combined_log.contains("LOKE returned general failure (FAIL!) [code: -1]") {
+    if log.contains("LOKE returned general failure (FAIL!) [code: -1]") {
         if is_custom_binary {
             println!(
                 "{}",
-                "ROOT CAUSE: VaultKeeper / KG State Lock (LOKE FAIL! [code: -1])\n\
-                 Samsung's bootloader rejected your unsigned custom binary at session close.\n\
-                 FIX:\n\
-                 1. Run `exynos-loke-rescue full-raw-restore` to boot into stock Samsung One UI.\n\
-                 2. Connect to Wi-Fi, open Settings > Developer options, and verify `OEM unlocking` is ON.\n\
-                 3. Re-enter Download Mode and run `flash-custom-recovery` again."
+                "DIAGNOSIS: VaultKeeper (`KG State: Prenormal`) or Bootloader Signature Gate\n\
+                 Samsung `sboot` rejected your unsigned custom binary during `CMD_SESSION_END`.\n\
+                 REMEDIATION:\n\
+                 1. Run `exynos-loke-rescue full-raw-restore --stock-dir <DIR>` to boot official One UI.\n\
+                 2. Complete setup, connect to Wi-Fi, and open Settings > Developer options.\n\
+                 3. Confirm `OEM unlocking` is ON and greyed out (syncs VaultKeeper to `Checking`).\n\
+                 4. Re-enter Download Mode and re-run `flash-custom-recovery`."
                     .yellow()
             );
         } else {
             println!(
                 "{}",
-                "ROOT CAUSE: Bootloader Binary Revision or Region Mismatch (LOKE FAIL! [code: -1])\n\
-                 Check the top-left corner of your phone's Download Mode screen for red text:\n\
-                 - `SW REV. CHECK FAIL`: Your stock firmware binary revision is older than the phone's fuse.\n\
-                   Run `exynos-loke-rescue fetch-stock` to pull the latest matching bootloader revision.\n\
-                 - `Only official released binaries`: Ensure you are pointing `--ap` to an official stock AP file."
+                "DIAGNOSIS: Bootloader Anti-Rollback (`SW REV. CHECK FAIL`) or Incomplete Session\n\
+                 Inspect the top-left corner of your phone's Download Mode display for red text:\n\
+                 - `SW REV. CHECK FAIL (BOOT/RECOVERY)`: Your stock archive has an older binary\n\
+                   fuse bit than the bootloader currently flashed on the device. Run\n\
+                   `exynos-loke-rescue fetch-stock` to download the latest matching revision.\n\
+                 - `Only official released binaries are allowed`: Verify `--ap` points to an\n\
+                   unmodified Samsung stock AP archive."
                     .yellow()
             );
         }
-    } else if combined_log.contains("Dynamic partition pre-flight check failed") {
+    } else if log.contains("Dynamic partition pre-flight check failed") {
         println!(
             "{}",
-            "ROOT CAUSE: samloader-rs Dynamic Partition Parser Bug\n\
-             Leftover custom ROM (LineageOS) partition metadata caused samloader-rs to miscalculate `super` size.\n\
-             FIX: Do NOT pass `-a AP_*.tar.md5` directly. Use `exynos-loke-rescue rescue-boot` or\n\
-             `exynos-loke-rescue full-raw-restore` to flash raw extracted partitions via `-p`."
+            "DIAGNOSIS: `samloader-rs` Dynamic Partition Metadata Pre-Flight Bug\n\
+             Leftover custom ROM logical partition extents inside `super` caused `samloader-rs`\n\
+             to abort before honoring `--skip-size-check`.\n\
+             REMEDIATION:\n\
+             Never pass `-a AP_*.tar.md5` directly when reverting from a custom ROM.\n\
+             Use `exynos-loke-rescue rescue-boot` or `exynos-loke-rescue full-raw-restore`\n\
+             to flash extracted `.img` payloads via explicit `-p` partition flags."
                 .yellow()
         );
-    } else if combined_log.contains("Failed to send handshake")
-        || combined_log.contains("USB bulk read failed")
-        || combined_log.contains("Device not found")
+    } else if log.contains("Failed to send handshake")
+        || log.contains("USB bulk read failed")
+        || log.contains("Device not found")
     {
         println!(
             "{}",
-            "ROOT CAUSE: Hung LOKE USB Endpoint\n\
-             An aborted flash left the phone's USB stack unresponsive.\n\
-             FIX:\n\
-             1. Unplug the USB cable from the phone for 5 seconds.\n\
-             2. Replug into a direct USB 2.0 port (avoid hubs/USB-C adapters).\n\
-             3. Run `exynos-loke-rescue prep-usb` and retry."
+            "DIAGNOSIS: Stalled LOKE USB Bulk Endpoint (`04e8:685d`)\n\
+             A previous aborted session left the phone's USB OTG controller unresponsive.\n\
+             REMEDIATION:\n\
+             1. Physically unplug the USB cable from the device for 5 seconds.\n\
+             2. Reconnect to a direct motherboard USB-A 2.0 port (avoid hubs).\n\
+             3. Run `exynos-loke-rescue prep-usb` and re-execute the flash command."
                 .yellow()
         );
     } else {
         println!(
             "{}",
-            "Unknown LOKE/USB error encountered. Review the raw output above and ensure:\n\
-             - Battery has >15% charge.\n\
-             - ModemManager is stopped (`sudo systemctl stop ModemManager`).\n\
-             - Cable was replugged after any previous failed flash."
+            "DIAGNOSIS: Unclassified LOKE / Transport Fault\n\
+             Verify:\n\
+             - Battery charge is above 15%.\n\
+             - `ModemManager` is stopped (`sudo systemctl stop ModemManager`).\n\
+             - `cdc_acm` is unloaded (`sudo modprobe -r cdc_acm`)."
                 .yellow()
         );
     }
 
-    println!("{}", "===========================================================\n".red().bold());
+    println!(
+        "{}\n",
+        "==================================================================".red().bold()
+    );
 }

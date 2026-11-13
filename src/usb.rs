@@ -1,3 +1,4 @@
+use crate::error::RescueError;
 use anyhow::{bail, Context, Result};
 use colored::*;
 use regex::Regex;
@@ -5,9 +6,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const UDEV_RULE_PATH: &str = "/etc/udev/rules.d/60-exynos-loke-rescue.rules";
-const UDEV_RULE_CONTENT: &str = r#"# Samsung Download Mode (LOKE / Odin)
-SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="685d", MODE="0666", GROUP="plugdev", TAG+="uaccess"
+const UDEV_RULE_DEST: &str = "/etc/udev/rules.d/60-exynos-loke-rescue.rules";
+const UDEV_RULE_PAYLOAD: &str = r#"# Samsung Exynos / Qualcomm Download Mode (LOKE / Odin Protocol)
+SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="685d", MODE="0666", GROUP="plugdev", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="6860", MODE="0666", GROUP="plugdev", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="6861", MODE="0666", GROUP="plugdev", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
 "#;
 
 #[derive(Debug, Clone)]
@@ -16,133 +19,184 @@ pub struct DeviceInfo {
     pub serial: String,
     pub bootloader: String,
     pub sales_code: String,
+    pub storage: String,
 }
 
-/// Resolves the samloader-rs executable path from CLI override, ./samloader, or $PATH.
+/// Resolves `samloader-rs` binary from explicit path, `./samloader`, or `$PATH`.
 pub fn resolve_samloader(override_path: Option<&Path>) -> Result<PathBuf> {
     if let Some(p) = override_path {
-        if p.exists() {
+        if p.is_file() {
             return Ok(p.to_path_buf());
         }
-        bail!("Specified --samloader-bin does not exist: {}", p.display());
+        bail!("Explicit --samloader-bin path does not exist: {}", p.display());
     }
 
-    let local = PathBuf::from("./samloader");
-    if local.exists() {
-        return Ok(local);
+    let cwd_bin = PathBuf::from("./samloader");
+    if cwd_bin.is_file() {
+        return Ok(cwd_bin);
     }
 
-    which::which("samloader").context(
-        "Could not find `samloader` (topjohnwu/samloader-rs) in ./samloader or $PATH.\n\
-         Download the Linux x86_64 release from https://github.com/topjohnwu/samloader-rs/releases",
-    )
+    which::which("samloader").map_err(|_| RescueError::SamloaderNotFound.into())
 }
 
-/// Checks lsusb for Samsung Download Mode (04e8:685d) and warns if missing or hung.
-pub fn check_lsusb_samsung() -> Result<Option<String>> {
-    let output = Command::new("lsusb")
-        .output()
-        .context("Failed to execute `lsusb`. Install `usbutils` (e.g., sudo dnf install usbutils).")?;
+/// Scans `/sys/bus/usb/devices` directly (without requiring external `lsusb`) and falls
+/// back to `lsusb` to verify whether `04e8:685d` is currently enumerated on the host.
+pub fn scan_usb_bus_for_download_mode() -> Result<Option<String>> {
+    let usb_sysfs = Path::new("/sys/bus/usb/devices");
+    if usb_sysfs.is_dir() {
+        for entry in fs::read_dir(usb_sysfs)? {
+            let dev_path = entry?.path();
+            let vid_path = dev_path.join("idVendor");
+            let pid_path = dev_path.join("idProduct");
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    for line in stdout.lines() {
-        if line.contains("04e8:685d") {
-            return Ok(Some(line.trim().to_string()));
+            if vid_path.is_file() && pid_path.is_file() {
+                let vid = fs::read_to_string(&vid_path).unwrap_or_default();
+                let pid = fs::read_to_string(&pid_path).unwrap_or_default();
+
+                if vid.trim().eq_ignore_ascii_case("04e8")
+                    && pid.trim().eq_ignore_ascii_case("685d")
+                {
+                    let busnum = fs::read_to_string(dev_path.join("busnum"))
+                        .unwrap_or_else(|_| "?".into());
+                    let devnum = fs::read_to_string(dev_path.join("devnum"))
+                        .unwrap_or_else(|_| "?".into());
+                    let speed = fs::read_to_string(dev_path.join("speed"))
+                        .unwrap_or_else(|_| "?".into());
+
+                    return Ok(Some(format!(
+                        "Bus {:0>3} Device {:0>3}: ID 04e8:685d Samsung Download Mode ({} Mbps)",
+                        busnum.trim(),
+                        devnum.trim(),
+                        speed.trim()
+                    )));
+                }
+            }
         }
     }
     Ok(None)
 }
 
-/// Sanitizes the Linux USB stack: writes udev rules, pauses ModemManager, unloads cdc_acm.
-pub fn sanitize_linux_usb(samloader_bin: &Path, skip_systemd: bool) -> Result<()> {
-    println!("{}", "==> Configuring Linux USB environment for Samsung LOKE...".cyan().bold());
+/// Checks whether the `cdc_acm` kernel module is currently loaded via `/proc/modules`.
+pub fn is_cdc_acm_loaded() -> bool {
+    fs::read_to_string("/proc/modules")
+        .map(|content| content.lines().any(|l| l.starts_with("cdc_acm ")))
+        .unwrap_or(false)
+}
 
-    // 1. Run samloader's built-in fix-usb if available, plus write explicit 04e8:685d rule
-    let status = Command::new("sudo")
-        .arg(samloader_bin)
-        .arg("fix-usb")
-        .status();
+/// Configures udev rules with `ID_MM_DEVICE_IGNORE=1`, stops `ModemManager`, and unloads `cdc_acm`.
+pub fn sanitize_linux_usb(samloader_bin: &Path, no_systemd: bool) -> Result<()> {
+    println!("{}", "==> Sanitizing Linux USB subsystem for Samsung LOKE...".cyan().bold());
 
-    if status.map(|s| !s.success()).unwrap_or(true) {
-        println!("{}", "    Writing udev rule manually via sudo tee...".yellow());
-        let tmp = tempfile::NamedTempFile::new()?;
-        fs::write(tmp.path(), UDEV_RULE_CONTENT)?;
-        let cp_status = Command::new("sudo")
-            .args(["cp", tmp.path().to_str().unwrap(), UDEV_RULE_PATH])
-            .status()
-            .context("Failed to copy udev rules")?;
-        if !cp_status.success() {
-            bail!("Failed to install udev rule at {}", UDEV_RULE_PATH);
-        }
-        let _ = Command::new("sudo")
-            .args(["udevadm", "control", "--reload-rules"])
-            .status();
-        let _ = Command::new("sudo")
-            .args(["udevadm", "trigger"])
-            .status();
+    // Step 1: Write persistent udev rule
+    let tmp = tempfile::NamedTempFile::new()?;
+    fs::write(tmp.path(), UDEV_RULE_PAYLOAD)?;
+
+    let cp_ok = Command::new("sudo")
+        .args(["cp", tmp.path().to_str().unwrap(), UDEV_RULE_DEST])
+        .status()
+        .context("Failed to execute sudo cp for udev rules")?
+        .success();
+
+    if !cp_ok {
+        bail!("Failed to install udev rule at {}", UDEV_RULE_DEST);
     }
 
-    // 2. Stop ModemManager so it doesn't grab 04e8:685d serial endpoints
-    if !skip_systemd {
-        println!("    Stopping ModemManager service...");
+    let _ = Command::new("sudo")
+        .args(["chmod", "0644", UDEV_RULE_DEST])
+        .status();
+    let _ = Command::new("sudo")
+        .args(["udevadm", "control", "--reload-rules"])
+        .status();
+    let _ = Command::new("sudo")
+        .args(["udevadm", "trigger"])
+        .status();
+
+    // Also invoke samloader's internal fix-usb if supported
+    let _ = Command::new("sudo")
+        .arg(samloader_bin)
+        .arg("fix-usb")
+        .output();
+
+    println!("    {} Installed {}", "✓".green(), UDEV_RULE_DEST);
+
+    // Step 2: Stop ModemManager
+    if !no_systemd {
         let _ = Command::new("sudo")
             .args(["systemctl", "stop", "ModemManager"])
             .status();
+        println!("    {} Stopped ModemManager daemon", "✓".green());
     }
 
-    // 3. Unload cdc_acm kernel driver
-    println!("    Unloading cdc_acm kernel module...");
-    let _ = Command::new("sudo")
-        .args(["modprobe", "-r", "cdc_acm"])
-        .status();
+    // Step 3: Unload cdc_acm kernel driver if bound
+    if is_cdc_acm_loaded() {
+        let rmmod_ok = Command::new("sudo")
+            .args(["modprobe", "-r", "cdc_acm"])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false);
+        if rmmod_ok {
+            println!("    {} Unloaded conflicting `cdc_acm` kernel module", "✓".green());
+        } else {
+            println!(
+                "    {} Could not unload `cdc_acm` (may be built-in or in use)",
+                "!".yellow()
+            );
+        }
+    } else {
+        println!("    {} `cdc_acm` module is not loaded", "✓".green());
+    }
 
-    // 4. Verify lsusb visibility
-    match check_lsusb_samsung()? {
-        Some(line) => {
-            println!("{} {}", "✓ Detected on USB bus:".green().bold(), line);
-            Ok(())
+    // Step 4: Verify USB bus presence
+    match scan_usb_bus_for_download_mode()? {
+        Some(summary) => {
+            println!("{} {}", "✓ Device active:".green().bold(), summary);
         }
         None => {
             println!(
                 "{}",
-                "⚠ Samsung Download Mode (04e8:685d) is NOT visible in `lsusb`.\n\
-                 - Check if battery drained to 0% (charge on wall adapter for 15 mins).\n\
-                 - Unplug the USB cable for 5 seconds and reconnect to a direct USB-A 2.0 port."
+                "⚠ Samsung Download Mode (04e8:685d) not found on USB bus.\n\
+                 - Ensure device is powered on and in Download Mode / Emergency Recovery.\n\
+                 - Unplug USB cable for 5 seconds and reconnect directly to a host USB port."
                     .yellow()
             );
-            Ok(())
         }
     }
+
+    Ok(())
 }
 
-/// Runs `samloader detect` and parses Model, Serial, Bootloader, and Sales Code.
+/// Queries `samloader detect` and parses hardware identity fields.
 pub fn detect_device(samloader_bin: &Path, backend: &str) -> Result<DeviceInfo> {
-    if check_lsusb_samsung()?.is_none() {
-        bail!(
-            "No Samsung device (04e8:685d) found in `lsusb`.\n\
-             If a previous flash aborted, unplug the USB cable for 5 seconds and replug it to reset the LOKE USB endpoint."
+    if scan_usb_bus_for_download_mode()?.is_none() {
+        return Err(RescueError::DeviceNotDetected.into());
+    }
+
+    if is_cdc_acm_loaded() {
+        println!(
+            "{}",
+            "⚠ Warning: `cdc_acm` kernel module is loaded. Run `exynos-loke-rescue prep-usb` if handshake fails."
+                .yellow()
         );
     }
 
     let output = Command::new(samloader_bin)
         .args(["--usb-backend", backend, "detect"])
         .output()
-        .context("Failed to run `samloader detect`")?;
+        .context("Failed to execute `samloader detect`")?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     if !output.status.success() {
         bail!(
-            "`samloader detect` failed:\n{}\n{}\nHint: Unplug and replug the USB cable to clear any hung LOKE session.",
+            "`samloader detect` failed:\n{}\n{}\nAction: Unplug USB cable for 5 seconds and replug to reset LOKE endpoint.",
             stdout.trim(),
             stderr.trim()
         );
     }
 
-    let extract_field = |label: &str| -> String {
-        let pattern = format!(r"(?m)^\s*{}:\s*(.+)$", regex::escape(label));
-        let re = Regex::new(&pattern).unwrap();
+    let extract = |key: &str| -> String {
+        let re = Regex::new(&format!(r"(?m)^\s*{}:\s*(.+)$", regex::escape(key))).unwrap();
         re.captures(&stdout)
             .and_then(|c| c.get(1))
             .map(|m| m.as_str().trim().to_string())
@@ -150,9 +204,10 @@ pub fn detect_device(samloader_bin: &Path, backend: &str) -> Result<DeviceInfo> 
     };
 
     Ok(DeviceInfo {
-        model: extract_field("Model"),
-        serial: extract_field("Serial Number"),
-        bootloader: extract_field("Bootloader Version"),
-        sales_code: extract_field("Sales Code"),
+        model: extract("Model"),
+        serial: extract("Serial Number"),
+        bootloader: extract("Bootloader Version"),
+        sales_code: extract("Sales Code"),
+        storage: extract("Storage"),
     })
 }

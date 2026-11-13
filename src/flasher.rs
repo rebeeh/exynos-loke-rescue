@@ -1,4 +1,5 @@
 use crate::diagnostics::diagnose_flash_failure;
+use crate::error::RescueError;
 use anyhow::{bail, Context, Result};
 use colored::*;
 use std::io::{BufRead, BufReader};
@@ -7,12 +8,12 @@ use std::process::{Command, Stdio};
 
 #[derive(Debug, Clone)]
 pub struct PartitionMapping {
-    pub partition_name: String, // e.g., "BOOT", "VBMETA", "RECOVERY", "SUPER", "DTBO"
+    pub partition_name: String,
     pub image_path: PathBuf,
 }
 
-/// Executes `samloader flash -p <PART> <FILE> ...` while streaming output live and
-/// running post-mortem diagnostics if LOKE or USB errors occur.
+/// Invokes `samloader-rs flash -p <PART> <FILE> ...` while streaming live output
+/// and running post-mortem LOKE diagnostics on failure.
 pub fn flash_raw_partitions(
     samloader_bin: &Path,
     backend: &str,
@@ -33,11 +34,15 @@ pub fn flash_raw_partitions(
             .arg(&part.image_path);
     }
 
-    println!("{}", "==> Executing LOKE partition flash:".cyan().bold());
+    println!("{}", "==> Initiating LOKE raw partition transfer:".cyan().bold());
     for part in partitions {
+        let size_mib = std::fs::metadata(&part.image_path)
+            .map(|m| (m.len() as f64) / (1024.0 * 1024.0))
+            .unwrap_or(0.0);
         println!(
-            "    - {:<10} -> {}",
+            "    - {:<10} ({:>7.2} MiB) <- {}",
             part.partition_name.green(),
+            size_mib,
             part.image_path.display()
         );
     }
@@ -46,22 +51,20 @@ pub fn flash_raw_partitions(
 
     let mut child = cmd
         .spawn()
-        .context("Failed to spawn `samloader flash` process")?;
+        .context("Failed to spawn `samloader flash` subprocess")?;
 
     let stdout = child.stdout.take().unwrap();
     let stderr = child.stderr.take().unwrap();
 
     let mut captured_log = String::new();
 
-    let out_reader = BufReader::new(stdout);
-    for line in out_reader.lines().map_while(Result::ok) {
+    for line in BufReader::new(stdout).lines().map_while(Result::ok) {
         println!("    {}", line);
         captured_log.push_str(&line);
         captured_log.push('\n');
     }
 
-    let err_reader = BufReader::new(stderr);
-    for line in err_reader.lines().map_while(Result::ok) {
+    for line in BufReader::new(stderr).lines().map_while(Result::ok) {
         eprintln!("    {}", line.red());
         captured_log.push_str(&line);
         captured_log.push('\n');
@@ -70,19 +73,41 @@ pub fn flash_raw_partitions(
     let status = child.wait()?;
     if !status.success() {
         diagnose_flash_failure(&captured_log, is_custom_binary);
-        bail!("`samloader flash` exited with status {}", status);
+        return Err(RescueError::SubprocessFailed {
+            cmd: "samloader flash".to_string(),
+            code: status.code().unwrap_or(-1),
+        }
+        .into());
     }
 
     println!(
         "{}",
-        "✓ LOKE session closed cleanly (PASS). Emergency Recovery flag cleared."
+        "✓ LOKE session committed cleanly (PASS). Emergency Recovery state cleared."
             .green()
             .bold()
     );
     Ok(())
 }
 
-/// Downloads and unzips official stock firmware using `samloader download`.
+/// Dumps the live PIT from the connected device to a temporary file via `samloader dump-pit`.
+pub fn dump_device_pit(samloader_bin: &Path, backend: &str, out_pit: &Path) -> Result<()> {
+    let status = Command::new(samloader_bin)
+        .args([
+            "--usb-backend",
+            backend,
+            "dump-pit",
+            out_pit.to_str().unwrap(),
+        ])
+        .status()
+        .context("Failed to run `samloader dump-pit`")?;
+
+    if !status.success() {
+        bail!("`samloader dump-pit` failed");
+    }
+    Ok(())
+}
+
+/// Downloads and unpacks official signed firmware matching `model` and `region`.
 pub fn download_stock_firmware(
     samloader_bin: &Path,
     model: &str,
@@ -90,16 +115,16 @@ pub fn download_stock_firmware(
     out_dir: &Path,
 ) -> Result<()> {
     std::fs::create_dir_all(out_dir)?;
-    let zip_path = out_dir.join(format!("{}_{}_stock.zip", model, region));
+    let zip_path = out_dir.join(format!("{}_{}_official.zip", model, region));
 
     println!(
-        "{} {} ({})",
-        "==> Fetching official signed firmware for".cyan().bold(),
+        "{} {} (CSC: {})",
+        "==> Downloading official signed firmware for".cyan().bold(),
         model.green(),
         region.green()
     );
 
-    let status = Command::new(samloader_bin)
+    let dl_status = Command::new(samloader_bin)
         .args([
             "download",
             "-m",
@@ -112,15 +137,20 @@ pub fn download_stock_firmware(
         .status()
         .context("Failed to execute `samloader download`")?;
 
-    if !status.success() {
+    if !dl_status.success() {
         bail!("Firmware download failed for {} ({})", model, region);
     }
 
-    println!("{}", "==> Extracting firmware archive...".cyan().bold());
+    println!("{}", "==> Unpacking firmware zip archive...".cyan().bold());
     let unzip_status = Command::new("unzip")
-        .args(["-o", zip_path.to_str().unwrap(), "-d", out_dir.to_str().unwrap()])
+        .args([
+            "-o",
+            zip_path.to_str().unwrap(),
+            "-d",
+            out_dir.to_str().unwrap(),
+        ])
         .status()
-        .context("Failed to run `unzip`. Install `unzip` (sudo dnf install unzip).")?;
+        .context("Failed to run `unzip` (install via `sudo dnf install unzip`)")?;
 
     if !unzip_status.success() {
         bail!("Failed to unzip {}", zip_path.display());
@@ -128,7 +158,7 @@ pub fn download_stock_firmware(
 
     println!(
         "{} {}",
-        "✓ Stock firmware extracted to:".green().bold(),
+        "✓ Official firmware ready in:".green().bold(),
         out_dir.display()
     );
     Ok(())
