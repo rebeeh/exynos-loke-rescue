@@ -4,7 +4,7 @@
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)]()
 [![Language: Rust](https://img.shields.io/badge/Language-Rust-orange.svg?logo=rust&logoColor=white)]()
 [![Protocol: Clean--Room](https://img.shields.io/badge/Protocol-Clean--Room%20Odin%20v3%2Fv4-purple.svg)](PROTOCOL.md)
-[![Release: 3.0.0](https://img.shields.io/badge/Release-3.0.0--NATIVE--PROTOCOL-green.svg)]()
+[![Release: 1.0.0](https://img.shields.io/badge/Release-1.0.0--ENTERPRISE-green.svg)]()
 [![Target: Exynos 850](https://img.shields.io/badge/Target-Samsung%20Exynos%20850-9cf.svg)]()
 [![Device: Galaxy A21s](https://img.shields.io/badge/Device-Galaxy%20A21s%20(SM--A217F)-blueviolet.svg)]()
 
@@ -25,14 +25,16 @@
    - [Engine 1: 100% Native Rust LOKE Transport (`nusb`)](#engine-1-100-native-rust-loke-transport-nusb)
    - [Engine 2: Zero-Copy Archive Streamer & Supervisor](#engine-2-zero-copy-archive-streamer--supervisor)
 4. [Repository Hierarchy](#-repository-hierarchy)
-5. [Installation & Build Guide](#-installation--build-guide)
-6. [CLI Command Reference](#-cli-command-reference)
-7. [Operational Runbooks](#-operational-runbooks)
+5. [Packaging & Installation](#-packaging--installation)
+6. [Protocol Telemetry & Dissection](#-protocol-telemetry--dissection)
+7. [CLI Command Reference](#-cli-command-reference)
+8. [Operational Runbooks](#-operational-runbooks)
    - [Runbook A: Clearing "An error has occurred..."](#runbook-a-clearing-the-blue-an-error-has-occurred-screen)
    - [Runbook B: Recovering from Post-LineageOS Dynamic `super` Bootloops](#runbook-b-recovering-from-post-lineageos-dynamic-super-bootloops)
    - [Runbook C: Resolving `LOKE FAIL! [code: -1]` & VaultKeeper Locks](#runbook-c-resolving-loke-fail-code--1--vaultkeeper-prenormal-locks)
    - [Runbook D: Clean LineageOS Installation Post-Recovery](#runbook-d-clean-lineageos-installation-post-recovery)
-8. [Security & Partition Safety Invariants](#-security-and-partition-safety-invariants)
+   - [Runbook E: Resolving "Dynamic partition pre-flight check failed"](#runbook-e-resolving-the-dynamic-partition-pre-flight-check-failed-error)
+9. [Security & Partition Safety Invariants](#-security-and-partition-safety-invariants)
 
 ---
 
@@ -210,17 +212,25 @@ cd exynos-loke-rescue
 make release
 sudo make install
 ```
-# 1. Install system prerequisites
-sudo dnf install -y rust cargo curl unzip usbutils lz4   # Fedora
-# sudo apt install -y cargo rustc curl unzip usbutils liblz4-tool  # Ubuntu/Debian
 
-# 2. Build release binary
-cargo build --release
-sudo cp target/release/exynos-loke-rescue /usr/local/bin/
+---
 
-# 3. Install udev rules
-sudo cp udev/60-exynos-loke-rescue.rules /etc/udev/rules.d/
-sudo udevadm control --reload-rules && sudo udevadm trigger
+## 🔍 Protocol Telemetry & Dissection
+
+### Wireshark / TShark Lua Dissector
+Analyze USB bulk packets in real time or offline from captured `.pcapng` traces using the bundled LOKE protocol dissector:
+```bash
+# 1. Capture USB bulk traffic on download mode interface (04e8:685d)
+./scripts/capture_usbmon.sh ~/loke_wire_trace.pcapng
+
+# 2. Inspect decoded LOKE control frames, commands, and ACKs in TShark
+tshark -X lua_script:tools/wireshark/exynos_loke.lua -r ~/loke_wire_trace.pcapng -Y "loke"
+```
+
+### Security & Binary Hardening Verification (REA)
+Verify release binaries against static exposure, credential markers, and ELF security flags:
+```bash
+make audit
 ```
 
 ---

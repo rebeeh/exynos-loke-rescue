@@ -188,3 +188,27 @@ Offset    Size      Type        Field Name          Description
 | `[0xFFFFFFFF, -3]` | **NAND Block I/O Error** | Hardware eMMC/UFS write error or bad sector. |
 | `[0xFFFFFFFF, -4]` | **Dynamic Partition Extent Error** | Dynamic partition size mismatch or sparse image header error. |
 | `LIBUSB_ERROR_TIMEOUT (-7)` | **Protocol Staging Mismatch** | Host issued Odin v4 subcommands (`0x05`) to an Odin v3 bootloader, or USB endpoint stalled due to ModemManager contention. |
+
+---
+
+## 7. Wire Telemetry Capture & Dissection (Wireshark / TShark)
+
+To verify LOKE wire frames against this specification during live flashing, use the bundled Lua dissector ([`tools/wireshark/exynos_loke.lua`](tools/wireshark/exynos_loke.lua)):
+
+```bash
+# 1. Enable Linux usbmon module
+sudo modprobe usbmon
+
+# 2. Capture USB bulk frames on the Samsung Download interface
+./scripts/capture_usbmon.sh ~/loke_trace.pcapng
+
+# 3. Dissect protocol exchanges in TShark
+tshark -X lua_script:tools/wireshark/exynos_loke.lua -r ~/loke_trace.pcapng -Y "loke"
+```
+
+The dissector maps:
+* **0x64:** `CMD_SESSION_SETUP` with subcommands (`0x00` Begin, `0x01` Total Bytes, `0x05` Query Device Type, `0x08` Sales Code).
+* **0x65:** `CMD_PIT_TRANSFER` with subcommands (`0x00` Dump Start, `0x03` Dump End).
+* **0x66:** `CMD_FILE_TRANSFER` with subcommands (`0x00` Start Sequence, `0x02` Commit Sequence).
+* **0x67:** `CMD_SESSION_END` with subcommands (`0x00` Halt, `0x01` Reboot Normal, `0x02` Reboot Download).
+* **ACKs:** 8-byte status codes and sequence acknowledgments.
