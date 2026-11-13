@@ -22,7 +22,7 @@ pub struct Cli {
     pub verbose: bool,
 
     #[command(subcommand)]
-    pub command: Commands,
+    pub command: Option<Commands>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
@@ -33,6 +33,10 @@ pub enum TransportEngine {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
+    /// Interactive guided unbrick and recovery wizard (default when run without arguments)
+    #[command(name = "wizard", alias = "interactive", alias = "tui", alias = "menu")]
+    Wizard,
+
     /// Configure Linux udev rules (04e8:685d), stop ModemManager, and sanitize USB stack
     #[command(name = "fix-usb", alias = "prep-usb")]
     FixUsb {

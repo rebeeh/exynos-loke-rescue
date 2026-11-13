@@ -2,7 +2,6 @@ use crate::error::RescueError;
 use anyhow::{Context, Result};
 
 use byteorder::{LittleEndian, ReadBytesExt};
-use colored::*;
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Seek, SeekFrom};
 use std::path::Path;
@@ -118,23 +117,7 @@ impl PitTable {
     }
 
     pub fn print_summary(&self) {
-        println!(
-            "{} ({} partitions)",
-            "==> Samsung Binary PIT Geometry".cyan().bold(),
-            self.entry_count
-        );
-        println!(
-            "    {:<4} {:<16} {:<24} {:>12}",
-            "ID", "PARTITION", "FLASH FILENAME", "SIZE (MiB)"
-        );
-        println!("    {}", "-".repeat(60));
-        for e in &self.entries {
-            let mib = (e.size_bytes() as f64) / (1024.0 * 1024.0);
-            println!(
-                "    {:<4} {:<16} {:<24} {:>12.2}",
-                e.partition_id, e.partition_name, e.flash_filename, mib
-            );
-        }
+        crate::ui::render_pit_table(self);
     }
 }
 

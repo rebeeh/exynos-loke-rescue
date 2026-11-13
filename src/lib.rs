@@ -14,4 +14,5 @@ pub mod mock;
 pub mod nusb_transport;
 pub mod pit;
 pub mod sparse;
+pub mod ui;
 pub mod usb;

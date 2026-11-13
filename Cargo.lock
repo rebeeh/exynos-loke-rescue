@@ -272,6 +272,7 @@ dependencies = [
  "clap_complete",
  "clap_mangen",
  "colored",
+ "console",
  "futures-lite",
  "indicatif",
  "lz4_flex",
