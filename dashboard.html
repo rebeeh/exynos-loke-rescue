@@ -3,266 +3,269 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exynos LOKE Rescue — Diagnostics & Recovery</title>
+  <title>Exynos LOKE Rescue — Liquid Glass Diagnostics Suite</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
-    /* Smooth Apple-like scrolling & styling */
-    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    /* Apple Liquid Glass Design System Core Tokens */
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    /* Ambient Liquid Mesh Gradient */
+    .liquid-mesh {
+      background: radial-gradient(circle at 15% 15%, rgba(0, 113, 227, 0.12) 0%, transparent 45%),
+                  radial-gradient(circle at 85% 25%, rgba(52, 199, 89, 0.08) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 85%, rgba(94, 92, 230, 0.10) 0%, transparent 50%);
+    }
+
+    /* Liquid Glass Material Surfaces */
+    .glass-surface {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.20);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      transform: translateY(-1.5px);
+      border-color: rgba(0, 113, 227, 0.35);
+      box-shadow: 0 14px 30px -10px rgba(0, 113, 227, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-pill-active {
+      background: rgba(0, 113, 227, 0.20);
+      color: #2997ff;
+      border: 1px solid rgba(0, 113, 227, 0.45);
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.30);
+    }
+
+    /* Custom sleek scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(140, 140, 150, 0.25); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 150, 0.45); }
-    .sf-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    ::-webkit-scrollbar-thumb { background: rgba(150, 150, 160, 0.25); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(150, 150, 160, 0.45); }
+
+    /* Keyframe animations */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(52, 199, 89, 0.6)); }
+    }
+    .pulse-glow { animation: pulseGlow 2.5s infinite ease-in-out; }
   </style>
 </head>
-<body class="min-h-full bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-200 p-3 sm:p-5 md:p-8 lg:p-10 flex flex-col justify-between">
+<body class="min-h-full bg-[var(--background)] text-[var(--foreground)] liquid-mesh antialiased p-3 sm:p-5 md:p-8 lg:p-10 flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">
 
-  <!-- Main Container -->
+  <!-- Core Content Wrapper -->
   <div class="max-w-7xl w-full mx-auto space-y-6">
 
-    <!-- Top Navigation & Header Bar (Apple Utility Bar) -->
-    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm sf-blur">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <!-- Top Navigation Header (Liquid Glass Floating Island) -->
+    <header class="glass-surface rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+      <!-- Ambient specular highlight line -->
+      <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></div>
+
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         
-        <!-- Left: Device Brand & Identity -->
-        <div class="flex items-center gap-3.5">
-          <div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 shrink-0">
-            <!-- Modern Smartphone Vector Icon -->
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
-              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+        <!-- Brand & Protocol Architecture -->
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 via-blue-600/10 to-transparent border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0 shadow-inner">
+            <!-- SF Symbol Smartphone Silhouette -->
+            <svg class="w-6 h-6 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="3.5" ry="3.5"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2.5"></line>
             </svg>
           </div>
           <div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-lg sm:text-xl font-semibold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue</h1>
-              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">v1.0.0</span>
-              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Native Linux</span>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/15 text-blue-400 border border-blue-400/25 tracking-wide">v1.0.0</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-400/25 tracking-wide">Pure Rust nusb</span>
             </div>
             <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-0.5">
-              Deterministic Odin v3/v4 Protocol Driver &bull; Clean-Room Transport &bull; Low-Level Hardware NAND Control
+              Deterministic Odin v3/v4 Protocol Engine &bull; Direct Hardware NAND Recovery &bull; Reverse Engineered Architecture
             </p>
           </div>
         </div>
 
-        <!-- Right: Hardware Connection Pills -->
+        <!-- Real-Time Hardware Status Badges -->
         <div class="flex items-center gap-2.5 flex-wrap">
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="text-[var(--muted-foreground)]">Driver:</span>
-            <span class="font-mono font-medium text-[var(--foreground)]">nusb (04e8:685d)</span>
+          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-glow"></span>
+            <span class="text-[var(--muted-foreground)]">Transport:</span>
+            <span class="font-mono font-medium text-[var(--foreground)]">04e8:685d (LOKE)</span>
           </div>
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs">
-            <span class="text-[var(--muted-foreground)]">Target:</span>
-            <span class="font-mono font-medium text-blue-500">Galaxy A21s (SM-A217F)</span>
+          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs">
+            <span class="text-[var(--muted-foreground)]">Device:</span>
+            <span class="font-mono font-semibold text-blue-400">Galaxy A21s (SM-A217F)</span>
+          </div>
+          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs">
+            <span class="text-[var(--muted-foreground)]">Protocol:</span>
+            <span class="font-mono text-purple-400 font-semibold">Tier v3 (1MB Macro)</span>
           </div>
         </div>
       </div>
 
-      <!-- Segmented Control Tabs (Apple iOS/macOS Pill Switcher) -->
-      <div class="mt-6 pt-4 border-t border-[var(--border)] overflow-x-auto pb-1">
-        <div class="inline-flex p-1 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-medium min-w-max">
-          <button onclick="switchTab('partition-map')" id="tab-partition-map" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 bg-[var(--card)] text-[var(--foreground)] shadow-sm font-semibold">
+      <!-- Segmented Control Bar (Glass Dynamic Island) -->
+      <nav class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between gap-3 overflow-x-auto pb-1">
+        <div class="inline-flex p-1 rounded-2xl glass-pill text-xs font-medium gap-1 min-w-max">
+          <button onclick="switchTab('tab-storage')" id="btn-tab-storage" class="nav-tab glass-pill-active flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
               <line x1="12" y1="22.08" x2="12" y2="12"></line>
             </svg>
-            <span>Storage Geometry</span>
+            <span>Storage Geometry (42)</span>
           </button>
-          <button onclick="switchTab('diagnostic-tree')" id="tab-diagnostic-tree" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+
+          <button onclick="switchTab('tab-protocol')" id="btn-tab-protocol" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+              <rect x="9" y="9" width="6" height="6"></rect>
+              <line x1="9" y1="1" x2="9" y2="4"></line>
+              <line x1="15" y1="1" x2="15" y2="4"></line>
+              <line x1="9" y1="20" x2="9" y2="23"></line>
+              <line x1="15" y1="20" x2="15" y2="23"></line>
+            </svg>
+            <span>Wire Protocol Inspector</span>
+          </button>
+
+          <button onclick="switchTab('tab-diagnostics')" id="btn-tab-diagnostics" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
-            <span>Diagnostic Flow</span>
+            <span>Guided Diagnostics</span>
           </button>
-          <button onclick="switchTab('command-builder')" id="tab-command-builder" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+
+          <button onclick="switchTab('tab-studio')" id="btn-tab-studio" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="4 17 10 11 4 5"></polyline>
               <line x1="12" y1="19" x2="20" y2="19"></line>
             </svg>
-            <span>Command Generator</span>
+            <span>Terminal Command Studio</span>
           </button>
-          <button onclick="switchTab('safety-matrix')" id="tab-safety-matrix" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+
+          <button onclick="switchTab('tab-simulator')" id="btn-tab-simulator" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Live Flash Simulator</span>
+          </button>
+
+          <button onclick="switchTab('tab-safety')" id="btn-tab-safety" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
             <span>Safety Invariants</span>
           </button>
         </div>
-      </div>
+      </nav>
     </header>
 
-    <!-- TAB 1: Visual Storage Geometry -->
-    <main id="view-partition-map" class="space-y-6">
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
+    <!-- ======================================================== -->
+    <!-- TAB 1: Storage Geometry & 42-Partition Dissector         -->
+    <!-- ======================================================== -->
+    <main id="content-tab-storage" class="space-y-6">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
         
-        <!-- Section Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-base font-semibold text-[var(--foreground)]">Flash Memory Partition Layout</h2>
-            <p class="text-xs text-[var(--muted-foreground)]">Inspected directly from A21S_EUR_OPEN.pit (42 physical and logical partitions)</p>
+            <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Flash Storage & PIT Dissector</h2>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Physical eMMC geometry & dynamic partition metadata from A21S_EUR_OPEN.pit</p>
           </div>
-          <!-- Legend -->
-          <div class="flex items-center gap-3.5 text-xs text-[var(--muted-foreground)] flex-wrap">
-            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> Dynamic Super</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Kernel / Boot</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> User Storage</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span> Protected NVRAM</span>
+          <!-- Filter Buttons -->
+          <div class="flex items-center gap-2 flex-wrap text-xs">
+            <button onclick="filterPartitions('all')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill font-medium text-blue-400 border-blue-400/40">All (42)</button>
+            <button onclick="filterPartitions('core')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Kernel & Boot (5)</button>
+            <button onclick="filterPartitions('super')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Dynamic Super (1)</button>
+            <button onclick="filterPartitions('storage')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">User Storage (3)</button>
+            <button onclick="filterPartitions('nvram')" class="part-filter-btn px-3 py-1.5 rounded-lg glass-pill text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Protected NVRAM (4)</button>
           </div>
         </div>
 
-        <!-- Apple-like Storage Capacity Bar (iOS / macOS "About This Mac" Style) -->
-        <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 mb-6">
-          <div class="flex justify-between items-center text-xs mb-2.5">
-            <span class="font-medium text-[var(--foreground)]">Internal eMMC Flash Capacity</span>
-            <span class="text-[var(--muted-foreground)] font-mono">~32.00 GB Total</span>
+        <!-- Proportional Segmented Capacity Bar (Apple macOS / iOS Storage Inspector) -->
+        <div class="glass-card rounded-2xl p-4 sm:p-5 mb-7">
+          <div class="flex justify-between items-center text-xs mb-3">
+            <span class="font-medium text-[var(--foreground)]">Proportional Capacity Allocation</span>
+            <span class="font-mono text-[var(--muted-foreground)]">Total 32.00 GB eMMC Flash</span>
           </div>
-          <div class="w-full h-7 rounded-lg overflow-hidden flex bg-zinc-200 dark:bg-zinc-800 p-0.5 gap-0.5">
-            <div style="width: 17%;" class="h-full rounded bg-emerald-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Android Dynamic Partitions container storing system, vendor, product, and odm images')">
-              <span class="truncate">SUPER (5.18G)</span>
+
+          <div class="w-full h-9 rounded-xl overflow-hidden flex bg-black/40 border border-white/10 p-1 gap-1 shadow-inner select-none">
+            <div style="width: 17.5%;" onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Dynamic container storing Android system, vendor, product, odm. Android Sparse format 0xed26ff3a.')" class="h-full rounded-lg bg-emerald-500/90 hover:bg-emerald-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-2 cursor-pointer shadow-sm">
+              <span class="truncate">SUPER (5.18 GB)</span>
             </div>
-            <div style="width: 74%;" class="h-full rounded bg-amber-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted user storage and app data. Erased via Download Mode to clear stock recovery locks')">
-              <span class="truncate">USERDATA (~24G)</span>
+            <div style="width: 73.5%;" onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted userdata partition. Erased via low-level NAND hardware wipe 0x64 (0x07) to unbrick broken power key prompt.')" class="h-full rounded-lg bg-amber-500/90 hover:bg-amber-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-2 cursor-pointer shadow-sm">
+              <span class="truncate">USERDATA (~24.0 GB)</span>
             </div>
-            <div style="width: 3%;" class="h-full rounded bg-blue-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Android Stock One UI recovery or LineageOS / TWRP recovery binary')">
+            <div style="width: 3.5%;" onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="h-full rounded-lg bg-blue-500/90 hover:bg-blue-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-1 cursor-pointer shadow-sm">
               <span class="truncate">REC</span>
             </div>
-            <div style="width: 2%;" class="h-full rounded bg-blue-400 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and initial ramdisk image')">
+            <div style="width: 2.5%;" onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="h-full rounded-lg bg-cyan-400 hover:bg-cyan-300 transition-colors flex items-center justify-center text-[11px] font-semibold text-black px-1 cursor-pointer shadow-sm">
               <span class="truncate">BOOT</span>
             </div>
-            <div style="width: 4%;" class="h-full rounded bg-rose-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Encrypted File System holding radio calibrations, IMEI, and MAC addresses (STRICT IMMUTABLE)')">
+            <div style="width: 3%;" onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Radio calibrations, IMEI, MAC address certificates. Immutable and hard write-protected by driver.')" class="h-full rounded-lg bg-rose-500 hover:bg-rose-400 transition-colors flex items-center justify-center text-[11px] font-semibold text-white px-1 cursor-pointer shadow-sm">
               <span class="truncate">EFS</span>
             </div>
           </div>
+
+          <div class="flex items-center justify-between text-[11px] text-[var(--muted-foreground)] mt-3 pt-2 border-t border-white/5 flex-wrap gap-2">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Dynamic Super: 5.18 GiB</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Encrypted Data: ~24.0 GiB</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Recovery: 53.0 MiB</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Kernel: 36.0 MiB</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Protected NVRAM: 20.0 MiB</span>
+          </div>
         </div>
 
-        <!-- Partition Inspector: Two-Column Responsive Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Two-Column Partition Table & Detail Inspector -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          <!-- Left: Partition List (8 Cols on Desktop) -->
-          <div class="lg:col-span-7 bg-[var(--background)] border border-[var(--border)] rounded-xl overflow-hidden">
-            <div class="px-4 py-3 border-b border-[var(--border)] bg-[var(--card)]/50 flex items-center justify-between text-xs">
-              <span class="font-medium text-[var(--foreground)]">Essential Rescue Partitions</span>
-              <span class="text-[var(--muted-foreground)]">Select a partition to inspect</span>
+          <!-- Partition Grid List (7 Cols) -->
+          <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden flex flex-col">
+            <div class="p-3.5 border-b border-white/10 bg-white/5 flex items-center justify-between text-xs">
+              <span class="font-medium text-[var(--foreground)]">Partition Table Inventory</span>
+              <span class="text-[var(--muted-foreground)]" id="partition-counter">Showing 42 partitions</span>
             </div>
-            <div class="divide-y divide-[var(--border)] max-h-80 overflow-y-auto">
-              
-              <div onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-                <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">18</span>
-                  <div>
-                    <div class="text-sm font-semibold text-[var(--foreground)]">BOOT</div>
-                    <div class="text-xs text-[var(--muted-foreground)]">Filename: boot.img</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">36.00 MiB</div>
-                  <div class="text-[11px] text-blue-500">Kernel</div>
-                </div>
-              </div>
 
-              <div onclick="selectPartition('VBMETA', 24, 1024, 'AP', 'vbmeta.img', 'Verified Boot 2.0 cryptographic hashes, public keys, and AVB descriptor records.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-                <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">24</span>
-                  <div>
-                    <div class="text-sm font-semibold text-[var(--foreground)]">VBMETA</div>
-                    <div class="text-xs text-[var(--muted-foreground)]">Filename: vbmeta.img</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">512.00 KiB</div>
-                  <div class="text-[11px] text-blue-500">AVB 2.0</div>
-                </div>
-              </div>
-
-              <div onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-                <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">19</span>
-                  <div>
-                    <div class="text-sm font-semibold text-[var(--foreground)]">RECOVERY</div>
-                    <div class="text-xs text-[var(--muted-foreground)]">Filename: recovery.img</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">53.00 MiB</div>
-                  <div class="text-[11px] text-blue-500">Recovery OS</div>
-                </div>
-              </div>
-
-              <div onclick="selectPartition('DTBO', 21, 16384, 'AP', 'dtbo.img', 'Device Tree Blob Overlay containing peripheral pinmux configurations and Exynos 850 topology.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-                <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">21</span>
-                  <div>
-                    <div class="text-sm font-semibold text-[var(--foreground)]">DTBO</div>
-                    <div class="text-xs text-[var(--muted-foreground)]">Filename: dtbo.img</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">8.00 MiB</div>
-                  <div class="text-[11px] text-blue-500">Device Tree</div>
-                </div>
-              </div>
-
-              <div onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Android Dynamic Partitions container storing system, vendor, product, and odm.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-                <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-mono text-xs font-semibold">30</span>
-                  <div>
-                    <div class="text-sm font-semibold text-[var(--foreground)]">SUPER</div>
-                    <div class="text-xs text-[var(--muted-foreground)]">Filename: super.img</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">5.18 GiB</div>
-                  <div class="text-[11px] text-emerald-500">Sparse Dynamic</div>
-                </div>
-              </div>
-
-              <div onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted user storage. Erasing from Download Mode solves broken Power Button confirmation traps.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-                <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-mono text-xs font-semibold">37</span>
-                  <div>
-                    <div class="text-sm font-semibold text-[var(--foreground)]">USERDATA</div>
-                    <div class="text-xs text-[var(--muted-foreground)]">Filename: userdata.img</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">~26.00 GiB</div>
-                  <div class="text-[11px] text-amber-500">Storage</div>
-                </div>
-              </div>
-
-              <div onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Encrypted File System holding radio calibrations, IMEI, and MAC addresses. Write-protected by driver.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-                <div class="flex items-center gap-3">
-                  <span class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center font-mono text-xs font-semibold">1</span>
-                  <div>
-                    <div class="text-sm font-semibold text-[var(--foreground)]">EFS (IMMUTABLE)</div>
-                    <div class="text-xs text-[var(--muted-foreground)]">Filename: efs.img</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">20.00 MiB</div>
-                  <div class="text-[11px] text-rose-500">Protected</div>
-                </div>
-              </div>
+            <div class="divide-y divide-white/5 max-h-96 overflow-y-auto" id="partition-list-container">
+              <!-- Dynamically populated via script -->
             </div>
           </div>
 
-          <!-- Right: Inspector Detail Card (5 Cols on Desktop) -->
-          <div class="lg:col-span-5 bg-[var(--background)] border border-[var(--border)] rounded-xl p-5 flex flex-col justify-between">
+          <!-- Inspector Details Card (5 Cols) -->
+          <div class="lg:col-span-5 glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Partition Inspector</span>
-                <span id="inspect-badge" class="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">ID 18</span>
+                <span id="inspect-badge" class="px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold bg-blue-500/15 text-blue-400 border border-blue-400/30">ID 18</span>
               </div>
               <div>
-                <h3 id="inspect-name" class="text-xl font-bold tracking-tight text-[var(--foreground)]">BOOT</h3>
-                <p id="inspect-desc" class="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
+                <h3 id="inspect-name" class="text-2xl font-bold tracking-tight text-[var(--foreground)]">BOOT</h3>
+                <p id="inspect-desc" class="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed">
                   Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.
                 </p>
               </div>
 
-              <div class="space-y-2.5 pt-3 border-t border-[var(--border)] text-xs">
+              <!-- Technical Details Breakdown -->
+              <div class="space-y-2.5 pt-4 border-t border-white/10 text-xs">
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)]">Flash Filename:</span>
                   <span id="inspect-file" class="font-mono font-medium text-[var(--foreground)]">boot.img</span>
@@ -273,23 +276,41 @@
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)]">Allocated Capacity:</span>
-                  <span id="inspect-size" class="font-mono font-semibold text-blue-500">36.00 MiB</span>
+                  <span id="inspect-size" class="font-mono font-bold text-blue-400">36.00 MiB</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)]">Binary Domain:</span>
                   <span id="inspect-type" class="font-medium text-[var(--foreground)]">AP (Application Processor)</span>
                 </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-[var(--muted-foreground)]">Flash Safety Tier:</span>
+                  <span id="inspect-safety" class="font-medium text-emerald-400">Safe for Direct Flashing</span>
+                </div>
+              </div>
+
+              <!-- Reverse Engineering Protocol Note -->
+              <div class="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
+                <div class="font-semibold text-blue-400 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span>LOKE Protocol Rationale</span>
+                </div>
+                <p id="inspect-rationale" class="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+                  LOKE verifies the OEM RSA cryptographic signature on the final sequence block. Mismatches trigger error code -1.
+                </p>
               </div>
             </div>
 
-            <div class="pt-4 border-t border-[var(--border)] mt-4">
-              <button onclick="copySinglePartitionCommand()" id="btn-copy-partition" class="w-full py-2.5 px-3.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
-                <!-- Copy Vector Icon -->
+            <div class="pt-5 border-t border-white/10 mt-4">
+              <button onclick="copySinglePartitionCommand()" id="btn-copy-partition" class="w-full py-2.5 px-4 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-400/30 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                <span>Copy Direct Flash Command</span>
+                <span id="btn-copy-partition-text">Copy Partition Flash Command</span>
               </button>
             </div>
           </div>
@@ -297,106 +318,208 @@
       </div>
     </main>
 
-    <!-- TAB 2: Diagnostic Flowchart -->
-    <section id="view-diagnostic-tree" class="hidden space-y-6">
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
-        <div class="mb-5">
-          <h2 class="text-base font-semibold text-[var(--foreground)]">Recovery Decision Matrix</h2>
-          <p class="text-xs text-[var(--muted-foreground)]">Identify your hardware symptom to execute the verified unbrick workflow.</p>
+    <!-- ======================================================== -->
+    <!-- TAB 2: Reverse Engineered Wire Protocol Inspector       -->
+    <!-- ======================================================== -->
+    <section id="content-tab-protocol" class="hidden space-y-6">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Odin Wire Protocol Reverse Engineered Specification</h2>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Wire-level state machine reconstructed from Samsung LOKE bootloader memory analysis</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <!-- Step 1 -->
+          <div class="glass-card rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 font-mono text-xs font-bold flex items-center justify-center">01</span>
+              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Init</span>
+            </div>
+            <h3 class="text-sm font-semibold text-[var(--foreground)]">Handshake & Ping</h3>
+            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Host sends ASCII string <code class="text-blue-400">"ODIN"</code> (4 bytes). Bootloader verifies cable and echoes <code class="text-emerald-400">"LOKE"</code>.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="glass-card rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-400 font-mono text-xs font-bold flex items-center justify-center">02</span>
+              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Opcode 0x64</span>
+            </div>
+            <h3 class="text-sm font-semibold text-[var(--foreground)]">Session Setup</h3>
+            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Negotiates protocol tier: Odin v3 (1MB sequence buffer) or Odin v4 (8MB sequence). Hardware NAND erase (subcmd <code class="text-amber-400">0x07</code>).
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="glass-card rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold flex items-center justify-center">03</span>
+              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Opcode 0x66</span>
+            </div>
+            <h3 class="text-sm font-semibold text-[var(--foreground)]">Sequence Streaming</h3>
+            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Transmits 512-byte aligned macro buffers. On the final sequence block, bootloader validates SHA-256 and OEM RSA public keys.
+            </p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="glass-card rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 font-mono text-xs font-bold flex items-center justify-center">04</span>
+              <span class="text-[11px] font-mono text-[var(--muted-foreground)]">Opcode 0x67</span>
+            </div>
+            <h3 class="text-sm font-semibold text-[var(--foreground)]">Session Commit</h3>
+            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Clears the emergency softbrick flag in secure param storage and executes device reset to One UI.
+            </p>
+          </div>
+        </div>
+
+        <!-- Wire Packet Table -->
+        <div class="glass-card rounded-2xl p-5">
+          <h3 class="text-sm font-semibold text-[var(--foreground)] mb-3">Protocol Frame Structure (1024-Byte Control Block)</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-white/10 text-[var(--muted-foreground)]">
+                  <th class="pb-2.5 font-medium">Offset</th>
+                  <th class="pb-2.5 font-medium">Field</th>
+                  <th class="pb-2.5 font-medium">Size</th>
+                  <th class="pb-2.5 font-medium">Description</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5 font-mono text-[var(--foreground)]">
+                <tr>
+                  <td class="py-2.5 text-blue-400">0x00 - 0x03</td>
+                  <td>cmd_id</td>
+                  <td>4 Bytes (u32 LE)</td>
+                  <td class="font-sans text-[var(--muted-foreground)]">Primary opcode: 0x64 (Setup), 0x65 (PIT), 0x66 (Flash), 0x67 (End)</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 text-blue-400">0x04 - 0x07</td>
+                  <td>subcmd_id</td>
+                  <td>4 Bytes (u32 LE)</td>
+                  <td class="font-sans text-[var(--muted-foreground)]">Subcommand: 0x00 (Start sequence), 0x02 (Commit sequence), 0x07 (NAND wipe)</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 text-blue-400">0x08 - 0x0B</td>
+                  <td>arg1</td>
+                  <td>4 Bytes (u32 LE)</td>
+                  <td class="font-sans text-[var(--muted-foreground)]">Payload length or sequence byte count (aligned to 512-byte sector)</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 text-blue-400">0x0C - 0x0F</td>
+                  <td>arg2</td>
+                  <td>4 Bytes (u32 LE)</td>
+                  <td class="font-sans text-[var(--muted-foreground)]">Target partition ID from PIT table (e.g. 18 for BOOT, 30 for SUPER)</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 text-blue-400">0x10 - 0x13</td>
+                  <td>arg3</td>
+                  <td>4 Bytes (u32 LE)</td>
+                  <td class="font-sans text-[var(--muted-foreground)]">Final block flag: 1 = verify signature & commit; 0 = stream next chunk</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 text-blue-400">0x14 - 0x3FF</td>
+                  <td>zero_pad</td>
+                  <td>1004 Bytes</td>
+                  <td class="font-sans text-[var(--muted-foreground)]">Zero-filled padding to fulfill strict 1024-byte control packet size</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: Guided Diagnostics                               -->
+    <!-- ======================================================== -->
+    <section id="content-tab-diagnostics" class="hidden space-y-6">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Interactive Recovery Flowchart</h2>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Diagnose symptoms and execute deterministic, hardware-tested recovery sequences</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           
-          <!-- Card 1: Teal Emergency Recovery -->
-          <div class="p-5 rounded-xl border border-blue-500/20 bg-blue-500/5 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center gap-2.5 mb-2">
-                <span class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-500 font-semibold text-xs flex items-center justify-center">1</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">Teal Emergency Recovery Screen</h3>
+          <!-- Recipe 1 -->
+          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-500/20 text-blue-400 border border-blue-400/30">SCENARIO 1</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">Teal Emergency Recovery Softbrick</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
-                Screen reads: <span class="font-mono text-blue-500">"An error has occurred while updating the device software."</span>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Screen displays: <span class="font-mono text-blue-400">"An error has occurred while updating the device software."</span> Caused by interrupted flashing or invalid kernel signature.
               </p>
-              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-blue-500 mb-3 break-all select-all">
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-blue-300 break-all select-all">
                 exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
               </div>
-              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
-                <li>&bull; Flashes signed <code class="text-[var(--foreground)]">boot.img</code>, <code class="text-[var(--foreground)]">vbmeta.img</code>, <code class="text-[var(--foreground)]">recovery.img</code></li>
-                <li>&bull; Issues <code class="text-[var(--foreground)]">CMD_SESSION_END (0x67)</code> to clear bootloader softbrick flags</li>
-              </ul>
             </div>
-            <button onclick="applyDiagnosticMode('rescue-boot')" class="py-2 px-3 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition-colors">
-              Configure Boot Rescue Command
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2 px-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-400/30 text-xs font-semibold transition-colors">
+              Load Scenario in Command Studio
             </button>
           </div>
 
-          <!-- Card 2: Broken Power Button Wipe -->
-          <div class="p-5 rounded-xl border border-amber-500/20 bg-amber-500/5 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center gap-2.5 mb-2">
-                <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 font-semibold text-xs flex items-center justify-center">2</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">Recovery Prompt & Broken Power Key</h3>
+          <!-- Recipe 2 -->
+          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-400/30">SCENARIO 2</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">Broken Power Key Recovery Trap</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
-                Recovery prompts: <span class="font-mono text-amber-500">"Cannot load Android system. Your data may be corrupt."</span> but power key cannot confirm.
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Stock recovery prompts: <span class="font-mono text-amber-400">"Cannot load Android system. Your data may be corrupt."</span> but the physical power key is broken and cannot confirm the wipe.
               </p>
-              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-amber-500 mb-3 break-all select-all">
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-amber-300 break-all select-all">
                 exynos-loke-rescue emergency-wipe-reboot
               </div>
-              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
-                <li>&bull; Boots Download Mode via Vol Up + Vol Down + USB insertion</li>
-                <li>&bull; Triggers opcode <code class="text-[var(--foreground)]">0x64 (0x07)</code> hardware NAND wipe on USERDATA</li>
-                <li>&bull; Auto-reboots directly into One UI without touching the physical power key</li>
-              </ul>
             </div>
-            <button onclick="applyDiagnosticMode('emergency-wipe-reboot')" class="py-2 px-3 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors">
-              Configure Emergency Wipe Command
+            <button onclick="applyDiagnosticMode('emergency-wipe-reboot')" class="w-full py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-semibold transition-colors">
+              Load Scenario in Command Studio
             </button>
           </div>
 
-          <!-- Card 3: Full Stock OS Restore -->
-          <div class="p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center gap-2.5 mb-2">
-                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-500 font-semibold text-xs flex items-center justify-center">3</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">Clean Stock OS Restoration</h3>
+          <!-- Recipe 3 -->
+          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-400/30">SCENARIO 3</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">Full Stock OS Reinstallation</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
-                Corrupted dynamic partitions, vendor bootloops, or returning to clean official One UI.
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Corrupt vendor/system dynamic partitions in `SUPER`, bootloops past Samsung logo, or returning to clean official One UI.
               </p>
-              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-emerald-500 mb-3 break-all select-all">
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-emerald-300 break-all select-all">
                 exynos-loke-rescue full-raw-restore -s ~/Downloads/stock -e
               </div>
-              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
-                <li>&bull; Streams 5.18 GiB <code class="text-[var(--foreground)]">SUPER</code>, <code class="text-[var(--foreground)]">DTBO</code>, <code class="text-[var(--foreground)]">BOOT</code>, <code class="text-[var(--foreground)]">VBMETA</code>, <code class="text-[var(--foreground)]">RECOVERY</code></li>
-                <li>&bull; Completely avoids samloader-rs super metadata unsparse crash bug</li>
-              </ul>
             </div>
-            <button onclick="applyDiagnosticMode('full-raw-restore')" class="py-2 px-3 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 transition-colors">
-              Configure Full Restore Command
+            <button onclick="applyDiagnosticMode('full-raw-restore')" class="w-full py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 text-xs font-semibold transition-colors">
+              Load Scenario in Command Studio
             </button>
           </div>
 
-          <!-- Card 4: VaultKeeper Prenormal Lock -->
-          <div class="p-5 rounded-xl border border-rose-500/20 bg-rose-500/5 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center gap-2.5 mb-2">
-                <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-500 font-semibold text-xs flex items-center justify-center">4</span>
-                <h3 class="text-sm font-semibold text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Lock</h3>
+          <!-- Recipe 4 -->
+          <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-400/30">SCENARIO 4</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Lock (-1)</h3>
               </div>
-              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
-                LOKE error code -1: <span class="font-mono text-rose-500">"Custom Binary Blocked by OEM Lock"</span>.
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Flashing custom binaries blocked by bootloader: <span class="font-mono text-rose-400">"Custom Binary Blocked by OEM Lock"</span>. VaultKeeper Prenormal lock is active.
               </p>
-              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-rose-500 mb-3 break-all select-all">
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10 font-mono text-xs text-rose-300 break-all select-all">
                 exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
               </div>
-              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
-                <li>&bull; Flash official signed kernel/recovery to clear tamper lock</li>
-                <li>&bull; Boot One UI, connect to Wi-Fi, and unlock OEM in Developer Options</li>
-              </ul>
             </div>
-            <button onclick="applyDiagnosticMode('rescue-boot')" class="py-2 px-3 rounded-lg bg-rose-500 text-white text-xs font-semibold hover:bg-rose-600 transition-colors">
-              Configure Safe Stock Flash
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/30 text-xs font-semibold transition-colors">
+              Load Scenario in Command Studio
             </button>
           </div>
 
@@ -404,131 +527,128 @@
       </div>
     </section>
 
-    <!-- TAB 3: Interactive Command Builder -->
-    <section id="view-command-builder" class="hidden space-y-6">
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
-        <div class="mb-5">
-          <h2 class="text-base font-semibold text-[var(--foreground)]">CLI Command Generator</h2>
-          <p class="text-xs text-[var(--muted-foreground)]">Select options to generate the verified terminal execution string.</p>
+    <!-- ======================================================== -->
+    <!-- TAB 4: Command Studio (macOS Style Terminal)            -->
+    <!-- ======================================================== -->
+    <section id="content-tab-studio" class="hidden space-y-6">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Interactive Command Studio</h2>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Configure operational parameters to generate the exact terminal invocation string</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          <!-- Left: Controls (7 Cols) -->
+          <!-- Options Form (7 Cols) -->
           <div class="lg:col-span-7 space-y-5">
-            
-            <!-- Mode Segmented Radio Group -->
             <div>
-              <label class="block text-xs font-semibold text-[var(--foreground)] mb-2">Recovery Mode</label>
+              <label class="block text-xs font-semibold text-[var(--foreground)] mb-2">Recovery Mode Selection</label>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                
+                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
                   <input type="radio" name="mode" value="rescue-boot" checked onchange="updateCommand()" class="accent-blue-500">
                   <div>
-                    <div class="font-semibold text-[var(--foreground)]">Boot Rescue</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Mode 1: BOOT+VBMETA+REC</div>
+                    <div class="font-semibold text-[var(--foreground)]">Mode 1: Boot Rescue</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Signed BOOT + VBMETA + REC</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
                   <input type="radio" name="mode" value="emergency-wipe-reboot" onchange="updateCommand()" class="accent-blue-500">
                   <div>
                     <div class="font-semibold text-[var(--foreground)]">Emergency Wipe</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Bypasses broken Power Key</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Hardware NAND Wipe (Broken Key)</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
                   <input type="radio" name="mode" value="full-raw-restore" onchange="updateCommand()" class="accent-blue-500">
                   <div>
-                    <div class="font-semibold text-[var(--foreground)]">Full Raw Restore</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Mode 2: SUPER + OS Images</div>
+                    <div class="font-semibold text-[var(--foreground)]">Mode 2: Full Restore</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">SUPER + DTBO + Kernel + OS</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                <label class="flex items-center gap-3 p-3.5 rounded-xl glass-card cursor-pointer">
                   <input type="radio" name="mode" value="probe" onchange="updateCommand()" class="accent-blue-500">
                   <div>
                     <div class="font-semibold text-[var(--foreground)]">Hardware Probe</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Query live device PIT</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">ODIN Handshake & PIT Dump</div>
                   </div>
                 </label>
+
               </div>
             </div>
 
-            <!-- Path Input -->
+            <!-- Path Field -->
             <div id="path-input-group" class="space-y-1.5">
-              <label class="block text-xs font-semibold text-[var(--foreground)]">Firmware Archive / Image Path</label>
-              <div class="relative">
-                <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-3.5 py-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono text-[var(--foreground)] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all">
-              </div>
+              <label class="block text-xs font-semibold text-[var(--foreground)]">Firmware Path / Archive</label>
+              <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-[var(--foreground)] focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none transition-all">
             </div>
 
-            <!-- Apple-Style Toggle Switches -->
-            <div class="space-y-3 pt-3 border-t border-[var(--border)]">
-              <label class="block text-xs font-semibold text-[var(--foreground)]">Execution Options</label>
+            <!-- Toggles -->
+            <div class="space-y-2.5 pt-3 border-t border-white/10 text-xs">
+              <label class="block font-semibold text-[var(--foreground)]">Safety & Execution Flags</label>
               
-              <div class="space-y-2.5 text-xs">
-                <label class="flex items-center justify-between p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] cursor-pointer">
-                  <div>
-                    <div class="font-medium text-[var(--foreground)]">Erase USERDATA (-e)</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Executes hardware NAND erase before reboot</div>
-                  </div>
-                  <input type="checkbox" id="flag-erase" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
-                </label>
+              <label class="flex items-center justify-between p-3 rounded-xl glass-card cursor-pointer">
+                <div>
+                  <div class="font-medium text-[var(--foreground)]">Erase USERDATA partition (-e)</div>
+                  <div class="text-[11px] text-[var(--muted-foreground)]">Executes low-level hardware NAND wipe</div>
+                </div>
+                <input type="checkbox" id="flag-erase" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
+              </label>
 
-                <label class="flex items-center justify-between p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] cursor-pointer">
-                  <div>
-                    <div class="font-medium text-[var(--foreground)]">Keep in Download Mode (--no-reboot)</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Prevents automatic device reboot on completion</div>
-                  </div>
-                  <input type="checkbox" id="flag-no-reboot" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
-                </label>
+              <label class="flex items-center justify-between p-3 rounded-xl glass-card cursor-pointer">
+                <div>
+                  <div class="font-medium text-[var(--foreground)]">Keep device in Download Mode (--no-reboot)</div>
+                  <div class="text-[11px] text-[var(--muted-foreground)]">Prevents automatic device reboot after session commit</div>
+                </div>
+                <input type="checkbox" id="flag-no-reboot" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
+              </label>
 
-                <label class="flex items-center justify-between p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] cursor-pointer">
-                  <div>
-                    <div class="font-medium text-[var(--foreground)]">Verbose Telemetry (-v)</div>
-                    <div class="text-[11px] text-[var(--muted-foreground)]">Logs low-level USB transfer packets</div>
-                  </div>
-                  <input type="checkbox" id="flag-verbose" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
-                </label>
-              </div>
+              <label class="flex items-center justify-between p-3 rounded-xl glass-card cursor-pointer">
+                <div>
+                  <div class="font-medium text-[var(--foreground)]">Verbose packet telemetry (-v)</div>
+                  <div class="text-[11px] text-[var(--muted-foreground)]">Logs raw 512/1024-byte USB bulk transfers</div>
+                </div>
+                <input type="checkbox" id="flag-verbose" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
+              </label>
             </div>
           </div>
 
-          <!-- Right: macOS Terminal Style Code Preview (5 Cols) -->
+          <!-- macOS Terminal Window Preview (5 Cols) -->
           <div class="lg:col-span-5 flex flex-col justify-between">
-            <div class="bg-zinc-950 text-zinc-100 rounded-2xl p-4 sm:p-5 border border-zinc-800 shadow-lg">
-              
-              <!-- macOS Window Traffic Light Header -->
-              <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800/80">
+            <div class="bg-zinc-950/90 text-zinc-100 rounded-2xl p-5 border border-zinc-800 shadow-2xl backdrop-blur-xl">
+              <!-- Traffic lights -->
+              <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800">
                 <div class="flex items-center gap-2">
-                  <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
-                  <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
-                  <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                  <span class="w-3 h-3 rounded-full bg-rose-500/90 inline-block shadow-sm"></span>
+                  <span class="w-3 h-3 rounded-full bg-amber-500/90 inline-block shadow-sm"></span>
+                  <span class="w-3 h-3 rounded-full bg-emerald-500/90 inline-block shadow-sm"></span>
                 </div>
-                <span class="text-xs font-mono text-zinc-400">Terminal &mdash; bash</span>
+                <span class="text-xs font-mono text-zinc-400">Terminal &mdash; zsh</span>
               </div>
 
-              <!-- Terminal Body -->
+              <!-- Terminal contents -->
               <div class="font-mono text-xs text-zinc-300 space-y-2">
-                <div class="text-zinc-500"># Generated Linux recovery command</div>
+                <div class="text-zinc-500"># Ready for execution in Fedora / Ubuntu shell</div>
                 <div class="text-blue-400 break-all select-all leading-relaxed" id="cmd-output">
                   exynos-loke-rescue rescue-boot -a ~/Downloads/stock
                 </div>
               </div>
 
-              <div class="mt-4 pt-4 border-t border-zinc-800/80 text-xs text-zinc-400 leading-relaxed" id="cmd-explanation">
+              <div class="mt-5 pt-3 border-t border-zinc-800/80 text-xs text-zinc-400 leading-relaxed" id="cmd-explanation">
                 Extracts signed boot, vbmeta, and recovery from the stock AP archive and commits them to clear emergency recovery screens.
               </div>
             </div>
 
             <div class="mt-4">
-              <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-3 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-sm">
+              <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-3 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-md">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                <span id="copy-text">Copy Terminal Command</span>
+                <span id="copy-text">Copy Command to Clipboard</span>
               </button>
             </div>
           </div>
@@ -536,95 +656,292 @@
       </div>
     </section>
 
-    <!-- TAB 4: Safety Invariants -->
-    <section id="view-safety-matrix" class="hidden space-y-6">
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
-        <div class="mb-5">
-          <h2 class="text-base font-semibold text-[var(--foreground)]">Flash Safety Protocol & Invariant Protections</h2>
-          <p class="text-xs text-[var(--muted-foreground)]">To prevent irrecoverable baseband bricking or IMEI corruption, safety locks are enforced at the transport layer.</p>
+    <!-- ======================================================== -->
+    <!-- TAB 5: Live Interactive Flash Simulator                 -->
+    <!-- ======================================================== -->
+    <section id="content-tab-simulator" class="hidden space-y-6">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Interactive LOKE Flash Streaming Simulator</h2>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Visualize real-time USB sequence chunk transmission and bootloader signature checks</p>
+          </div>
+          <button onclick="startSimulation()" id="btn-run-sim" class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span id="btn-sim-text">Start Live Simulation</span>
+          </button>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 space-y-5">
+          <!-- Live Telemetry Bar -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
+              <div class="text-[var(--muted-foreground)]">Protocol State</div>
+              <div id="sim-state" class="font-mono font-bold text-blue-400 mt-0.5">READY</div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
+              <div class="text-[var(--muted-foreground)]">Streaming Speed</div>
+              <div id="sim-speed" class="font-mono font-bold text-emerald-400 mt-0.5">0.00 MB/s</div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
+              <div class="text-[var(--muted-foreground)]">Chunks Transmitted</div>
+              <div id="sim-chunks" class="font-mono font-bold text-purple-400 mt-0.5">0 / 256</div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/30 border border-white/5">
+              <div class="text-[var(--muted-foreground)]">Elapsed / ETA</div>
+              <div id="sim-eta" class="font-mono font-bold text-[var(--foreground)] mt-0.5">00:00 / 00:00</div>
+            </div>
+          </div>
+
+          <!-- Progress Track -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span id="sim-current-part" class="font-medium text-[var(--foreground)]">Target: boot.img (36.00 MiB)</span>
+              <span id="sim-pct" class="font-mono font-bold text-blue-400">0%</span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-black/50 border border-white/10 p-0.5 overflow-hidden">
+              <div id="sim-progress-bar" style="width: 0%;" class="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-150"></div>
+            </div>
+          </div>
+
+          <!-- Simulated Console Feed -->
+          <div class="p-4 rounded-xl bg-zinc-950 font-mono text-[11px] text-zinc-300 h-32 overflow-y-auto space-y-1 border border-zinc-800" id="sim-log">
+            <div class="text-zinc-500">> Mock LOKE Device ready. Press "Start Live Simulation" to begin testbed session.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6: Safety Invariants & Partition Matrix             -->
+    <!-- ======================================================== -->
+    <section id="content-tab-safety" class="hidden space-y-6">
+      <div class="glass-surface rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold tracking-tight text-[var(--foreground)]">Flash Safety Protocol & Invariant Protections</h2>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Transport-level verification preventing permanent radio hardware bricking or IMEI loss</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
-          
-          <!-- Protected Partitions -->
-          <div class="p-5 rounded-xl border border-rose-500/20 bg-rose-500/5 space-y-3">
-            <div class="flex items-center gap-2 text-rose-500 font-semibold text-sm">
+          <!-- Protected -->
+          <div class="glass-card rounded-2xl p-5 border-rose-500/30 bg-rose-500/5 space-y-3">
+            <div class="flex items-center gap-2 text-rose-400 font-semibold text-sm">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
-              <span>Strict Read-Only Partitions (Locked)</span>
+              <span>Strict Read-Only Partitions (Locked by Engine)</span>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              These partitions store factory radio calibration data and cryptographically anchored device identifiers. Overwrite attempts are intercepted and rejected prior to USB transmission.
+              These partitions store factory baseband calibrations and cryptographically anchored device identifiers. Flash writes are blocked at the host level before packet generation.
             </p>
             <ul class="space-y-2 text-[var(--foreground)]">
               <li class="flex items-start gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-500">EFS / SEC_EFS:</strong> Radio calibrations, IMEI and cellular certificates.</span>
+                <span><strong class="font-mono text-rose-400">EFS / SEC_EFS:</strong> Radio calibrations, IMEI and cellular certificates.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-500">CPEFS / NVDATA:</strong> Cellular baseband non-volatile parameter store.</span>
+                <span><strong class="font-mono text-rose-400">CPEFS / NVDATA:</strong> Cellular modem non-volatile parameter store.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-500">TNV / PERSDATA:</strong> Factory hardware keystore trust anchors.</span>
+                <span><strong class="font-mono text-rose-400">TNV / PERSDATA:</strong> Factory hardware keystore trust anchors.</span>
               </li>
             </ul>
           </div>
 
-          <!-- Permitted Targets -->
-          <div class="p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-3">
-            <div class="flex items-center gap-2 text-emerald-500 font-semibold text-sm">
+          <!-- Permitted -->
+          <div class="glass-card rounded-2xl p-5 border-emerald-500/30 bg-emerald-500/5 space-y-3">
+            <div class="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              <span>Permitted Flash Targets (Deterministic)</span>
+              <span>Permitted Flash Targets (Deterministic Verification)</span>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              Verified operating system partitions eligible for fast streaming and cryptographic signature verification by the LOKE bootloader.
+              Verified operating system partitions eligible for sequence streaming and cryptographic signature verification by the LOKE bootloader.
             </p>
             <ul class="space-y-2 text-[var(--foreground)]">
               <li class="flex items-start gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-500">BOOT / RECOVERY / VBMETA:</strong> Kernel, ramdisk, and AVB 2.0 signatures.</span>
+                <span><strong class="font-mono text-emerald-400">BOOT / RECOVERY / VBMETA:</strong> Kernel, ramdisk, and AVB 2.0 signatures.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-500">SUPER:</strong> Dynamic system, vendor, product, and odm container.</span>
+                <span><strong class="font-mono text-emerald-400">SUPER:</strong> Dynamic system, vendor, product, and odm container.</span>
               </li>
               <li class="flex items-start gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-500">USERDATA:</strong> Low-level hardware erase (Opcode 0x64 Subcmd 0x07).</span>
+                <span><strong class="font-mono text-emerald-400">USERDATA:</strong> Low-level hardware erase (Opcode 0x64 Subcmd 0x07).</span>
               </li>
             </ul>
           </div>
-
         </div>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="text-center text-xs text-[var(--muted-foreground)] pt-2 pb-4">
-      Exynos LOKE Rescue &bull; Memory-Safe Pure Rust &bull; Deterministic Flash Recovery Engine
+    <footer class="text-center text-xs text-[var(--muted-foreground)] pt-3 pb-6 flex items-center justify-center gap-2">
+      <span>Exynos LOKE Rescue</span>
+      <span>&bull;</span>
+      <span>Apple Liquid Glass Material Design</span>
+      <span>&bull;</span>
+      <span>Linux Native 04e8:685d Driver</span>
     </footer>
 
   </div>
 
-  <!-- Inline Script (Zero External JS Dependencies) -->
+  <!-- Real-Time Data & Interactive Behaviors -->
   <script>
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-[var(--card)]', 'text-[var(--foreground)]', 'shadow-sm', 'font-semibold');
+    // Complete 42 partition inventory from A21S_EUR_OPEN.pit
+    const PARTITIONS = [
+      { id: 80, name: "BOOTLOADER", file: "sboot.bin", blocks: 8192, type: "AP", category: "core", desc: "Primary stage bootloader binary (sboot.bin)" },
+      { id: 90, name: "DDI", file: "—", blocks: 2048, type: "AP", category: "core", desc: "Display driver interface parameters" },
+      { id: 91, name: "ECT", file: "ect.bin", blocks: 0, type: "AP", category: "core", desc: "Exynos calibration table" },
+      { id: 70, name: "PIT", file: "—", blocks: 16, type: "AP", category: "core", desc: "Partition Information Table partition record" },
+      { id: 71, name: "MD5HDR", file: "md5.img", blocks: 2048, type: "AP", category: "core", desc: "Firmware MD5 validation header" },
+      { id: 1, name: "EFS", file: "efs.img", blocks: 40960, type: "AP", category: "nvram", desc: "Radio calibrations, IMEI, MAC address certificates (IMMUTABLE)" },
+      { id: 2, name: "SEC_EFS", file: "sec_efs.img", blocks: 40960, type: "AP", category: "nvram", desc: "Secondary backup EFS mirror store" },
+      { id: 3, name: "RESERVED", file: "—", blocks: 8192, type: "AP", category: "core", desc: "OEM reserved blocks" },
+      { id: 4, name: "CPEFS", file: "—", blocks: 16384, type: "AP", category: "nvram", desc: "Cellular processor parameter store" },
+      { id: 5, name: "STEADY", file: "steady.bin", blocks: 8192, type: "AP", category: "core", desc: "Hardware power state configuration" },
+      { id: 6, name: "PARAM", file: "param.bin", blocks: 16384, type: "AP", category: "core", desc: "Display bootscreen and download mode graphics" },
+      { id: 7, name: "BOTA", file: "—", blocks: 73728, type: "AP", category: "core", desc: "Bootloader over-the-air staging buffer" },
+      { id: 8, name: "LDFW", file: "ldfw.img", blocks: 16384, type: "AP", category: "core", desc: "Low-level display firmware overlay" },
+      { id: 9, name: "TZSW", file: "tzsw.img", blocks: 3072, type: "AP", category: "core", desc: "ARM TrustZone Secure OS image" },
+      { id: 10, name: "TZAR", file: "tzar.img", blocks: 13312, type: "AP", category: "core", desc: "TrustZone Anti-Rollback table" },
+      { id: 11, name: "KEYSTORAGE", file: "keystorage.bin", blocks: 1024, type: "AP", category: "nvram", desc: "Hardware-backed keystore partition" },
+      { id: 12, name: "NAD_REFER", file: "nad_refer.bin", blocks: 2048, type: "AP", category: "core", desc: "NAND reference voltages" },
+      { id: 13, name: "UP_PARAM", file: "up_param.bin", blocks: 16384, type: "AP", category: "core", desc: "User parameter configuration" },
+      { id: 14, name: "MISC", file: "misc.bin", blocks: 4096, type: "AP", category: "core", desc: "Android recovery boot command flag" },
+      { id: 15, name: "UH", file: "uh.bin", blocks: 4096, type: "AP", category: "core", desc: "Micro-hypervisor binary" },
+      { id: 16, name: "UHCFG", file: "uhuh.bin", blocks: 8192, type: "AP", category: "core", desc: "Hypervisor configuration table" },
+      { id: 17, name: "BLCMD", file: "blcmd.bin", blocks: 1024, type: "AP", category: "core", desc: "Bootloader command buffer" },
+      { id: 18, name: "BOOT", file: "boot.img", blocks: 73728, type: "AP", category: "core", desc: "Android Linux kernel and ramdisk image" },
+      { id: 19, name: "RECOVERY", file: "recovery.img", blocks: 108544, type: "AP", category: "core", desc: "Stock or custom touch recovery environment" },
+      { id: 20, name: "DTB", file: "dt.img", blocks: 16384, type: "AP", category: "core", desc: "Device Tree Blob binary" },
+      { id: 21, name: "DTBO", file: "dtbo.img", blocks: 16384, type: "AP", category: "core", desc: "Device Tree Blob Overlay table" },
+      { id: 22, name: "RADIO", file: "modem.bin", blocks: 102400, type: "CP", category: "core", desc: "Shannon cellular baseband modem firmware" },
+      { id: 23, name: "PERSISTENT", file: "—", blocks: 1024, type: "AP", category: "core", desc: "FRP lock and OEM unlocking state byte" },
+      { id: 24, name: "VBMETA", file: "vbmeta.img", blocks: 1024, type: "AP", category: "core", desc: "Verified Boot 2.0 cryptographic signatures" },
+      { id: 25, name: "VBMETA_SAMSUNG", file: "vbmeta_samsung.img", blocks: 1024, type: "AP", category: "core", desc: "Samsung proprietary knox verified boot metadata" },
+      { id: 26, name: "KEYREFUGE", file: "—", blocks: 32768, type: "AP", category: "nvram", desc: "Knox key refuge encrypted partition" },
+      { id: 27, name: "KEYDATA", file: "—", blocks: 32768, type: "AP", category: "nvram", desc: "Keystore non-volatile cryptographic parameters" },
+      { id: 28, name: "METADATA", file: "metadata.img", blocks: 65536, type: "AP", category: "core", desc: "Encrypted disk metadata for Adoptable Storage" },
+      { id: 29, name: "RESERVED2", file: "—", blocks: 3072, type: "AP", category: "core", desc: "OEM boundary padding" },
+      { id: 30, name: "SUPER", file: "super.img", blocks: 10854400, type: "AP", category: "super", desc: "Dynamic container storing system, vendor, product, odm" },
+      { id: 31, name: "PRISM", file: "prism.img", blocks: 1638400, type: "AP", category: "storage", desc: "Country-specific regional CSC applications" },
+      { id: 32, name: "OPTICS", file: "optics.img", blocks: 40960, type: "AP", category: "storage", desc: "Carrier customization and operator packages" },
+      { id: 33, name: "CACHE", file: "cache.img", blocks: 409600, type: "AP", category: "storage", desc: "Android temporary cache storage" },
+      { id: 34, name: "OMR", file: "omr.img", blocks: 40960, type: "AP", category: "storage", desc: "Open Market Customization resources" },
+      { id: 35, name: "CP_DEBUG", file: "modem_debug.bin", blocks: 10240, type: "CP", category: "core", desc: "Cellular modem debug ramdump" },
+      { id: 36, name: "SPU", file: "spu.img", blocks: 102400, type: "AP", category: "core", desc: "Secure Processing Unit firmware" },
+      { id: 37, name: "USERDATA", file: "userdata.img", blocks: 54525952, type: "AP", category: "storage", desc: "Encrypted user storage and app data" }
+    ];
+
+    let currentSelectedPartition = PARTITIONS[22]; // BOOT by default
+
+    function renderPartitionList(filterCategory = 'all') {
+      const container = document.getElementById('partition-list-container');
+      container.innerHTML = '';
+
+      const filtered = filterCategory === 'all' 
+        ? PARTITIONS 
+        : PARTITIONS.filter(p => p.category === filterCategory);
+
+      document.getElementById('partition-counter').innerText = `Showing ${filtered.length} of ${PARTITIONS.length} partitions`;
+
+      filtered.forEach(p => {
+        const mib = (p.blocks * 512 / (1024 * 1024)).toFixed(2);
+        const sizeDisplay = mib >= 1024 ? (mib / 1024).toFixed(2) + ' GiB' : mib + ' MiB';
+        const isProtected = p.category === 'nvram';
+
+        const row = document.createElement('div');
+        row.className = "px-4 py-3 hover:bg-white/5 cursor-pointer flex items-center justify-between transition-colors";
+        row.onclick = () => selectPartition(p.name, p.id, p.blocks, p.type, p.file, p.desc);
+
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg ${isProtected ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : 'bg-blue-500/15 text-blue-400 border border-blue-400/30'} flex items-center justify-center font-mono text-xs font-semibold">
+              ${p.id}
+            </span>
+            <div>
+              <div class="text-sm font-semibold text-[var(--foreground)] flex items-center gap-1.5">
+                <span>${p.name}</span>
+                ${isProtected ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400">LOCKED</span>' : ''}
+              </div>
+              <div class="text-xs text-[var(--muted-foreground)]">File: ${p.file}</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-mono font-medium text-[var(--foreground)]">${sizeDisplay}</div>
+            <div class="text-[11px] ${isProtected ? 'text-rose-400' : 'text-blue-400'}">${p.category.toUpperCase()}</div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function filterPartitions(category) {
+      document.querySelectorAll('.part-filter-btn').forEach(btn => {
+        btn.classList.remove('text-blue-400', 'border-blue-400/40');
         btn.classList.add('text-[var(--muted-foreground)]');
       });
-      const activeBtn = document.getElementById('tab-' + tabId);
-      activeBtn.classList.add('bg-[var(--card)]', 'text-[var(--foreground)]', 'shadow-sm', 'font-semibold');
+      event.target.classList.add('text-blue-400', 'border-blue-400/40');
+      event.target.classList.remove('text-[var(--muted-foreground)]');
+      renderPartitionList(category);
+    }
+
+    function selectPartition(name, id, blocks, type, file, desc) {
+      currentSelectedPartition = { name, id, blocks, type, file, desc };
+      document.getElementById('inspect-name').innerText = name;
+      document.getElementById('inspect-badge').innerText = 'ID ' + id;
+      document.getElementById('inspect-desc').innerText = desc;
+      document.getElementById('inspect-file').innerText = file;
+      document.getElementById('inspect-blocks').innerText = Number(blocks).toLocaleString() + ' blocks';
+
+      const mib = (blocks * 512 / (1024 * 1024)).toFixed(2);
+      document.getElementById('inspect-size').innerText = mib >= 1024 ? (mib / 1024).toFixed(2) + ' GiB' : mib + ' MiB';
+      document.getElementById('inspect-type').innerText = type + ' (Application Processor)';
+
+      const isProtected = ['EFS', 'SEC_EFS', 'CPEFS', 'KEYSTORAGE', 'KEYDATA', 'KEYREFUGE'].includes(name);
+      const safetyElem = document.getElementById('inspect-safety');
+      const ratElem = document.getElementById('inspect-rationale');
+
+      if (isProtected) {
+        safetyElem.innerText = "LOCKED: Hard Read-Only Invariant";
+        safetyElem.className = "font-medium text-rose-400";
+        ratElem.innerText = "Writing to this partition is blocked at the transport layer to prevent permanent radio corruption or IMEI erasure.";
+      } else {
+        safetyElem.innerText = "Safe for Direct Flashing";
+        safetyElem.className = "font-medium text-emerald-400";
+        ratElem.innerText = "LOKE verifies the OEM RSA cryptographic signature on the final sequence block. Mismatches trigger error code -1.";
+      }
+    }
+
+    function copySinglePartitionCommand() {
+      const cmd = `exynos-loke-rescue flash-raw -p ${currentSelectedPartition.name} ${currentSelectedPartition.file}`;
+      navigator.clipboard.writeText(cmd).then(() => {
+        const text = document.getElementById('btn-copy-partition-text');
+        text.innerText = 'Copied to Clipboard!';
+        setTimeout(() => { text.innerText = 'Copy Partition Flash Command'; }, 2000);
+      });
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('glass-pill-active');
+        btn.classList.add('text-[var(--muted-foreground)]');
+      });
+      const activeBtn = document.getElementById('btn-' + tabId);
+      activeBtn.classList.add('glass-pill-active');
       activeBtn.classList.remove('text-[var(--muted-foreground)]');
 
-      ['partition-map', 'diagnostic-tree', 'command-builder', 'safety-matrix'].forEach(id => {
-        const view = document.getElementById('view-' + id);
+      ['tab-storage', 'tab-protocol', 'tab-diagnostics', 'tab-studio', 'tab-simulator', 'tab-safety'].forEach(id => {
+        const view = document.getElementById('content-' + id);
         if (id === tabId) {
           view.classList.remove('hidden');
         } else {
@@ -633,39 +950,8 @@
       });
     }
 
-    let selectedPartition = {
-      name: 'BOOT',
-      id: 18,
-      blocks: 73728,
-      type: 'AP',
-      file: 'boot.img',
-      desc: 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.'
-    };
-
-    function selectPartition(name, id, blocks, type, file, desc) {
-      selectedPartition = { name, id, blocks, type, file, desc };
-      document.getElementById('inspect-name').innerText = name;
-      document.getElementById('inspect-badge').innerText = 'ID ' + id;
-      document.getElementById('inspect-desc').innerText = desc;
-      document.getElementById('inspect-file').innerText = file;
-      document.getElementById('inspect-blocks').innerText = Number(blocks).toLocaleString() + ' blocks';
-      const mib = (blocks * 512 / (1024 * 1024)).toFixed(2);
-      document.getElementById('inspect-size').innerText = mib >= 1024 ? (mib / 1024).toFixed(2) + ' GiB' : mib + ' MiB';
-      document.getElementById('inspect-type').innerText = type + ' (Application Processor)';
-    }
-
-    function copySinglePartitionCommand() {
-      const cmd = `exynos-loke-rescue flash-raw -p ${selectedPartition.name} ${selectedPartition.file}`;
-      navigator.clipboard.writeText(cmd).then(() => {
-        const btn = document.getElementById('btn-copy-partition');
-        const orig = btn.innerHTML;
-        btn.innerHTML = '<span>Copied to Clipboard</span>';
-        setTimeout(() => { btn.innerHTML = orig; }, 2000);
-      });
-    }
-
     function applyDiagnosticMode(modeVal) {
-      switchTab('command-builder');
+      switchTab('tab-studio');
       const radio = document.querySelector(`input[name="mode"][value="${modeVal}"]`);
       if (radio) {
         radio.checked = true;
@@ -718,11 +1004,70 @@
         const btn = document.getElementById('copy-btn');
         btn.classList.add('bg-emerald-600');
         setTimeout(() => {
-          text.innerText = 'Copy Terminal Command';
+          text.innerText = 'Copy Command to Clipboard';
           btn.classList.remove('bg-emerald-600');
         }, 2000);
       });
     }
+
+    // Live Flash Simulator State Machine
+    let simInterval = null;
+    function startSimulation() {
+      if (simInterval) {
+        clearInterval(simInterval);
+        simInterval = null;
+        document.getElementById('btn-sim-text').innerText = 'Start Live Simulation';
+        return;
+      }
+
+      document.getElementById('btn-sim-text').innerText = 'Stop Simulation';
+      const log = document.getElementById('sim-log');
+      log.innerHTML = '';
+
+      function addLog(msg) {
+        const d = document.createElement('div');
+        d.innerText = `> ${msg}`;
+        log.appendChild(d);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      addLog('Opening USB Device 04e8:685d (Samsung Download Mode)...');
+      addLog('Handshake TX: "ODIN" -> RX: "LOKE" (Acknowledged)');
+      addLog('Negotiating Session Setup: Opcode 0x64 Subcmd 0x00...');
+      addLog('Protocol Tier: Odin v3. Sequence macro buffer: 1,048,576 bytes.');
+
+      let chunk = 0;
+      const totalChunks = 256;
+      document.getElementById('sim-state').innerText = 'STREAMING';
+
+      simInterval = setInterval(() => {
+        chunk += 4;
+        const pct = Math.min(100, Math.round((chunk / totalChunks) * 100));
+        document.getElementById('sim-progress-bar').style.width = pct + '%';
+        document.getElementById('sim-pct').innerText = pct + '%';
+        document.getElementById('sim-chunks').innerText = `${chunk} / ${totalChunks}`;
+        document.getElementById('sim-speed').innerText = `${(32.5 + Math.random() * 4).toFixed(1)} MB/s`;
+        document.getElementById('sim-eta').innerText = `00:${String(Math.max(0, 8 - Math.round(chunk / 32))).padStart(2, '0')}`;
+
+        if (chunk % 32 === 0 && chunk < totalChunks) {
+          addLog(`Sequence ${(chunk / 32)} committed (1048576 bytes). Subcmd 0x02 ACK received.`);
+        }
+
+        if (chunk >= totalChunks) {
+          clearInterval(simInterval);
+          simInterval = null;
+          document.getElementById('sim-state').innerText = 'PASS (0x00)';
+          document.getElementById('sim-speed').innerText = '0.00 MB/s';
+          document.getElementById('btn-sim-text').innerText = 'Restart Simulation';
+          addLog('Final sequence block committed. Bootloader RSA signature validated.');
+          addLog('CMD_SESSION_END (0x67) transmitted. Emergency recovery flag reset.');
+          addLog('SUCCESS: Partition BOOT flashed cleanly. Rebooting device.');
+        }
+      }, 100);
+    }
+
+    // Initialize partition list on load
+    renderPartitionList('all');
   </script>
 </body>
 </html>
