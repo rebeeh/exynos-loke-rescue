@@ -108,7 +108,7 @@ fn flash_via_native_nusb(targets: &[PartitionTarget], options: FlashOptions) -> 
     session.end_session_with_mode(options.reboot_mode)?;
     println!(
         "{}",
-        "✓ Native LOKE session closed cleanly (PASS). Emergency Recovery flag cleared."
+        "[OK] Native LOKE session closed cleanly (PASS). Emergency Recovery flag cleared."
             .green()
             .bold()
     );

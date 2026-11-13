@@ -110,24 +110,16 @@ fn main() -> Result<()> {
 
         Some(Commands::EmergencyWipeReboot) => {
             println!(
-                "\n{}",
-                "╭──────────────────────────────────────────────────────────────────────────╮".yellow()
-            );
-            println!(
-                "{}",
-                "│  ⚡ EMERGENCY UNBRICK: BROKEN POWER BUTTON RECOVERY BYPASS               │"
+                "\n  {}",
+                "── Emergency Unbrick: Broken Power Button Recovery Bypass ──"
                     .yellow()
                     .bold()
             );
             println!(
-                "{}",
-                "│  Executing hardware NAND erase directly from Download Mode & auto-reboot │".yellow()
+                "  {}",
+                "Executing hardware NAND erase directly from Download Mode & auto-reboot\n"
+                    .dimmed()
             );
-            println!(
-                "{}",
-                "╰──────────────────────────────────────────────────────────────────────────╯".yellow()
-            );
-            println!();
 
             flasher::execute_nand_erase(
                 cli.transport,
@@ -549,24 +541,16 @@ fn main() -> Result<()> {
             fault_timeout,
         }) => {
             println!(
-                "\n{}",
-                "╭──────────────────────────────────────────────────────────────────────────╮".cyan()
-            );
-            println!(
-                "{}",
-                "│  🧪 EXYNOS LOKE RESCUE: IN-MEMORY DRY-RUN SIMULATION ENGINE              │"
+                "\n  {}",
+                "── In-Memory Dry-Run Simulation Engine ──"
                     .cyan()
                     .bold()
             );
             println!(
-                "{}",
-                "│  Deterministic protocol simulation against virtual in-memory device      │".cyan()
+                "  {}",
+                "Deterministic protocol simulation against virtual in-memory device\n"
+                    .dimmed()
             );
-            println!(
-                "{}",
-                "╰──────────────────────────────────────────────────────────────────────────╯".cyan()
-            );
-            println!();
 
             let mut mock = mock::MockLokeDevice::new();
             if fault_vaultkeeper {

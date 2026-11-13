@@ -101,13 +101,13 @@ pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
             .args(["control", "--reload-rules"])
             .status();
         let _ = Command::new("udevadm").args(["trigger"]).status();
-        println!("    {} Installed {}", "✓".green(), UDEV_RULE_DEST);
+        println!("    {} Installed {}", "[OK]".green().bold(), UDEV_RULE_DEST);
 
         if !no_systemd {
             let _ = Command::new("systemctl")
                 .args(["stop", "ModemManager"])
                 .status();
-            println!("    {} Stopped ModemManager daemon", "✓".green());
+            println!("    {} Stopped ModemManager daemon", "[OK]".green().bold());
         }
 
         if is_cdc_acm_loaded() {
@@ -119,16 +119,16 @@ pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
             if rmmod_ok {
                 println!(
                     "    {} Unloaded conflicting `cdc_acm` kernel module",
-                    "✓".green()
+                    "[OK]".green().bold()
                 );
             } else {
                 println!(
                     "    {} Could not unload `cdc_acm` (may be built-in or bound)",
-                    "!".yellow()
+                    "[WARN]".yellow().bold()
                 );
             }
         } else {
-            println!("    {} `cdc_acm` kernel module is not loaded", "✓".green());
+            println!("    {} `cdc_acm` kernel module is not loaded", "[OK]".green().bold());
         }
     } else {
         println!(
@@ -157,13 +157,13 @@ pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
             .status();
         let _ = Command::new("sudo").args(["udevadm", "trigger"]).status();
 
-        println!("    {} Installed {}", "✓".green(), UDEV_RULE_DEST);
+        println!("    {} Installed {}", "[OK]".green().bold(), UDEV_RULE_DEST);
 
         if !no_systemd {
             let _ = Command::new("sudo")
                 .args(["systemctl", "stop", "ModemManager"])
                 .status();
-            println!("    {} Stopped ModemManager daemon", "✓".green());
+            println!("    {} Stopped ModemManager daemon", "[OK]".green().bold());
         }
 
         if is_cdc_acm_loaded() {
@@ -175,27 +175,27 @@ pub fn sanitize_linux_usb(no_systemd: bool) -> Result<()> {
             if rmmod_ok {
                 println!(
                     "    {} Unloaded conflicting `cdc_acm` kernel module",
-                    "✓".green()
+                    "[OK]".green().bold()
                 );
             } else {
                 println!(
                     "    {} Could not unload `cdc_acm` (may be built-in or bound)",
-                    "!".yellow()
+                    "[WARN]".yellow().bold()
                 );
             }
         } else {
-            println!("    {} `cdc_acm` kernel module is not loaded", "✓".green());
+            println!("    {} `cdc_acm` kernel module is not loaded", "[OK]".green().bold());
         }
     }
 
     match scan_sysfs_for_samsung_download()? {
         Some(summary) => {
-            println!("{} {}", "✓ Device active:".green().bold(), summary);
+            println!("{} {}", "[OK] Device active:".green().bold(), summary);
         }
         None => {
             println!(
                 "{}",
-                "⚠ Samsung Download Mode (04e8:685d) not found in /sys/bus/usb/devices.\n\
+                "[WARN] Samsung Download Mode (04e8:685d) not found in /sys/bus/usb/devices.\n\
                  - Verify battery is charged (>15%) and device is in Download/Emergency Recovery Mode.\n\
                  - Unplug USB cable for 5 seconds and reconnect directly to a host USB port."
                     .yellow()

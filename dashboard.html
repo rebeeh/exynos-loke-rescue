@@ -1,506 +1,676 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exynos LOKE Rescue - Interactive Dashboard</title>
+  <title>Exynos LOKE Rescue — Diagnostics & Recovery</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
-    /* Custom scrollbars */
+    /* Smooth Apple-like scrolling & styling */
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(150, 150, 150, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(140, 140, 150, 0.25); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 150, 0.45); }
+    .sf-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 md:p-6 transition-colors duration-200">
+<body class="min-h-full bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-200 p-3 sm:p-5 md:p-8 lg:p-10 flex flex-col justify-between">
 
-  <!-- Header Card -->
-  <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 mb-6 shadow-sm">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-2xl font-bold">
-          ⚡
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue Suite</h1>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">v1.0.0</span>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Linux Native</span>
+  <!-- Main Container -->
+  <div class="max-w-7xl w-full mx-auto space-y-6">
+
+    <!-- Top Navigation & Header Bar (Apple Utility Bar) -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm sf-blur">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <!-- Left: Device Brand & Identity -->
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 shrink-0">
+            <!-- Modern Smartphone Vector Icon -->
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            </svg>
           </div>
-          <p class="text-[var(--muted-foreground)] text-xs md:text-sm mt-0.5">
-            Deterministic Odin v3/v4 Protocol Driver &bull; Memory-Safe Pure Rust &bull; Hardware NAND Recovery
-          </p>
-        </div>
-      </div>
-
-      <!-- Quick Status Badges -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="font-medium text-[var(--foreground)]">USB Driver:</span>
-          <span class="text-[var(--muted-foreground)]">nusb 04e8:685d</span>
-        </div>
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs">
-          <span class="font-medium text-[var(--foreground)]">Target:</span>
-          <span class="text-cyan-400 font-mono">Galaxy A21s (SM-A217F)</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Navigation Tabs -->
-    <nav class="flex border-b border-[var(--border)] mt-6 -mb-5 gap-6 text-sm">
-      <button onclick="switchTab('partition-map')" id="tab-partition-map" class="tab-btn pb-3 font-semibold border-b-2 border-cyan-400 text-cyan-400 transition-colors">
-        📊 Visual Partition Map
-      </button>
-      <button onclick="switchTab('diagnostic-tree')" id="tab-diagnostic-tree" class="tab-btn pb-3 font-semibold border-b-2 border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
-        🩺 Diagnostic Flowchart
-      </button>
-      <button onclick="switchTab('command-builder')" id="tab-command-builder" class="tab-btn pb-3 font-semibold border-b-2 border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
-        💻 Live Command Builder
-      </button>
-      <button onclick="switchTab('safety-matrix')" id="tab-safety-matrix" class="tab-btn pb-3 font-semibold border-b-2 border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
-        🛡️ Safety Invariants
-      </button>
-    </nav>
-  </header>
-
-  <!-- TAB 1: Visual Partition Map -->
-  <main id="view-partition-map" class="space-y-6">
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
-        <div>
-          <h2 class="text-base font-semibold text-[var(--foreground)]">Galaxy A21s (Exynos 850) Flash Memory Geometry</h2>
-          <p class="text-xs text-[var(--muted-foreground)]">Interactive partition breakdown from A21S_EUR_OPEN.pit (42 total entries)</p>
-        </div>
-        <div class="flex items-center gap-3 text-xs">
-          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500"></span> Dynamic Super</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-cyan-500"></span> Kernel / Boot</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-500"></span> Userdata / Cache</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-rose-500"></span> Protected NVRAM</span>
-        </div>
-      </div>
-
-      <!-- Storage Proportional Bar -->
-      <div class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl p-3 mb-5">
-        <div class="text-xs font-semibold mb-2 flex justify-between">
-          <span class="text-[var(--foreground)]">Flash Allocation (Proportional View)</span>
-          <span class="text-[var(--muted-foreground)]">Total eMMC Capacity: ~32 GB</span>
-        </div>
-        <div class="w-full h-8 rounded-lg overflow-hidden flex bg-slate-800 text-[11px] font-bold text-black select-none">
-          <div style="width: 17%;" class="bg-emerald-400 hover:bg-emerald-300 transition-colors flex items-center justify-center cursor-pointer" onclick="selectPartition('SUPER', 26, 5427200, 'AP', 'super.img', 'Dynamic container for system, vendor, product, odm')">
-            SUPER (5.3G)
-          </div>
-          <div style="width: 74%;" class="bg-amber-400 hover:bg-amber-300 transition-colors flex items-center justify-center cursor-pointer" onclick="selectPartition('USERDATA', 30, 23592960, 'AP', 'userdata.img', 'Encrypted user storage & application data')">
-            USERDATA (~23.6G)
-          </div>
-          <div style="width: 3%;" class="bg-cyan-400 hover:bg-cyan-300 transition-colors flex items-center justify-center cursor-pointer" onclick="selectPartition('RECOVERY', 21, 108544, 'AP', 'recovery.img', 'Android stock/custom recovery binary')">
-            REC
-          </div>
-          <div style="width: 2%;" class="bg-cyan-300 hover:bg-cyan-200 transition-colors flex items-center justify-center cursor-pointer" onclick="selectPartition('BOOT', 19, 73728, 'AP', 'boot.img', 'Linux kernel + ramdisk')">
-            BOOT
-          </div>
-          <div style="width: 4%;" class="bg-rose-500 hover:bg-rose-400 transition-colors flex items-center justify-center cursor-pointer text-white" onclick="selectPartition('EFS', 4, 40960, 'AP', 'efs.img', 'IMEI, MAC, calibration parameters (STRICT READ-ONLY)')">
-            EFS
-          </div>
-        </div>
-      </div>
-
-      <!-- Partition Inspector Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Partition List -->
-        <div class="lg:col-span-2 bg-[var(--background)] border border-[var(--border)] rounded-xl overflow-hidden">
-          <div class="p-3 border-b border-[var(--border)] bg-[var(--card)] flex items-center justify-between">
-            <span class="text-xs font-semibold text-[var(--foreground)]">Critical Rescue Partitions</span>
-            <span class="text-xs text-[var(--muted-foreground)]">Click a row to inspect</span>
-          </div>
-          <div class="max-h-72 overflow-y-auto divide-y divide-[var(--border)]">
-            <div onclick="selectPartition('BOOT', 19, 73728, 'AP', 'boot.img', 'Android Linux Kernel + Ramdisk image. Crucial for clearing LOKE Emergency Boot Softbricks.')" class="p-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-              <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">ID 19</span>
-                <div>
-                  <div class="text-sm font-semibold text-[var(--foreground)]">BOOT</div>
-                  <div class="text-xs text-[var(--muted-foreground)]">Filename: boot.img</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-medium text-[var(--foreground)]">36.00 MiB</div>
-                <div class="text-[11px] text-cyan-400">Kernel</div>
-              </div>
-            </div>
-
-            <div onclick="selectPartition('VBMETA', 22, 128, 'AP', 'vbmeta.img', 'Verified Boot 2.0 metadata, public keys, and cryptographic digest table.')" class="p-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-              <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">ID 22</span>
-                <div>
-                  <div class="text-sm font-semibold text-[var(--foreground)]">VBMETA</div>
-                  <div class="text-xs text-[var(--muted-foreground)]">Filename: vbmeta.img</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-medium text-[var(--foreground)]">0.06 MiB</div>
-                <div class="text-[11px] text-cyan-400">AVB 2.0</div>
-              </div>
-            </div>
-
-            <div onclick="selectPartition('RECOVERY', 21, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP recovery.')" class="p-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-              <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">ID 21</span>
-                <div>
-                  <div class="text-sm font-semibold text-[var(--foreground)]">RECOVERY</div>
-                  <div class="text-xs text-[var(--muted-foreground)]">Filename: recovery.img</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-medium text-[var(--foreground)]">53.00 MiB</div>
-                <div class="text-[11px] text-cyan-400">Recovery OS</div>
-              </div>
-            </div>
-
-            <div onclick="selectPartition('DTBO', 20, 16384, 'AP', 'dtbo.img', 'Device Tree Blob Overlay containing peripheral pinmux & hardware topology.')" class="p-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-              <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">ID 20</span>
-                <div>
-                  <div class="text-sm font-semibold text-[var(--foreground)]">DTBO</div>
-                  <div class="text-xs text-[var(--muted-foreground)]">Filename: dtbo.img</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-medium text-[var(--foreground)]">8.00 MiB</div>
-                <div class="text-[11px] text-cyan-400">Device Tree</div>
-              </div>
-            </div>
-
-            <div onclick="selectPartition('SUPER', 26, 10854400, 'AP', 'super.img', 'Android Dynamic Partitions container storing system, vendor, product, and odm.')" class="p-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-              <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">ID 26</span>
-                <div>
-                  <div class="text-sm font-semibold text-[var(--foreground)]">SUPER</div>
-                  <div class="text-xs text-[var(--muted-foreground)]">Filename: super.img</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-medium text-[var(--foreground)]">5300.00 MiB</div>
-                <div class="text-[11px] text-emerald-400">Sparse Dynamic</div>
-              </div>
-            </div>
-
-            <div onclick="selectPartition('USERDATA', 30, 47185920, 'AP', 'userdata.img', 'Encrypted user storage. Erasing from Download Mode solves broken Power Button traps.')" class="p-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-              <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">ID 30</span>
-                <div>
-                  <div class="text-sm font-semibold text-[var(--foreground)]">USERDATA</div>
-                  <div class="text-xs text-[var(--muted-foreground)]">Filename: userdata.img</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-medium text-[var(--foreground)]">23040.00 MiB</div>
-                <div class="text-[11px] text-amber-400">Ext4 / F2FS</div>
-              </div>
-            </div>
-
-            <div onclick="selectPartition('EFS', 4, 40960, 'AP', 'efs.img', 'Encrypted File System holding radio calibrations, IMEI, and MAC addresses. Write-protected by engine.')" class="p-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
-              <div class="flex items-center gap-3">
-                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">ID 4</span>
-                <div>
-                  <div class="text-sm font-semibold text-[var(--foreground)]">EFS (PROTECTED)</div>
-                  <div class="text-xs text-[var(--muted-foreground)]">Filename: efs.img</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-medium text-[var(--foreground)]">20.00 MiB</div>
-                <div class="text-[11px] text-rose-400">LOCKED</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Detail Inspector Card -->
-        <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-5 flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold text-[var(--muted-foreground)] tracking-wider uppercase">Partition Details</span>
-              <span id="inspect-badge" class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">ID 19</span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="text-lg sm:text-xl font-semibold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue</h1>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">v1.0.0</span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Native Linux</span>
             </div>
-            <h3 id="inspect-name" class="text-xl font-bold text-[var(--foreground)] mb-1">BOOT</h3>
-            <p id="inspect-desc" class="text-xs text-[var(--muted-foreground)] mb-4 leading-relaxed">
-              Android Linux Kernel + Ramdisk image. Crucial for clearing LOKE Emergency Boot Softbricks.
-            </p>
-
-            <div class="space-y-2 text-xs border-t border-[var(--border)] pt-3">
-              <div class="flex justify-between">
-                <span class="text-[var(--muted-foreground)]">Flash Filename:</span>
-                <span id="inspect-file" class="font-mono text-[var(--foreground)] font-semibold">boot.img</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-[var(--muted-foreground)]">Block Count:</span>
-                <span id="inspect-blocks" class="font-mono text-[var(--foreground)]">73,728 blocks</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-[var(--muted-foreground)]">Capacity:</span>
-                <span id="inspect-size" class="font-mono text-cyan-400 font-bold">36.00 MiB</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-[var(--muted-foreground)]">Binary Domain:</span>
-                <span id="inspect-type" class="font-mono text-[var(--foreground)]">AP (Application Processor)</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 pt-3 border-t border-[var(--border)]">
-            <button onclick="copyFlashCommand()" class="w-full py-2 px-3 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
-              📋 Copy Single Partition Flash Command
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- TAB 2: Diagnostic Flowchart -->
-  <section id="view-diagnostic-tree" class="hidden space-y-6">
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
-      <h2 class="text-base font-semibold text-[var(--foreground)] mb-1">Hardware & Recovery Diagnostic Decision Tree</h2>
-      <p class="text-xs text-[var(--muted-foreground)] mb-5">Identify your brick symptom below to determine the deterministic recovery procedure.</p>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Card 1 -->
-        <div class="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/5 hover:border-cyan-500/50 transition-colors">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-cyan-400 text-lg font-bold">①</span>
-            <h3 class="font-semibold text-sm text-[var(--foreground)]">Teal Emergency Recovery Screen</h3>
-          </div>
-          <p class="text-xs text-[var(--muted-foreground)] mb-3">
-            Screen reads: <code class="text-cyan-400">"An error has occurred while updating the device software. Use the Smart Switch emergency recovery function"</code>.
-          </p>
-          <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)] text-xs font-mono text-cyan-400 mb-3">
-            exynos-loke-rescue rescue-boot -a ./stock/AP_*.tar.md5
-          </div>
-          <p class="text-[11px] text-[var(--muted-foreground)]">
-            &bull; Flashes signed <code class="text-[var(--foreground)]">boot.img</code>, <code class="text-[var(--foreground)]">vbmeta.img</code>, and <code class="text-[var(--foreground)]">recovery.img</code>.<br>
-            &bull; Sends <code class="text-[var(--foreground)]">CMD_SESSION_END (0x67)</code> to clear bootloader emergency flag.
-          </p>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50 transition-colors">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-amber-400 text-lg font-bold">②</span>
-            <h3 class="font-semibold text-sm text-[var(--foreground)]">Recovery Prompt & Broken Power Key</h3>
-          </div>
-          <p class="text-xs text-[var(--muted-foreground)] mb-3">
-            Stock recovery prompts: <code class="text-amber-400">"Cannot load Android system. Your data may be corrupt."</code> but physical Power button cannot confirm.
-          </p>
-          <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)] text-xs font-mono text-amber-400 mb-3">
-            exynos-loke-rescue emergency-wipe-reboot
-          </div>
-          <p class="text-[11px] text-[var(--muted-foreground)]">
-            &bull; Enters Download Mode via Vol Up + Vol Down + USB insertion.<br>
-            &bull; Sends opcode <code class="text-[var(--foreground)]">0x64 (0x07)</code> hardware NAND wipe on USERDATA.<br>
-            &bull; Auto-reboots directly into One UI without touching the Power key!
-          </p>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/50 transition-colors">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-emerald-400 text-lg font-bold">③</span>
-            <h3 class="font-semibold text-sm text-[var(--foreground)]">Full Stock OS Reinstallation</h3>
-          </div>
-          <p class="text-xs text-[var(--muted-foreground)] mb-3">
-            Device bootloops past Samsung logo, dynamic partitions corrupted, or restoring 100% clean One UI stock ROM.
-          </p>
-          <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)] text-xs font-mono text-emerald-400 mb-3">
-            exynos-loke-rescue full-raw-restore -s ./stock -e
-          </div>
-          <p class="text-[11px] text-[var(--muted-foreground)]">
-            &bull; Flashes 5.3 GB <code class="text-[var(--foreground)]">SUPER</code>, plus <code class="text-[var(--foreground)]">DTBO</code>, <code class="text-[var(--foreground)]">BOOT</code>, <code class="text-[var(--foreground)]">VBMETA</code>, <code class="text-[var(--foreground)]">RECOVERY</code>.<br>
-            &bull; Bypasses samloader-rs super metadata decompression crash bug.
-          </p>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="p-4 rounded-xl border border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 transition-colors">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-rose-400 text-lg font-bold">④</span>
-            <h3 class="font-semibold text-sm text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Prenormal</h3>
-          </div>
-          <p class="text-xs text-[var(--muted-foreground)] mb-3">
-            Flashing custom recovery / kernel fails with LOKE error code -1: <code class="text-rose-400">Custom Binary Blocked by OEM Lock</code>.
-          </p>
-          <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)] text-xs font-mono text-rose-400 mb-3">
-            exynos-loke-rescue rescue-boot -a ./stock/AP_*.tar.md5
-          </div>
-          <p class="text-[11px] text-[var(--muted-foreground)]">
-            &bull; Boot One UI, connect to Wi-Fi, wait 5 min for Samsung KG server check.<br>
-            &bull; Verify Settings &gt; Developer options &gt; OEM Unlocking is permanently active.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TAB 3: Live Command Builder -->
-  <section id="view-command-builder" class="hidden space-y-6">
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
-      <h2 class="text-base font-semibold text-[var(--foreground)] mb-1">Interactive Command Generator</h2>
-      <p class="text-xs text-[var(--muted-foreground)] mb-5">Configure parameters to generate the exact, tested CLI command.</p>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Configuration Form -->
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-[var(--foreground)] mb-2">Operation Mode</label>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-[var(--border)] bg-[var(--background)] cursor-pointer">
-                <input type="radio" name="mode" value="rescue-boot" checked onchange="updateCommand()" class="accent-cyan-400">
-                <span>Boot Rescue (Mode 1)</span>
-              </label>
-              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-[var(--border)] bg-[var(--background)] cursor-pointer">
-                <input type="radio" name="mode" value="emergency-wipe-reboot" onchange="updateCommand()" class="accent-cyan-400">
-                <span>Emergency Wipe (Power Btn)</span>
-              </label>
-              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-[var(--border)] bg-[var(--background)] cursor-pointer">
-                <input type="radio" name="mode" value="full-raw-restore" onchange="updateCommand()" class="accent-cyan-400">
-                <span>Full Restore (Mode 2)</span>
-              </label>
-              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-[var(--border)] bg-[var(--background)] cursor-pointer">
-                <input type="radio" name="mode" value="probe" onchange="updateCommand()" class="accent-cyan-400">
-                <span>Probe / Inspect PIT</span>
-              </label>
-            </div>
-          </div>
-
-          <div id="path-input-group">
-            <label class="block text-xs font-semibold text-[var(--foreground)] mb-1">Firmware Archive / Directory Path</label>
-            <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs font-mono text-[var(--foreground)] focus:border-cyan-400 outline-none">
-          </div>
-
-          <div class="space-y-2 pt-2 border-t border-[var(--border)]">
-            <label class="block text-xs font-semibold text-[var(--foreground)]">Safety & Execution Flags</label>
-            <div class="space-y-2 text-xs">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="flag-erase" onchange="updateCommand()" class="accent-cyan-400">
-                <span class="text-[var(--foreground)]">Erase USERDATA (-e)</span>
-                <span class="text-[var(--muted-foreground)] text-[11px]">(Clears corrupted user data)</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="flag-no-reboot" onchange="updateCommand()" class="accent-cyan-400">
-                <span class="text-[var(--foreground)]">Keep in Download Mode (--no-reboot)</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="flag-verbose" onchange="updateCommand()" class="accent-cyan-400">
-                <span class="text-[var(--foreground)]">Verbose wire telemetry (-v)</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Live Generated Output -->
-        <div class="flex flex-col justify-between bg-[var(--background)] border border-[var(--border)] rounded-xl p-4">
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold text-[var(--muted-foreground)] uppercase">Command Preview</span>
-              <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Ready to execute</span>
-            </div>
-            <div class="p-3 rounded-lg bg-black/40 border border-[var(--border)] text-xs font-mono text-cyan-300 break-all select-all leading-relaxed" id="cmd-output">
-              exynos-loke-rescue rescue-boot -a ~/Downloads/stock
-            </div>
-            <p class="text-[11px] text-[var(--muted-foreground)] mt-3 leading-relaxed" id="cmd-explanation">
-              Extracts signed boot, vbmeta, and recovery from the stock AP archive and commits them via clean LOKE session.
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deterministic Odin v3/v4 Protocol Driver &bull; Clean-Room Transport &bull; Low-Level Hardware NAND Control
             </p>
           </div>
+        </div>
 
-          <div class="mt-4 pt-3 border-t border-[var(--border)]">
-            <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-2.5 px-4 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 transition-colors">
-              📋 Copy Command to Clipboard
-            </button>
+        <!-- Right: Hardware Connection Pills -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-[var(--muted-foreground)]">Driver:</span>
+            <span class="font-mono font-medium text-[var(--foreground)]">nusb (04e8:685d)</span>
+          </div>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs">
+            <span class="text-[var(--muted-foreground)]">Target:</span>
+            <span class="font-mono font-medium text-blue-500">Galaxy A21s (SM-A217F)</span>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- TAB 4: Safety Matrix -->
-  <section id="view-safety-matrix" class="hidden space-y-6">
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
-      <h2 class="text-base font-semibold text-[var(--foreground)] mb-1">Strict Flash Protection Matrix</h2>
-      <p class="text-xs text-[var(--muted-foreground)] mb-5">
-        To prevent permanent hardware bricking or IMEI loss, exynos-loke-rescue enforces invariant partition protection at the protocol layer.
-      </p>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <div class="p-4 rounded-xl border border-rose-500/30 bg-rose-500/5">
-          <h3 class="font-bold text-rose-400 mb-2 flex items-center gap-2">
-            <span>🛡️</span> Hard Write-Protected Partitions (Immutable)
-          </h3>
-          <ul class="space-y-1.5 text-[var(--foreground)]">
-            <li><strong class="font-mono text-rose-400">EFS / SEC_EFS:</strong> Radio calibrations, device IMEI & MACs. Overwrite causes permanent modem brick.</li>
-            <li><strong class="font-mono text-rose-400">CPEFS / NVDATA:</strong> Cellular modem non-volatile parameter store.</li>
-            <li><strong class="font-mono text-rose-400">TNV / PERSDATA:</strong> Factory provisioned trust root keys.</li>
-          </ul>
-        </div>
-
-        <div class="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
-          <h3 class="font-bold text-emerald-400 mb-2 flex items-center gap-2">
-            <span>✓</span> Allowed Flash Targets (Deterministic)
-          </h3>
-          <ul class="space-y-1.5 text-[var(--foreground)]">
-            <li><strong class="font-mono text-emerald-400">BOOT / RECOVERY / VBMETA:</strong> Kernel and recovery environments.</li>
-            <li><strong class="font-mono text-emerald-400">SUPER:</strong> Dynamic OS container (system, vendor, odm).</li>
-            <li><strong class="font-mono text-emerald-400">DTBO:</strong> Device tree overlays.</li>
-            <li><strong class="font-mono text-emerald-400">USERDATA (Erase Only):</strong> Format storage without risking radio/firmware.</li>
-          </ul>
+      <!-- Segmented Control Tabs (Apple iOS/macOS Pill Switcher) -->
+      <div class="mt-6 pt-4 border-t border-[var(--border)] overflow-x-auto pb-1">
+        <div class="inline-flex p-1 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-medium min-w-max">
+          <button onclick="switchTab('partition-map')" id="tab-partition-map" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 bg-[var(--card)] text-[var(--foreground)] shadow-sm font-semibold">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span>Storage Geometry</span>
+          </button>
+          <button onclick="switchTab('diagnostic-tree')" id="tab-diagnostic-tree" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <span>Diagnostic Flow</span>
+          </button>
+          <button onclick="switchTab('command-builder')" id="tab-command-builder" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <span>Command Generator</span>
+          </button>
+          <button onclick="switchTab('safety-matrix')" id="tab-safety-matrix" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span>Safety Invariants</span>
+          </button>
         </div>
       </div>
-    </div>
-  </section>
+    </header>
 
+    <!-- TAB 1: Visual Storage Geometry -->
+    <main id="view-partition-map" class="space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
+        
+        <!-- Section Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <h2 class="text-base font-semibold text-[var(--foreground)]">Flash Memory Partition Layout</h2>
+            <p class="text-xs text-[var(--muted-foreground)]">Inspected directly from A21S_EUR_OPEN.pit (42 physical and logical partitions)</p>
+          </div>
+          <!-- Legend -->
+          <div class="flex items-center gap-3.5 text-xs text-[var(--muted-foreground)] flex-wrap">
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> Dynamic Super</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Kernel / Boot</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> User Storage</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span> Protected NVRAM</span>
+          </div>
+        </div>
+
+        <!-- Apple-like Storage Capacity Bar (iOS / macOS "About This Mac" Style) -->
+        <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 mb-6">
+          <div class="flex justify-between items-center text-xs mb-2.5">
+            <span class="font-medium text-[var(--foreground)]">Internal eMMC Flash Capacity</span>
+            <span class="text-[var(--muted-foreground)] font-mono">~32.00 GB Total</span>
+          </div>
+          <div class="w-full h-7 rounded-lg overflow-hidden flex bg-zinc-200 dark:bg-zinc-800 p-0.5 gap-0.5">
+            <div style="width: 17%;" class="h-full rounded bg-emerald-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Android Dynamic Partitions container storing system, vendor, product, and odm images')">
+              <span class="truncate">SUPER (5.18G)</span>
+            </div>
+            <div style="width: 74%;" class="h-full rounded bg-amber-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted user storage and app data. Erased via Download Mode to clear stock recovery locks')">
+              <span class="truncate">USERDATA (~24G)</span>
+            </div>
+            <div style="width: 3%;" class="h-full rounded bg-blue-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Android Stock One UI recovery or LineageOS / TWRP recovery binary')">
+              <span class="truncate">REC</span>
+            </div>
+            <div style="width: 2%;" class="h-full rounded bg-blue-400 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and initial ramdisk image')">
+              <span class="truncate">BOOT</span>
+            </div>
+            <div style="width: 4%;" class="h-full rounded bg-rose-500 hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center text-[11px] font-semibold text-white px-1 select-none" onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Encrypted File System holding radio calibrations, IMEI, and MAC addresses (STRICT IMMUTABLE)')">
+              <span class="truncate">EFS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Partition Inspector: Two-Column Responsive Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          
+          <!-- Left: Partition List (8 Cols on Desktop) -->
+          <div class="lg:col-span-7 bg-[var(--background)] border border-[var(--border)] rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-[var(--border)] bg-[var(--card)]/50 flex items-center justify-between text-xs">
+              <span class="font-medium text-[var(--foreground)]">Essential Rescue Partitions</span>
+              <span class="text-[var(--muted-foreground)]">Select a partition to inspect</span>
+            </div>
+            <div class="divide-y divide-[var(--border)] max-h-80 overflow-y-auto">
+              
+              <div onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">18</span>
+                  <div>
+                    <div class="text-sm font-semibold text-[var(--foreground)]">BOOT</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Filename: boot.img</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">36.00 MiB</div>
+                  <div class="text-[11px] text-blue-500">Kernel</div>
+                </div>
+              </div>
+
+              <div onclick="selectPartition('VBMETA', 24, 1024, 'AP', 'vbmeta.img', 'Verified Boot 2.0 cryptographic hashes, public keys, and AVB descriptor records.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">24</span>
+                  <div>
+                    <div class="text-sm font-semibold text-[var(--foreground)]">VBMETA</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Filename: vbmeta.img</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">512.00 KiB</div>
+                  <div class="text-[11px] text-blue-500">AVB 2.0</div>
+                </div>
+              </div>
+
+              <div onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">19</span>
+                  <div>
+                    <div class="text-sm font-semibold text-[var(--foreground)]">RECOVERY</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Filename: recovery.img</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">53.00 MiB</div>
+                  <div class="text-[11px] text-blue-500">Recovery OS</div>
+                </div>
+              </div>
+
+              <div onclick="selectPartition('DTBO', 21, 16384, 'AP', 'dtbo.img', 'Device Tree Blob Overlay containing peripheral pinmux configurations and Exynos 850 topology.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-mono text-xs font-semibold">21</span>
+                  <div>
+                    <div class="text-sm font-semibold text-[var(--foreground)]">DTBO</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Filename: dtbo.img</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">8.00 MiB</div>
+                  <div class="text-[11px] text-blue-500">Device Tree</div>
+                </div>
+              </div>
+
+              <div onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Android Dynamic Partitions container storing system, vendor, product, and odm.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-mono text-xs font-semibold">30</span>
+                  <div>
+                    <div class="text-sm font-semibold text-[var(--foreground)]">SUPER</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Filename: super.img</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">5.18 GiB</div>
+                  <div class="text-[11px] text-emerald-500">Sparse Dynamic</div>
+                </div>
+              </div>
+
+              <div onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted user storage. Erasing from Download Mode solves broken Power Button confirmation traps.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-mono text-xs font-semibold">37</span>
+                  <div>
+                    <div class="text-sm font-semibold text-[var(--foreground)]">USERDATA</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Filename: userdata.img</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">~26.00 GiB</div>
+                  <div class="text-[11px] text-amber-500">Storage</div>
+                </div>
+              </div>
+
+              <div onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Encrypted File System holding radio calibrations, IMEI, and MAC addresses. Write-protected by driver.')" class="px-4 py-3 hover:bg-[var(--card)] cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center font-mono text-xs font-semibold">1</span>
+                  <div>
+                    <div class="text-sm font-semibold text-[var(--foreground)]">EFS (IMMUTABLE)</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">Filename: efs.img</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-mono font-medium text-[var(--foreground)]">20.00 MiB</div>
+                  <div class="text-[11px] text-rose-500">Protected</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Inspector Detail Card (5 Cols on Desktop) -->
+          <div class="lg:col-span-5 bg-[var(--background)] border border-[var(--border)] rounded-xl p-5 flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">Partition Inspector</span>
+                <span id="inspect-badge" class="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">ID 18</span>
+              </div>
+              <div>
+                <h3 id="inspect-name" class="text-xl font-bold tracking-tight text-[var(--foreground)]">BOOT</h3>
+                <p id="inspect-desc" class="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
+                  Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.
+                </p>
+              </div>
+
+              <div class="space-y-2.5 pt-3 border-t border-[var(--border)] text-xs">
+                <div class="flex justify-between items-center">
+                  <span class="text-[var(--muted-foreground)]">Flash Filename:</span>
+                  <span id="inspect-file" class="font-mono font-medium text-[var(--foreground)]">boot.img</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-[var(--muted-foreground)]">Block Count:</span>
+                  <span id="inspect-blocks" class="font-mono text-[var(--foreground)]">73,728 blocks</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-[var(--muted-foreground)]">Allocated Capacity:</span>
+                  <span id="inspect-size" class="font-mono font-semibold text-blue-500">36.00 MiB</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-[var(--muted-foreground)]">Binary Domain:</span>
+                  <span id="inspect-type" class="font-medium text-[var(--foreground)]">AP (Application Processor)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-[var(--border)] mt-4">
+              <button onclick="copySinglePartitionCommand()" id="btn-copy-partition" class="w-full py-2.5 px-3.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
+                <!-- Copy Vector Icon -->
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy Direct Flash Command</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 2: Diagnostic Flowchart -->
+    <section id="view-diagnostic-tree" class="hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
+        <div class="mb-5">
+          <h2 class="text-base font-semibold text-[var(--foreground)]">Recovery Decision Matrix</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Identify your hardware symptom to execute the verified unbrick workflow.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Card 1: Teal Emergency Recovery -->
+          <div class="p-5 rounded-xl border border-blue-500/20 bg-blue-500/5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-500 font-semibold text-xs flex items-center justify-center">1</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">Teal Emergency Recovery Screen</h3>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
+                Screen reads: <span class="font-mono text-blue-500">"An error has occurred while updating the device software."</span>
+              </p>
+              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-blue-500 mb-3 break-all select-all">
+                exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
+              </div>
+              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
+                <li>&bull; Flashes signed <code class="text-[var(--foreground)]">boot.img</code>, <code class="text-[var(--foreground)]">vbmeta.img</code>, <code class="text-[var(--foreground)]">recovery.img</code></li>
+                <li>&bull; Issues <code class="text-[var(--foreground)]">CMD_SESSION_END (0x67)</code> to clear bootloader softbrick flags</li>
+              </ul>
+            </div>
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="py-2 px-3 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition-colors">
+              Configure Boot Rescue Command
+            </button>
+          </div>
+
+          <!-- Card 2: Broken Power Button Wipe -->
+          <div class="p-5 rounded-xl border border-amber-500/20 bg-amber-500/5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 font-semibold text-xs flex items-center justify-center">2</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">Recovery Prompt & Broken Power Key</h3>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
+                Recovery prompts: <span class="font-mono text-amber-500">"Cannot load Android system. Your data may be corrupt."</span> but power key cannot confirm.
+              </p>
+              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-amber-500 mb-3 break-all select-all">
+                exynos-loke-rescue emergency-wipe-reboot
+              </div>
+              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
+                <li>&bull; Boots Download Mode via Vol Up + Vol Down + USB insertion</li>
+                <li>&bull; Triggers opcode <code class="text-[var(--foreground)]">0x64 (0x07)</code> hardware NAND wipe on USERDATA</li>
+                <li>&bull; Auto-reboots directly into One UI without touching the physical power key</li>
+              </ul>
+            </div>
+            <button onclick="applyDiagnosticMode('emergency-wipe-reboot')" class="py-2 px-3 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors">
+              Configure Emergency Wipe Command
+            </button>
+          </div>
+
+          <!-- Card 3: Full Stock OS Restore -->
+          <div class="p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-500 font-semibold text-xs flex items-center justify-center">3</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">Clean Stock OS Restoration</h3>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
+                Corrupted dynamic partitions, vendor bootloops, or returning to clean official One UI.
+              </p>
+              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-emerald-500 mb-3 break-all select-all">
+                exynos-loke-rescue full-raw-restore -s ~/Downloads/stock -e
+              </div>
+              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
+                <li>&bull; Streams 5.18 GiB <code class="text-[var(--foreground)]">SUPER</code>, <code class="text-[var(--foreground)]">DTBO</code>, <code class="text-[var(--foreground)]">BOOT</code>, <code class="text-[var(--foreground)]">VBMETA</code>, <code class="text-[var(--foreground)]">RECOVERY</code></li>
+                <li>&bull; Completely avoids samloader-rs super metadata unsparse crash bug</li>
+              </ul>
+            </div>
+            <button onclick="applyDiagnosticMode('full-raw-restore')" class="py-2 px-3 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 transition-colors">
+              Configure Full Restore Command
+            </button>
+          </div>
+
+          <!-- Card 4: VaultKeeper Prenormal Lock -->
+          <div class="p-5 rounded-xl border border-rose-500/20 bg-rose-500/5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-500 font-semibold text-xs flex items-center justify-center">4</span>
+                <h3 class="text-sm font-semibold text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Lock</h3>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed mb-3">
+                LOKE error code -1: <span class="font-mono text-rose-500">"Custom Binary Blocked by OEM Lock"</span>.
+              </p>
+              <div class="p-3 rounded-lg bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-rose-500 mb-3 break-all select-all">
+                exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
+              </div>
+              <ul class="text-xs text-[var(--muted-foreground)] space-y-1 mb-4">
+                <li>&bull; Flash official signed kernel/recovery to clear tamper lock</li>
+                <li>&bull; Boot One UI, connect to Wi-Fi, and unlock OEM in Developer Options</li>
+              </ul>
+            </div>
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="py-2 px-3 rounded-lg bg-rose-500 text-white text-xs font-semibold hover:bg-rose-600 transition-colors">
+              Configure Safe Stock Flash
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Interactive Command Builder -->
+    <section id="view-command-builder" class="hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
+        <div class="mb-5">
+          <h2 class="text-base font-semibold text-[var(--foreground)]">CLI Command Generator</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Select options to generate the verified terminal execution string.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Left: Controls (7 Cols) -->
+          <div class="lg:col-span-7 space-y-5">
+            
+            <!-- Mode Segmented Radio Group -->
+            <div>
+              <label class="block text-xs font-semibold text-[var(--foreground)] mb-2">Recovery Mode</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                  <input type="radio" name="mode" value="rescue-boot" checked onchange="updateCommand()" class="accent-blue-500">
+                  <div>
+                    <div class="font-semibold text-[var(--foreground)]">Boot Rescue</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Mode 1: BOOT+VBMETA+REC</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                  <input type="radio" name="mode" value="emergency-wipe-reboot" onchange="updateCommand()" class="accent-blue-500">
+                  <div>
+                    <div class="font-semibold text-[var(--foreground)]">Emergency Wipe</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Bypasses broken Power Key</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                  <input type="radio" name="mode" value="full-raw-restore" onchange="updateCommand()" class="accent-blue-500">
+                  <div>
+                    <div class="font-semibold text-[var(--foreground)]">Full Raw Restore</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Mode 2: SUPER + OS Images</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-blue-500/50 cursor-pointer transition-colors">
+                  <input type="radio" name="mode" value="probe" onchange="updateCommand()" class="accent-blue-500">
+                  <div>
+                    <div class="font-semibold text-[var(--foreground)]">Hardware Probe</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Query live device PIT</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Path Input -->
+            <div id="path-input-group" class="space-y-1.5">
+              <label class="block text-xs font-semibold text-[var(--foreground)]">Firmware Archive / Image Path</label>
+              <div class="relative">
+                <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-3.5 py-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono text-[var(--foreground)] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all">
+              </div>
+            </div>
+
+            <!-- Apple-Style Toggle Switches -->
+            <div class="space-y-3 pt-3 border-t border-[var(--border)]">
+              <label class="block text-xs font-semibold text-[var(--foreground)]">Execution Options</label>
+              
+              <div class="space-y-2.5 text-xs">
+                <label class="flex items-center justify-between p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] cursor-pointer">
+                  <div>
+                    <div class="font-medium text-[var(--foreground)]">Erase USERDATA (-e)</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Executes hardware NAND erase before reboot</div>
+                  </div>
+                  <input type="checkbox" id="flag-erase" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
+                </label>
+
+                <label class="flex items-center justify-between p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] cursor-pointer">
+                  <div>
+                    <div class="font-medium text-[var(--foreground)]">Keep in Download Mode (--no-reboot)</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Prevents automatic device reboot on completion</div>
+                  </div>
+                  <input type="checkbox" id="flag-no-reboot" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
+                </label>
+
+                <label class="flex items-center justify-between p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] cursor-pointer">
+                  <div>
+                    <div class="font-medium text-[var(--foreground)]">Verbose Telemetry (-v)</div>
+                    <div class="text-[11px] text-[var(--muted-foreground)]">Logs low-level USB transfer packets</div>
+                  </div>
+                  <input type="checkbox" id="flag-verbose" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: macOS Terminal Style Code Preview (5 Cols) -->
+          <div class="lg:col-span-5 flex flex-col justify-between">
+            <div class="bg-zinc-950 text-zinc-100 rounded-2xl p-4 sm:p-5 border border-zinc-800 shadow-lg">
+              
+              <!-- macOS Window Traffic Light Header -->
+              <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800/80">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                  <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                  <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                </div>
+                <span class="text-xs font-mono text-zinc-400">Terminal &mdash; bash</span>
+              </div>
+
+              <!-- Terminal Body -->
+              <div class="font-mono text-xs text-zinc-300 space-y-2">
+                <div class="text-zinc-500"># Generated Linux recovery command</div>
+                <div class="text-blue-400 break-all select-all leading-relaxed" id="cmd-output">
+                  exynos-loke-rescue rescue-boot -a ~/Downloads/stock
+                </div>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-zinc-800/80 text-xs text-zinc-400 leading-relaxed" id="cmd-explanation">
+                Extracts signed boot, vbmeta, and recovery from the stock AP archive and commits them to clear emergency recovery screens.
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-3 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-sm">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span id="copy-text">Copy Terminal Command</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Safety Invariants -->
+    <section id="view-safety-matrix" class="hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm">
+        <div class="mb-5">
+          <h2 class="text-base font-semibold text-[var(--foreground)]">Flash Safety Protocol & Invariant Protections</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">To prevent irrecoverable baseband bricking or IMEI corruption, safety locks are enforced at the transport layer.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+          
+          <!-- Protected Partitions -->
+          <div class="p-5 rounded-xl border border-rose-500/20 bg-rose-500/5 space-y-3">
+            <div class="flex items-center gap-2 text-rose-500 font-semibold text-sm">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>Strict Read-Only Partitions (Locked)</span>
+            </div>
+            <p class="text-[var(--muted-foreground)] leading-relaxed">
+              These partitions store factory radio calibration data and cryptographically anchored device identifiers. Overwrite attempts are intercepted and rejected prior to USB transmission.
+            </p>
+            <ul class="space-y-2 text-[var(--foreground)]">
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-rose-500">EFS / SEC_EFS:</strong> Radio calibrations, IMEI and cellular certificates.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-rose-500">CPEFS / NVDATA:</strong> Cellular baseband non-volatile parameter store.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-rose-500">TNV / PERSDATA:</strong> Factory hardware keystore trust anchors.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Permitted Targets -->
+          <div class="p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-3">
+            <div class="flex items-center gap-2 text-emerald-500 font-semibold text-sm">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Permitted Flash Targets (Deterministic)</span>
+            </div>
+            <p class="text-[var(--muted-foreground)] leading-relaxed">
+              Verified operating system partitions eligible for fast streaming and cryptographic signature verification by the LOKE bootloader.
+            </p>
+            <ul class="space-y-2 text-[var(--foreground)]">
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-emerald-500">BOOT / RECOVERY / VBMETA:</strong> Kernel, ramdisk, and AVB 2.0 signatures.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-emerald-500">SUPER:</strong> Dynamic system, vendor, product, and odm container.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                <span><strong class="font-mono text-emerald-500">USERDATA:</strong> Low-level hardware erase (Opcode 0x64 Subcmd 0x07).</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-[var(--muted-foreground)] pt-2 pb-4">
+      Exynos LOKE Rescue &bull; Memory-Safe Pure Rust &bull; Deterministic Flash Recovery Engine
+    </footer>
+
+  </div>
+
+  <!-- Inline Script (Zero External JS Dependencies) -->
   <script>
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-cyan-400', 'text-cyan-400');
-        btn.classList.add('border-transparent', 'text-[var(--muted-foreground)]');
+        btn.classList.remove('bg-[var(--card)]', 'text-[var(--foreground)]', 'shadow-sm', 'font-semibold');
+        btn.classList.add('text-[var(--muted-foreground)]');
       });
-      document.getElementById('tab-' + tabId).classList.add('border-cyan-400', 'text-cyan-400');
-      document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-[var(--muted-foreground)]');
+      const activeBtn = document.getElementById('tab-' + tabId);
+      activeBtn.classList.add('bg-[var(--card)]', 'text-[var(--foreground)]', 'shadow-sm', 'font-semibold');
+      activeBtn.classList.remove('text-[var(--muted-foreground)]');
 
       ['partition-map', 'diagnostic-tree', 'command-builder', 'safety-matrix'].forEach(id => {
-        const el = document.getElementById('view-' + id);
+        const view = document.getElementById('view-' + id);
         if (id === tabId) {
-          el.classList.remove('hidden');
+          view.classList.remove('hidden');
         } else {
-          el.classList.add('hidden');
+          view.classList.add('hidden');
         }
       });
     }
 
-    let selectedPartitionData = {
+    let selectedPartition = {
       name: 'BOOT',
-      id: 19,
+      id: 18,
       blocks: 73728,
       type: 'AP',
       file: 'boot.img',
-      desc: 'Android Linux Kernel + Ramdisk image. Crucial for clearing LOKE Emergency Boot Softbricks.'
+      desc: 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.'
     };
 
     function selectPartition(name, id, blocks, type, file, desc) {
-      selectedPartitionData = { name, id, blocks, type, file, desc };
+      selectedPartition = { name, id, blocks, type, file, desc };
       document.getElementById('inspect-name').innerText = name;
       document.getElementById('inspect-badge').innerText = 'ID ' + id;
       document.getElementById('inspect-desc').innerText = desc;
       document.getElementById('inspect-file').innerText = file;
       document.getElementById('inspect-blocks').innerText = Number(blocks).toLocaleString() + ' blocks';
       const mib = (blocks * 512 / (1024 * 1024)).toFixed(2);
-      document.getElementById('inspect-size').innerText = mib + ' MiB';
+      document.getElementById('inspect-size').innerText = mib >= 1024 ? (mib / 1024).toFixed(2) + ' GiB' : mib + ' MiB';
       document.getElementById('inspect-type').innerText = type + ' (Application Processor)';
     }
 
-    function copyFlashCommand() {
-      const cmd = `exynos-loke-rescue flash-raw -p ${selectedPartitionData.name} ${selectedPartitionData.file}`;
+    function copySinglePartitionCommand() {
+      const cmd = `exynos-loke-rescue flash-raw -p ${selectedPartition.name} ${selectedPartition.file}`;
       navigator.clipboard.writeText(cmd).then(() => {
-        alert('Copied command: ' + cmd);
+        const btn = document.getElementById('btn-copy-partition');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span>Copied to Clipboard</span>';
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
       });
+    }
+
+    function applyDiagnosticMode(modeVal) {
+      switchTab('command-builder');
+      const radio = document.querySelector(`input[name="mode"][value="${modeVal}"]`);
+      if (radio) {
+        radio.checked = true;
+        updateCommand();
+      }
     }
 
     function updateCommand() {
@@ -512,7 +682,6 @@
 
       let cmd = 'exynos-loke-rescue';
       if (verbose) cmd += ' -v';
-
       let explanation = '';
 
       if (mode === 'rescue-boot') {
@@ -534,7 +703,7 @@
       } else if (mode === 'probe') {
         document.getElementById('path-input-group').classList.add('hidden');
         cmd += ' probe';
-        explanation = 'Connects to Samsung device over USB, performs ODIN<->LOKE handshake, and reads PIT table into memory.';
+        explanation = 'Connects to Samsung device over USB, performs ODIN<->LOKE handshake, and reads live PIT table into memory.';
       }
 
       document.getElementById('cmd-output').innerText = cmd;
@@ -544,13 +713,13 @@
     function copyGeneratedCommand() {
       const cmd = document.getElementById('cmd-output').innerText;
       navigator.clipboard.writeText(cmd).then(() => {
+        const text = document.getElementById('copy-text');
+        text.innerText = 'Copied to Clipboard!';
         const btn = document.getElementById('copy-btn');
-        const orig = btn.innerHTML;
-        btn.innerHTML = '✓ Copied to Clipboard!';
-        btn.classList.add('bg-emerald-400');
+        btn.classList.add('bg-emerald-600');
         setTimeout(() => {
-          btn.innerHTML = orig;
-          btn.classList.remove('bg-emerald-400');
+          text.innerText = 'Copy Terminal Command';
+          btn.classList.remove('bg-emerald-600');
         }, 2000);
       });
     }

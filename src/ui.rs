@@ -1,7 +1,7 @@
 //! Terminal UI/UX Engine for Exynos LOKE Rescue
 //!
 //! Provides interactive terminal menus, Unicode box-drawing tables, visual cards,
-//! multi-progress indicators, and a guided recovery wizard.
+//! multi-progress indicators, and a guided recovery wizard inspired by Apple CLI design principles.
 
 use crate::archive;
 use crate::cli::Cli;
@@ -43,57 +43,74 @@ pub fn format_bytes(bytes: u64) -> String {
     }
 }
 
-/// Render the primary branded ASCII header.
-pub fn print_banner() {
-    println!("\n{}", "╭──────────────────────────────────────────────────────────────────────────────╮".cyan());
-    println!("{}", "│  📱⚡ EXYNOS LOKE RESCUE - LINUX RECOVERY ENGINE                            │".cyan().bold());
-    println!("{}", format!("│  Deterministic Odin v3/v4 Protocol Driver  •  Release v{:<22}│", VERSION).cyan());
-    println!("{}", "│  Clean-Room Reverse Engineered Transport   •  Memory-Safe Pure Rust          │".cyan());
-    println!("{}", "╰──────────────────────────────────────────────────────────────────────────────╯".cyan());
-    println!();
+/// Retrieve terminal width, clamped within a sane reading range.
+fn get_terminal_width() -> usize {
+    let term = Term::stdout();
+    (term.size().1 as usize).clamp(60, 110)
 }
 
-/// Status Badge Helpers
+/// Render the Apple-inspired minimalist banner.
+pub fn print_banner() {
+    let width = get_terminal_width();
+    let title = format!("Exynos LOKE Rescue  •  v{}", VERSION);
+    let subtitle = "Deterministic Samsung Odin v3/v4 Protocol Driver  •  Linux Native";
+
+    println!("\n  {}", title.bold());
+    println!("  {}", subtitle.dimmed());
+    println!("  {}\n", "─".repeat(width.saturating_sub(4)).dimmed());
+}
+
+/// Status Badge Helpers (Anti-slop, zero emojis)
 pub fn badge_info(label: &str, message: &str) {
-    println!("  {} {:<14} {}", "ℹ".cyan().bold(), label.cyan(), message);
+    println!("  {} {:<12} {}", "[INFO]".cyan().bold(), label.dimmed(), message);
 }
 
 pub fn badge_success(label: &str, message: &str) {
-    println!("  {} {:<14} {}", "✓".green().bold(), label.green().bold(), message);
+    println!("  {} {:<12} {}", "[OK]".green().bold(), label.dimmed(), message);
 }
 
 pub fn badge_warn(label: &str, message: &str) {
-    println!("  {} {:<14} {}", "⚠".yellow().bold(), label.yellow().bold(), message);
+    println!("  {} {:<12} {}", "[WARN]".yellow().bold(), label.dimmed(), message);
 }
 
 pub fn badge_error(label: &str, message: &str) {
-    println!("  {} {:<14} {}", "✗".red().bold(), label.red().bold(), message);
+    println!("  {} {:<12} {}", "[FAIL]".red().bold(), label.dimmed(), message);
 }
 
 pub fn badge_step(current: usize, total: usize, message: &str) {
     println!(
-        "\n{} {}",
-        format!("[{}/{}]", current, total).blue().bold(),
+        "\n  {} {}",
+        format!("── [{}/{}]", current, total).blue().bold(),
         message.bold()
     );
 }
 
-/// Render a formatted Key-Value Card with rounded Unicode borders.
+/// Render a formatted Key-Value Card with responsive borders.
 pub fn render_card(title: &str, items: &[(&str, &str)]) {
+    let term_width = get_terminal_width();
     let max_k = items.iter().map(|(k, _)| k.len()).max().unwrap_or(12).max(12);
     let max_v = items.iter().map(|(_, v)| v.len()).max().unwrap_or(24).max(24);
-    let total_inner = (max_k + max_v + 5).max(title.len() + 4).min(78);
+    let card_width = (max_k + max_v + 8)
+        .max(title.len() + 6)
+        .min(term_width.saturating_sub(4));
 
-    println!("  ╭─ {} {}", title.bold(), "─".repeat(total_inner.saturating_sub(title.len() + 3)));
+    println!("  ┌─ {} {}", title.bold(), "─".repeat(card_width.saturating_sub(title.len() + 3)).dimmed());
     for (k, v) in items {
-        let pad = total_inner.saturating_sub(k.len() + v.len() + 5);
-        println!("  │  {}: {}{}", k.cyan(), v, " ".repeat(pad));
+        let key_str = format!("{}:", k);
+        let available_val_width = card_width.saturating_sub(max_k + 5);
+        let val_display = if v.len() > available_val_width && available_val_width > 3 {
+            format!("{}...", &v[..available_val_width.saturating_sub(3)])
+        } else {
+            v.to_string()
+        };
+        let pad = card_width.saturating_sub(max_k + val_display.len() + 5);
+        println!("  │  {:<width$} {}{}", key_str.cyan(), val_display, " ".repeat(pad), width = max_k + 1);
     }
-    println!("  ╰{}", "─".repeat(total_inner + 3));
+    println!("  └{}", "─".repeat(card_width + 1).dimmed());
     println!();
 }
 
-/// Render a structured Unicode Table with aligned columns and rounded corners.
+/// Render a structured Unicode Table with aligned columns and responsive layout.
 pub fn render_table(title: &str, headers: &[&str], rows: &[Vec<String>]) {
     if headers.is_empty() {
         return;
@@ -110,7 +127,7 @@ pub fn render_table(title: &str, headers: &[&str], rows: &[Vec<String>]) {
 
     let total_width: usize = col_widths.iter().map(|w| w + 3).sum::<usize>() + 1;
 
-    println!("\n  ╭─ {} {}", title.bold(), "─".repeat(total_width.saturating_sub(title.len() + 5)));
+    println!("\n  ┌─ {} {}", title.bold(), "─".repeat(total_width.saturating_sub(title.len() + 5)).dimmed());
 
     // Header row
     print!("  │ ");
@@ -142,13 +159,13 @@ pub fn render_table(title: &str, headers: &[&str], rows: &[Vec<String>]) {
     }
 
     // Bottom border
-    print!("  ╰─");
+    print!("  └─");
     for (i, w) in col_widths.iter().enumerate() {
         print!("{}", "─".repeat(*w));
         if i + 1 < col_widths.len() {
             print!("─┴─");
         } else {
-            print!("─╯");
+            print!("─┘");
         }
     }
     println!();
@@ -165,7 +182,7 @@ pub fn select_menu(prompt: &str, options: &[(&str, &str)]) -> Result<usize> {
         for (i, (title, desc)) in options.iter().enumerate() {
             println!("     {}. {} — {}", i + 1, title, desc);
         }
-        print!("  {} Enter choice [1-{}]: ", "?".cyan().bold(), options.len());
+        print!("  {} Enter choice [1-{}]: ", "[?]".cyan().bold(), options.len());
         io::stdout().flush()?;
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
@@ -193,14 +210,15 @@ pub fn select_menu(prompt: &str, options: &[(&str, &str)]) -> Result<usize> {
         for (i, (title, desc)) in options.iter().enumerate() {
             if i == selected {
                 println!(
-                    "  {} {} {}",
-                    "➔".cyan().bold(),
-                    format!("{}. {}", i + 1, title).cyan().bold(),
-                    format!("— {}", desc).cyan()
+                    "  {} {:>2}. {:<32} {}",
+                    "›".cyan().bold(),
+                    i + 1,
+                    title.cyan().bold(),
+                    format!("— {}", desc).dimmed()
                 );
             } else {
                 println!(
-                    "     {}. {} {}",
+                    "     {:>2}. {:<32} {}",
                     i + 1,
                     title,
                     format!("— {}", desc).dimmed()
@@ -253,7 +271,7 @@ pub fn select_menu(prompt: &str, options: &[(&str, &str)]) -> Result<usize> {
 pub fn prompt_input(prompt: &str, default_val: Option<&str>) -> Result<String> {
     print!(
         "  {} {}{}: ",
-        "?".cyan().bold(),
+        "[?]".cyan().bold(),
         prompt,
         default_val.map(|d| format!(" [{}]", d.dimmed())).unwrap_or_default()
     );
@@ -275,7 +293,7 @@ pub fn prompt_input(prompt: &str, default_val: Option<&str>) -> Result<String> {
 /// Interactive Confirmation (Yes/No).
 pub fn confirm(prompt: &str, default_yes: bool) -> Result<bool> {
     let suffix = if default_yes { "[Y/n]" } else { "[y/N]" };
-    print!("  {} {} {}: ", "?".yellow().bold(), prompt, suffix.cyan());
+    print!("  {} {} {}: ", "[?]".yellow().bold(), prompt, suffix.cyan());
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -289,14 +307,14 @@ pub fn confirm(prompt: &str, default_yes: bool) -> Result<bool> {
     Ok(trimmed == "y" || trimmed == "yes")
 }
 
-/// Modern Styled Progress Bar for Partition Streaming.
+/// Modern Styled Progress Bar for Partition Streaming (Apple-like smooth bar).
 pub fn create_flash_progress(part_name: &str, total_bytes: u64) -> ProgressBar {
     let pb = ProgressBar::new(total_bytes);
     pb.set_style(
         ProgressStyle::default_bar()
-            .template("  Flashing {msg} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec}, ETA {eta})")
+            .template("  Flashing {msg} [{elapsed_precise}] [{bar:36.blue/cyan}] {bytes}/{total_bytes} ({bytes_per_sec}, ETA {eta})")
             .unwrap()
-            .progress_chars("█▓▒░ "),
+            .progress_chars("━╸ "),
     );
     pb.set_message(format!("{:<10}", part_name.bold()));
     pb
@@ -314,7 +332,7 @@ fn expand_path(p: &str) -> PathBuf {
 
 /// Launch or export the interactive visual web dashboard.
 pub fn launch_web_dashboard() -> Result<()> {
-    badge_info("DASHBOARD", "Generating interactive HTML visual diagnostics suite...");
+    badge_info("DASHBOARD", "Preparing interactive Apple-style visual diagnostics suite...");
     let local_path = PathBuf::from("dashboard.html");
     if local_path.exists() {
         badge_success("READY", &format!("Visual dashboard available at: {}", local_path.canonicalize()?.display()));
@@ -322,9 +340,9 @@ pub fn launch_web_dashboard() -> Result<()> {
         badge_info("CREATED", "Dashboard artifact ready in project root.");
     }
 
-    println!("\n  To open the interactive dashboard in your default browser, run:");
+    println!("\n  To open the dashboard in your default browser, run:");
     println!("    {}", "xdg-open dashboard.html".cyan().bold());
-    println!("  Or open the artifact in the Antigravity side panel.\n");
+    println!("  Or open the artifact in the side panel.\n");
 
     let _ = Command::new("xdg-open").arg("dashboard.html").spawn();
     Ok(())
@@ -364,47 +382,47 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
             println!();
         }
 
-        // 2. Interactive Menu
+        // 2. Interactive Menu (Zero emojis, Apple-like precision)
         let options = [
             (
-                "⚡ Quick Emergency Boot Unbrick",
+                "Emergency Boot Unbrick",
                 "Fix teal 'An error has occurred...' softbrick screen (flashes BOOT+VBMETA+RECOVERY)",
             ),
             (
-                "🔄 Emergency Wipe & Auto-Reboot",
+                "Emergency Wipe & Auto-Reboot",
                 "Bypass broken Power Button: hardware NAND erase & automatic One UI boot",
             ),
             (
-                "📦 Full Stock OS Restore",
+                "Full Stock OS Restore",
                 "Guided flash of SUPER, DTBO, BOOT, VBMETA, RECOVERY (dynamic partitions safe)",
             ),
             (
-                "🔍 Hardware Probe & Live PIT Inspector",
+                "Hardware Probe & Live PIT",
                 "Handshake with LOKE bootloader, negotiate tier, and view partition geometry",
             ),
             (
-                "🛡️ Verify Firmware & Sparse Images",
+                "Verify Firmware & Sparse Images",
                 "Check .tar.md5 checksums, Android Sparse headers, and PIT size limits",
             ),
             (
-                "🧪 In-Memory Flashing Simulator",
+                "In-Memory Flashing Simulator",
                 "Run dry-run flash simulation against virtual mock LOKE device with zero risk",
             ),
             (
-                "🔧 Configure Linux USB & Udev Rules",
+                "Configure Linux USB Subsystem",
                 "Install udev rules (04e8:685d), stop ModemManager, unload cdc_acm",
             ),
             (
-                "🌐 Launch Visual Web Dashboard",
-                "Open rich HTML interactive partition map and diagnostic dashboard",
+                "Open Interactive Web Dashboard",
+                "Launch Apple-inspired HTML storage geometry and diagnostic suite",
             ),
-            ("🚪 Exit", "Quit the recovery tool"),
+            ("Exit", "Terminate session and close"),
         ];
 
         let selection = match select_menu("Select Recovery Action:", &options) {
             Ok(idx) => idx,
             Err(_) => {
-                println!("\n  Exiting Exynos LOKE Rescue. Have a great day!\n");
+                println!("\n  Exiting Exynos LOKE Rescue. Session closed.\n");
                 return Ok(());
             }
         };
@@ -412,7 +430,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
         match selection {
             0 => {
                 // Emergency Boot Unbrick
-                println!("\n{}", "── Mode 1: Quick Emergency Boot Recovery ──".cyan().bold());
+                println!("\n  {}", "── Mode 1: Quick Emergency Boot Recovery ──".cyan().bold());
                 badge_info(
                     "PURPOSE",
                     "Restores signed BOOT, VBMETA, and RECOVERY to clear bootloader emergency state.",
@@ -471,14 +489,14 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
 
             1 => {
                 // Emergency Wipe & Auto-Reboot (Broken Power Key Bypass)
-                println!("\n{}", "── Mode 2: Emergency Wipe & Auto-Reboot ──".cyan().bold());
+                println!("\n  {}", "── Mode 2: Emergency Wipe & Auto-Reboot ──".cyan().bold());
                 render_card(
                     "BROKEN POWER BUTTON RECOVERY BYPASS",
                     &[
                         ("Mechanism", "Low-level NAND Hardware Erase (Opcode 0x64 Subcmd 0x07)"),
                         ("Partition", "USERDATA / CACHE (Clears corrupt user files)"),
                         ("Benefit", "Bypasses Stock Recovery wipe confirmation screen entirely"),
-                        ("Outcome", "Device automatically reboots straight into One UI!"),
+                        ("Outcome", "Device automatically reboots straight into One UI"),
                     ],
                 );
 
@@ -492,7 +510,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                     ) {
                         Ok(_) => {
                             badge_step(2, 2, "Storage Erased & Auto-Reboot Triggered");
-                            badge_success("SUCCESS", "USERDATA wiped! Phone is booting directly to One UI.");
+                            badge_success("SUCCESS", "USERDATA wiped. Phone is booting directly to One UI.");
                         }
                         Err(e) => {
                             badge_error("ERASE FAILED", &format!("{:#}", e));
@@ -506,7 +524,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
 
             2 => {
                 // Full Stock OS Restore
-                println!("\n{}", "── Mode 3: Full Raw Stock OS Restore ──".cyan().bold());
+                println!("\n  {}", "── Mode 3: Full Raw Stock OS Restore ──".cyan().bold());
                 badge_info(
                     "PURPOSE",
                     "Flashes SUPER (dynamic partitions container), DTBO, BOOT, VBMETA, and RECOVERY.",
@@ -549,7 +567,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                 ) {
                     Ok(_) => {
                         badge_step(3, 3, "Full Restore Committed (PASS)");
-                        badge_success("RESTORED", "All stock OS partitions flashed successfully!");
+                        badge_success("RESTORED", "All stock OS partitions flashed successfully.");
                     }
                     Err(e) => {
                         badge_error("RESTORE FAILED", &format!("{:#}", e));
@@ -560,7 +578,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
 
             3 => {
                 // Hardware Probe & Live PIT Inspector
-                println!("\n{}", "── Hardware Probe & Partition Table Inspector ──".cyan().bold());
+                println!("\n  {}", "── Hardware Probe & Partition Table Inspector ──".cyan().bold());
                 if usb_status.is_some() {
                     badge_step(1, 2, "Negotiating ODIN<->LOKE Handshake...");
                     match NativeLokeSession::connect(cli.verbose) {
@@ -606,7 +624,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
 
             4 => {
                 // Verify Firmware & Sparse Images
-                println!("\n{}", "── Firmware & Sparse Image Integrity Inspector ──".cyan().bold());
+                println!("\n  {}", "── Firmware & Sparse Image Integrity Inspector ──".cyan().bold());
                 let default_file = if Path::new("/home/ebiza/Downloads/stock/super.img").is_file() {
                     Some("~/Downloads/stock/super.img")
                 } else {
@@ -636,7 +654,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                                             ("Algorithm", "MD5 (Trailing 32-hex digest)"),
                                             ("Digest", &res.computed_md5),
                                             ("Payload Size", &format_bytes(res.tar_payload_bytes)),
-                                            ("Status", "Official cryptographic integrity confirmed"),
+                                            ("Status", "PASS (Cryptographic integrity confirmed)"),
                                         ],
                                     );
                                 } else {
@@ -710,14 +728,14 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
 
             5 => {
                 // In-Memory Flashing Simulator
-                println!("\n{}", "── In-Memory Flashing Simulation Testbed ──".cyan().bold());
+                println!("\n  {}", "── In-Memory Flashing Simulation Testbed ──".cyan().bold());
                 badge_info(
                     "TESTBED",
                     "Runs full Odin v3 wire session in memory against a virtual Samsung LOKE device.",
                 );
 
                 let sim_options = [
-                    ("Clean Successful Flash", "Simulate ODIN v3 handshake, NAND erase, and BOOT/RECOVERY streaming"),
+                    ("Clean Session Simulation", "Simulate ODIN v3 handshake, NAND erase, and BOOT/RECOVERY streaming"),
                     ("Fault Injection: VaultKeeper Lock (-1)", "Simulate OEM unlock / KG Prenormal lock rejection"),
                     ("Fault Injection: Bulk USB Timeout (-7)", "Simulate USB pipe stall and timeout on v4 query"),
                 ];
@@ -762,7 +780,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                     badge_step(4, 4, "Closing Session (CMD_SESSION_END 0x67)...");
                     let end_frame = loke_proto::ControlFrame::session_end(SessionEndSubcmd::RebootNormal);
                     let _ = mock.handle_control_frame(&end_frame)?;
-                    badge_success("PASS", "Simulation completed with zero protocol errors!");
+                    badge_success("PASS", "Simulation completed with zero protocol errors.");
                 }
 
                 wait_for_enter()?;
@@ -770,7 +788,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
 
             6 => {
                 // Configure Linux USB & Udev Rules
-                println!("\n{}", "── Linux USB Stack & Udev Sanitization ──".cyan().bold());
+                println!("\n  {}", "── Linux USB Stack & Udev Permissions ──".cyan().bold());
                 match usb::sanitize_linux_usb(false) {
                     Ok(_) => badge_success("COMPLETED", "Linux USB environment ready for high-speed LOKE transfers."),
                     Err(e) => badge_error("USB SANITIZE ERROR", &format!("{:#}", e)),
@@ -786,7 +804,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
 
             8 => {
                 // Exit
-                println!("\n  Exiting Exynos LOKE Rescue. Device safety preserved.\n");
+                println!("\n  Exiting Exynos LOKE Rescue. Session terminated.\n");
                 return Ok(());
             }
 

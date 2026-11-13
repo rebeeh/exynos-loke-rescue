@@ -140,7 +140,7 @@ impl NativeLokeSession {
         if self.verbose {
             println!(
                 "    {} Negotiated LOKE transport tier: {:?}",
-                "✓".green(),
+                "[OK]".green().bold(),
                 self.tier
             );
         }
@@ -263,7 +263,7 @@ impl NativeLokeSession {
         let sectors = ack.payload();
         println!(
             "{}",
-            format!("✓ Storage erased successfully ({} sectors)", sectors)
+            format!("[OK] Storage erased successfully ({} sectors)", sectors)
                 .green()
                 .bold()
         );
