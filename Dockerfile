@@ -2,7 +2,7 @@
 # Stage 1: Build static musl binary
 FROM rust:1.80-alpine AS builder
 
-RUN apk add --no-cache musl-dev liblz4-dev pkgconfig
+RUN apk add --no-cache musl-dev
 
 WORKDIR /usr/src/exynos-loke-rescue
 COPY Cargo.toml Cargo.lock build.rs ./
@@ -15,7 +15,7 @@ RUN cargo build --release
 # Stage 2: Minimal runtime image
 FROM alpine:3.20
 
-RUN apk add --no-cache udev eudev libusb
+RUN apk add --no-cache eudev
 
 COPY --from=builder /usr/src/exynos-loke-rescue/target/release/exynos-loke-rescue /usr/local/bin/exynos-loke-rescue
 COPY --from=builder /usr/src/exynos-loke-rescue/udev/60-exynos-loke-rescue.rules /etc/udev/rules.d/60-exynos-loke-rescue.rules
