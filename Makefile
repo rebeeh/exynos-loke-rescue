@@ -1,7 +1,8 @@
 # Makefile for exynos-loke-rescue
 # Deterministic Linux firmware recovery engine for Samsung Exynos SoCs
 
-CARGO ?= cargo
+CARGO ?= $(shell command -v cargo 2>/dev/null || echo $(HOME)/.cargo/bin/cargo)
+export PATH := $(HOME)/.cargo/bin:$(PATH)
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 RULESDIR ?= /etc/udev/rules.d

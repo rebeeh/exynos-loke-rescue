@@ -113,6 +113,10 @@ impl PitTable {
             .find(|e| e.partition_name.eq_ignore_ascii_case(name))
     }
 
+    pub fn find_entry(&self, name: &str) -> Option<&PitEntry> {
+        self.find_partition(name)
+    }
+
     pub fn print_summary(&self) {
         println!(
             "{} ({} partitions)",

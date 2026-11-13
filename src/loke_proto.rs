@@ -22,6 +22,20 @@ pub enum LokeCommand {
     DynamicSuperCheck = 0x6a, // Dynamic partition pre-flight sizing check
 }
 
+impl LokeCommand {
+    pub fn from_u32(val: u32) -> Option<Self> {
+        match val {
+            0x64 => Some(Self::SessionSetup),
+            0x65 => Some(Self::PitTransfer),
+            0x66 => Some(Self::FileTransfer),
+            0x67 => Some(Self::SessionEnd),
+            0x69 => Some(Self::DeviceInfo),
+            0x6a => Some(Self::DynamicSuperCheck),
+            _ => None,
+        }
+    }
+}
+
 /// Subcommands for `LokeCommand::SessionSetup` (`0x64`).
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -31,6 +45,19 @@ pub enum SessionSetupSubcmd {
     SetTflashMode = 0x02,
     SetSalesCode = 0x05, // Set 3-letter CSC / Sales Code in device storage
     NandErase = 0x07,    // Low-level hardware NAND storage erase of USERDATA/cache
+}
+
+impl SessionSetupSubcmd {
+    pub fn from_u32(val: u32) -> Option<Self> {
+        match val {
+            0x00 => Some(Self::BeginSession),
+            0x01 => Some(Self::SetTotalBytes),
+            0x02 => Some(Self::SetTflashMode),
+            0x05 => Some(Self::SetSalesCode),
+            0x07 => Some(Self::NandErase),
+            _ => None,
+        }
+    }
 }
 
 /// Subcommands for `LokeCommand::PitTransfer` (`0x65`).
@@ -43,6 +70,18 @@ pub enum PitSubcmd {
     DumpEnd = 0x03,
 }
 
+impl PitSubcmd {
+    pub fn from_u32(val: u32) -> Option<Self> {
+        match val {
+            0x00 => Some(Self::FlashStart),
+            0x01 => Some(Self::DumpStart),
+            0x02 => Some(Self::DumpChunk),
+            0x03 => Some(Self::DumpEnd),
+            _ => None,
+        }
+    }
+}
+
 /// Subcommands for `LokeCommand::FileTransfer` (`0x66`).
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -50,6 +89,17 @@ pub enum FileTransferSubcmd {
     StartPartition = 0x00,
     DataSequence = 0x01,
     CommitPartition = 0x02,
+}
+
+impl FileTransferSubcmd {
+    pub fn from_u32(val: u32) -> Option<Self> {
+        match val {
+            0x00 => Some(Self::StartPartition),
+            0x01 => Some(Self::DataSequence),
+            0x02 => Some(Self::CommitPartition),
+            _ => None,
+        }
+    }
 }
 
 /// Subcommands for `LokeCommand::SessionEnd` (`0x67`).
@@ -60,6 +110,17 @@ pub enum SessionEndSubcmd {
     #[default]
     RebootNormal = 0x01, // Normal reboot into Android OS
     RebootDownload = 0x02, // Redownload: reboot back into Download Mode
+}
+
+impl SessionEndSubcmd {
+    pub fn from_u32(val: u32) -> Option<Self> {
+        match val {
+            0x00 => Some(Self::CloseNoReboot),
+            0x01 => Some(Self::RebootNormal),
+            0x02 => Some(Self::RebootDownload),
+            _ => None,
+        }
+    }
 }
 
 /// Negotiated protocol tier governing chunk sizes and v4 query eligibility.
@@ -120,6 +181,42 @@ impl ControlFrame {
         self
     }
 
+    pub fn session_setup_init(tier: ProtocolTier) -> Self {
+        Self::new(
+            LokeCommand::SessionSetup,
+            SessionSetupSubcmd::BeginSession as u32,
+        )
+        .with_args(tier as u32, 0, 0, 0)
+    }
+
+    pub fn nand_erase() -> Self {
+        Self::new(
+            LokeCommand::SessionSetup,
+            SessionSetupSubcmd::NandErase as u32,
+        )
+        .with_args(0, 0, 0, 0)
+    }
+
+    pub fn file_transfer_start(part_id: u32, size: u32, chunks: u32) -> Self {
+        Self::new(
+            LokeCommand::FileTransfer,
+            FileTransferSubcmd::StartPartition as u32,
+        )
+        .with_args(part_id, size, chunks, 0)
+    }
+
+    pub fn file_transfer_end(part_id: u32) -> Self {
+        Self::new(
+            LokeCommand::FileTransfer,
+            FileTransferSubcmd::CommitPartition as u32,
+        )
+        .with_args(part_id, 0, 0, 0)
+    }
+
+    pub fn session_end(mode: SessionEndSubcmd) -> Self {
+        Self::new(LokeCommand::SessionEnd, mode as u32).with_args(0, 0, 0, 0)
+    }
+
     /// Serializes the frame into an exact 1024-byte zero-padded wire buffer.
     pub fn to_bytes(&self) -> [u8; CONTROL_PACKET_SIZE] {
         let mut buf = [0u8; CONTROL_PACKET_SIZE];
@@ -168,5 +265,9 @@ impl LokeAck {
     /// Returns the positive payload / sector count or data volume returned by LOKE.
     pub fn payload(&self) -> u32 {
         self.status.max(0) as u32
+    }
+
+    pub fn is_success(&self) -> bool {
+        self.status >= 0
     }
 }

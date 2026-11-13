@@ -52,3 +52,63 @@ pub fn print_diagnostic_guidance(err_msg: &str, is_custom_binary: bool) {
             .bold()
     );
 }
+
+pub fn analyze_loke_failure(code: i32, part_name: &str) {
+    println!(
+        "\n{}",
+        "==================== LOKE FAILURE ANALYSIS ===================="
+            .red()
+            .bold()
+    );
+    match code {
+        -1 => {
+            println!(
+                "{}",
+                format!(
+                    "PARTITION: {}\n\
+                     ROOT CAUSE: Bootloader rejected binary signature (VaultKeeper / KG State: Prenormal)\n\
+                     Device bootloader enforces OEM signature verification and rejected unsigned image.\n\
+                     REMEDIATION:\n\
+                     1. Boot into stock One UI and complete setup wizard.\n\
+                     2. Connect to Wi-Fi, open Developer Options, and verify OEM unlocking is ENABLED.\n\
+                     3. Ensure VaultKeeper status in Download Mode reads 'KG STATE: CHECKING' or 'COMPLETED'.",
+                    part_name
+                )
+                .yellow()
+            );
+        }
+        -7 => {
+            println!(
+                "{}",
+                format!(
+                    "PARTITION: {}\n\
+                     ROOT CAUSE: USB Bulk Read/Write Timeout (-7)\n\
+                     Device bootloader hung or dropped USB communication.\n\
+                     REMEDIATION:\n\
+                     1. Reconnect USB cable directly without USB hubs.\n\
+                     2. Use Odin v3 transport tier without v4 subcommands.",
+                    part_name
+                )
+                .yellow()
+            );
+        }
+        other => {
+            println!(
+                "{}",
+                format!(
+                    "PARTITION: {}\n\
+                     ERROR CODE: {}\n\
+                     Inspect device screen for bootloader error message.",
+                    part_name, other
+                )
+                .yellow()
+            );
+        }
+    }
+    println!(
+        "{}\n",
+        "================================================================"
+            .red()
+            .bold()
+    );
+}

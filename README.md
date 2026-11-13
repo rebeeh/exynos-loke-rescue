@@ -144,6 +144,7 @@ exynos-loke-rescue/
 │   ├── capture_usbmon.sh           # Live Odin wire telemetry capture via usbmon
 │   └── rea_extract_sboot.sh        # Unpacks sboot.bin for REA / Ghidra analysis
 ├── src/
+│   ├── lib.rs                      # Core engine library crate interface
 │   ├── main.rs                     # Primary CLI coordinator & state machine
 │   ├── cli.rs                      # Clap v4 argument parser & subcommands
 │   ├── error.rs                    # Structured error taxonomy (RescueError)
@@ -152,10 +153,15 @@ exynos-loke-rescue/
 │   ├── nusb_transport.rs           # Direct native USB bulk I/O engine via nusb
 │   ├── pit.rs                      # Samsung binary PIT table parser (132-byte layout)
 │   ├── archive.rs                  # Zero-copy .tar.md5 and .lz4 frame streamer
+│   ├── sparse.rs                   # Android Sparse Image (0xed26ff3a) parser & geometry validator
+│   ├── image_verifier.rs           # TAR.MD5 checksum validator & partition sizing verifier
+│   ├── mock.rs                     # Virtual in-memory Samsung LOKE device simulator
 │   ├── diagnostics.rs              # Real-time LOKE error pattern interpreter
 │   └── flasher.rs                  # Dual-backend native + samloader execution supervisor
 └── tests/
-    └── protocol_and_archive_tests.rs # Test suite for control frames, PIT, and tar.md5
+    ├── protocol_and_archive_tests.rs # Test suite for control frames, PIT, and tar.md5
+    ├── mock_device_tests.rs          # End-to-end integration tests using in-memory mock LOKE device
+    └── sparse_and_verifier_tests.rs  # Unit tests for sparse images, MD5 trailers & PIT geometry
 ```
 
 ---
@@ -285,6 +291,29 @@ exynos-loke-rescue emergency-wipe-reboot
 ```
 * Issues LOKE command `0x64:0x07` (hardware NAND erase of USERDATA/cache).
 * Bypasses the broken power-button limitation where the user cannot confirm the stock recovery factory reset prompt!
+
+### 8. Archive & Image Geometry Verification (`verify-image`)
+```bash
+# Verify official Samsung .tar.md5 checksum trailer and inspect partition contents:
+exynos-loke-rescue verify-image -i ~/Downloads/stock/AP_*.tar.md5 -p ~/Downloads/stock/A21S_EUR_OPEN.pit
+
+# Deep inspect Android Sparse Image geometry on super.img against device PIT boundaries:
+exynos-loke-rescue verify-image -i ~/Downloads/stock/super.img -p ~/Downloads/stock/A21S_EUR_OPEN.pit
+```
+* Validates trailing 32-character hexadecimal MD5 checksum against the uncorrupted TAR stream.
+* Identifies Android Sparse image magic (`0xed26ff3a`), computing total unsparse blocks and expanded byte size.
+* Compares effective partition payloads directly against PIT boundaries to catch oversized partitions before touching flash.
+
+### 9. In-Memory Software Simulation (`simulate-flash`)
+```bash
+# Perform end-to-end dry-run flashing simulation against in-memory mock LOKE device:
+exynos-loke-rescue simulate-flash -e
+
+# Test fault diagnosis under simulated VaultKeeper Prenormal lock (Code -1):
+exynos-loke-rescue simulate-flash --fault-vaultkeeper
+```
+* Emulates the complete Samsung Download Mode Little Kernel (LK) state machine in memory.
+* Tests packet sequencing, handshake, NAND erase, chunked streaming, and session commitment without needing physical USB hardware.
 
 ---
 

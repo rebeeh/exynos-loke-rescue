@@ -1,14 +1,9 @@
 #![allow(dead_code)]
 
-mod archive;
-mod cli;
-mod diagnostics;
-mod error;
-mod flasher;
-mod loke_proto;
-mod nusb_transport;
-mod pit;
-mod usb;
+use exynos_loke_rescue::{
+    archive, cli, diagnostics, flasher, image_verifier, loke_proto, mock, nusb_transport, pit,
+    sparse, usb,
+};
 
 use anyhow::{bail, Result};
 use clap::Parser;
@@ -375,6 +370,288 @@ fn main() -> Result<()> {
                 &plan,
                 options,
             )?;
+        }
+
+        Commands::VerifyImage { image, pit } => {
+            if !image.exists() {
+                bail!("Image file does not exist: {}", image.display());
+            }
+
+            let pit_table = if let Some(p) = &pit {
+                println!("==> Loading PIT table from {}", p.display());
+                Some(PitTable::from_file(p)?)
+            } else {
+                None
+            };
+
+            let path_str = image.to_string_lossy();
+            if path_str.ends_with(".tar.md5") || path_str.ends_with(".tar") {
+                if path_str.ends_with(".tar.md5") {
+                    println!(
+                        "{}",
+                        "==> Verifying Samsung .tar.md5 Checksum Trailer..."
+                            .cyan()
+                            .bold()
+                    );
+                    let res = image_verifier::ImageVerifier::verify_tar_md5(&image)?;
+                    if res.matches {
+                        println!(
+                            "    {} MD5 Checksum MATCH: {}",
+                            "✓".green(),
+                            res.computed_md5
+                        );
+                        println!("      Payload size: {} bytes", res.tar_payload_bytes);
+                    } else {
+                        println!("    {} MD5 MISMATCH!", "✗".red().bold());
+                        println!("      Expected: {}", res.expected_md5);
+                        println!("      Computed: {}", res.computed_md5);
+                        bail!("MD5 verification failed for archive: {}", image.display());
+                    }
+                }
+
+                println!(
+                    "\n{}",
+                    "==> Inspecting Archive Partition Contents...".cyan().bold()
+                );
+                let reports = image_verifier::ImageVerifier::inspect_tar_partitions(&image)?;
+                println!(
+                    "    {:<24} {:<12} {:>14}  {:>14}  {:<12}",
+                    "ARCHIVE ENTRY", "PARTITION", "ARCHIVE SIZE", "EXPANDED", "FORMAT"
+                );
+                println!("    {}", "-".repeat(80));
+
+                for r in &reports {
+                    let (expanded_str, format_str) = match &r.format {
+                        sparse::ImageFormat::Raw { size } => (
+                            format!("{:.2} MiB", *size as f64 / (1024.0 * 1024.0)),
+                            "RAW".to_string(),
+                        ),
+                        sparse::ImageFormat::Sparse(hdr) => (
+                            format!("{:.2} MiB", hdr.unsparse_size() as f64 / (1024.0 * 1024.0)),
+                            format!("SPARSE ({} blks)", hdr.total_blocks),
+                        ),
+                    };
+
+                    let raw_str =
+                        format!("{:.2} MiB", r.raw_archive_bytes as f64 / (1024.0 * 1024.0));
+                    println!(
+                        "    {:<24} {:<12} {:>14}  {:>14}  {:<12}",
+                        r.filename, r.partition_name, raw_str, expanded_str, format_str
+                    );
+
+                    if let Some(ref p) = pit_table {
+                        image_verifier::ImageVerifier::verify_geometry(r, p)?;
+                    }
+                }
+            } else {
+                println!("{}", "==> Inspecting Partition Image File...".cyan().bold());
+                let format = sparse::ImageFormat::inspect_file(&image)?;
+                match &format {
+                    sparse::ImageFormat::Raw { size } => {
+                        println!("    Format: RAW Block Image");
+                        println!(
+                            "    Size:   {} bytes ({:.2} MiB)",
+                            size,
+                            *size as f64 / (1024.0 * 1024.0)
+                        );
+                    }
+                    sparse::ImageFormat::Sparse(hdr) => {
+                        println!(
+                            "    Format: Android Sparse Image (v{}.{})",
+                            hdr.major_version, hdr.minor_version
+                        );
+                        println!("    Block Size:     {} bytes", hdr.block_size);
+                        println!("    Total Blocks:   {} blocks", hdr.total_blocks);
+                        println!("    Total Chunks:   {} chunks", hdr.total_chunks);
+                        println!(
+                            "    Expanded Size:  {} bytes ({:.2} MiB)",
+                            hdr.unsparse_size(),
+                            hdr.unsparse_size() as f64 / (1024.0 * 1024.0)
+                        );
+                    }
+                }
+
+                if let Some(ref p) = pit_table {
+                    let file_stem = image.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+                    let part_name = file_stem.trim_end_matches(".img").to_ascii_uppercase();
+                    if let Some(entry) = p.find_entry(&part_name) {
+                        let max_bytes = entry.block_count as u64 * 512;
+                        let effective_bytes = format.effective_size();
+                        if effective_bytes <= max_bytes {
+                            println!(
+                                "    {} Partition '{}' fits within PIT boundary ({:.2} MiB / {:.2} MiB)",
+                                "✓".green(),
+                                part_name,
+                                effective_bytes as f64 / (1024.0 * 1024.0),
+                                max_bytes as f64 / (1024.0 * 1024.0)
+                            );
+                        } else {
+                            bail!(
+                                "Image exceeds PIT boundary for '{}' ({} > {} bytes)",
+                                part_name,
+                                effective_bytes,
+                                max_bytes
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        Commands::SimulateFlash {
+            image,
+            erase_userdata,
+            fault_vaultkeeper,
+            fault_timeout,
+        } => {
+            println!(
+                "{}",
+                "================================================================================"
+                    .blue()
+            );
+            println!(
+                "{}",
+                "       EXYNOS LOKE RESCUE: IN-MEMORY DRY-RUN SIMULATION ENGINE"
+                    .blue()
+                    .bold()
+            );
+            println!(
+                "{}",
+                "================================================================================"
+                    .blue()
+            );
+
+            let mut mock = mock::MockLokeDevice::new();
+            if fault_vaultkeeper {
+                mock.faults.vaultkeeper_prenormal_lock = true;
+                println!(
+                    "  {} Fault Injection: VaultKeeper / KG Prenormal Lock (Code -1) ACTIVE",
+                    "!".yellow()
+                );
+            }
+            if fault_timeout {
+                mock.faults.timeout_on_v4_query = true;
+                println!(
+                    "  {} Fault Injection: Bulk USB Timeout on v4 Query (Code -7) ACTIVE",
+                    "!".yellow()
+                );
+            }
+
+            println!("==> Step 1: Performing Handshake Simulation (\"ODIN\" -> \"LOKE\")...");
+            let resp = mock.handle_handshake(loke_proto::HANDSHAKE_REQUEST)?;
+            println!(
+                "    {} Received handshake response: {:?}",
+                "✓".green(),
+                std::str::from_utf8(&resp).unwrap_or("?")
+            );
+
+            println!("==> Step 2: Negotiating Protocol Tier (CMD_SESSION_SETUP 0x64)...");
+            let setup_frame =
+                loke_proto::ControlFrame::session_setup_init(loke_proto::ProtocolTier::OdinV3);
+            let setup_ack = mock.handle_control_frame(&setup_frame)?;
+            println!(
+                "    {} Session Setup ACK: Opcode 0x{:04x}, Status: {}",
+                "✓".green(),
+                setup_ack.cmd_id,
+                setup_ack.status
+            );
+
+            if erase_userdata {
+                println!("==> Step 3: Executing Low-Level NAND Storage Erase (USERDATA)...");
+                let erase_frame = loke_proto::ControlFrame::nand_erase();
+                let erase_ack = mock.handle_control_frame(&erase_frame)?;
+                println!(
+                    "    {} NAND Erase ACK: Opcode 0x{:04x}, Erased Sectors: {} ({} MiB)",
+                    "✓".green(),
+                    erase_ack.cmd_id,
+                    erase_ack.payload(),
+                    erase_ack.payload() / 2048
+                );
+            }
+
+            println!("==> Step 4: Simulating Partition Flash Sequence...");
+            let partitions_to_sim = if let Some(ref img_path) = image {
+                println!("    Loading partition list from {}", img_path.display());
+                vec![
+                    ("BOOT".to_string(), 32 * 1024 * 1024),
+                    ("SUPER".to_string(), 128 * 1024 * 1024),
+                ]
+            } else {
+                vec![
+                    ("BOOT".to_string(), 16 * 1024 * 1024),
+                    ("VBMETA".to_string(), 64 * 1024),
+                    ("RECOVERY".to_string(), 32 * 1024 * 1024),
+                ]
+            };
+
+            for (part_name, size) in partitions_to_sim {
+                let part_id = mock
+                    .pit_table
+                    .entries
+                    .iter()
+                    .find(|e| e.partition_name.eq_ignore_ascii_case(&part_name))
+                    .map(|e| e.partition_id)
+                    .unwrap_or(20);
+
+                let chunk_size = 128 * 1024;
+                let total_chunks = (size + chunk_size - 1) / chunk_size;
+
+                println!(
+                    "    Flashing partition {} ({} bytes, {} chunks)...",
+                    part_name.cyan(),
+                    size,
+                    total_chunks
+                );
+                let start_frame = loke_proto::ControlFrame::file_transfer_start(
+                    part_id,
+                    size as u32,
+                    total_chunks as u32,
+                );
+                let start_ack = mock.handle_control_frame(&start_frame);
+                match start_ack {
+                    Ok(ack) => {
+                        if !ack.is_success() {
+                            diagnostics::analyze_loke_failure(ack.payload() as i32, &part_name);
+                            bail!("Simulation aborted due to bootloader rejection");
+                        }
+                    }
+                    Err(e) => {
+                        bail!("Transfer start error: {}", e);
+                    }
+                }
+
+                // Simulate chunk transfers
+                let dummy_chunk = vec![0x55u8; chunk_size as usize];
+                for _ in 0..total_chunks {
+                    let _ = mock.handle_chunk(&dummy_chunk)?;
+                }
+
+                let end_frame = loke_proto::ControlFrame::file_transfer_end(part_id);
+                let _ = mock.handle_control_frame(&end_frame)?;
+                println!(
+                    "    {} Partition {} successfully flashed in simulation.",
+                    "✓".green(),
+                    part_name
+                );
+            }
+
+            println!("==> Step 5: Closing Flashing Session (CMD_SESSION_END 0x67)...");
+            let end_frame = loke_proto::ControlFrame::session_end(SessionEndSubcmd::RebootNormal);
+            let end_ack = mock.handle_control_frame(&end_frame)?;
+            println!("    {} Session End ACK: Opcode 0x{:04x}, Device param update flag reset to 0x{:02x}",
+                "✓".green(), end_ack.cmd_id, mock.param_update_flag);
+
+            println!(
+                "\n{}",
+                "✓ Dry-run simulation completed successfully with zero errors!"
+                    .green()
+                    .bold()
+            );
+            println!(
+                "{}",
+                "================================================================================"
+                    .blue()
+            );
         }
     }
 

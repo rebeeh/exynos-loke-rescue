@@ -197,4 +197,34 @@ pub enum Commands {
         #[arg(long, default_value_t = true)]
         no_reboot: bool,
     },
+
+    /// Verify MD5 trailer checksum and examine partition geometry/sparse headers of an archive or image file
+    VerifyImage {
+        /// Path to .tar, .tar.md5, or raw/sparse .img file
+        #[arg(short, long)]
+        image: PathBuf,
+
+        /// Optional path to .pit file to verify that partitions fit within device boundaries
+        #[arg(short, long)]
+        pit: Option<PathBuf>,
+    },
+
+    /// Perform a software dry-run flashing simulation against the in-memory mock LOKE device
+    SimulateFlash {
+        /// Optional path to AP archive or raw images to simulate flashing
+        #[arg(short, long)]
+        image: Option<PathBuf>,
+
+        /// Simulate low-level NAND hardware erase on USERDATA
+        #[arg(short = 'e', long = "erase")]
+        erase_userdata: bool,
+
+        /// Inject mock VaultKeeper / Knox Guard Prenormal lock failure (Code -1)
+        #[arg(long)]
+        fault_vaultkeeper: bool,
+
+        /// Inject mock USB timeout failure (Code -7)
+        #[arg(long)]
+        fault_timeout: bool,
+    },
 }
