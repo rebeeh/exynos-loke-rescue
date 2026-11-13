@@ -6,118 +6,150 @@
   <title>Exynos LOKE Rescue — Liquid Glass Diagnostics Suite</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
-    /* Apple Liquid Glass Design System Core Tokens with Dynamic Contrast Syncing */
+    /* Apple Liquid Glass Design System Core Tokens (iOS 26/27 Human Interface) */
     :root {
+      /* Apple Dark Mode System Palette */
       --background: #09090b;
-      --foreground: #f4f4f5;
-      --muted-foreground: #d4d4d8;
-      --glass-surface-bg: rgba(24, 24, 27, 0.75);
+      --foreground: #f5f5f7;
+      --muted-foreground: #a1a1aa;
+      --muted-foreground-subtle: #71717a;
+      
+      --glass-surface-bg: rgba(28, 28, 30, 0.75);
       --glass-surface-border: rgba(255, 255, 255, 0.16);
-      --glass-card-bg: rgba(39, 39, 42, 0.65);
+      --glass-card-bg: rgba(44, 44, 46, 0.65);
       --glass-card-border: rgba(255, 255, 255, 0.12);
-      --glass-pill-bg: rgba(255, 255, 255, 0.08);
+      --glass-pill-bg: rgba(58, 58, 60, 0.50);
       --glass-pill-border: rgba(255, 255, 255, 0.16);
-      --text-contrast-primary: #f4f4f5;
-      --text-contrast-secondary: #d4d4d8;
-      --text-contrast-tertiary: #a1a1aa;
-      --accent-color: #0071e3;
-      --accent-glow: rgba(0, 113, 227, 0.30);
+
+      --apple-blue: #0a84ff;
+      --apple-green: #30d158;
+      --apple-orange: #ff9f0a;
+      --apple-red: #ff453a;
+      --apple-purple: #bf5af2;
+      --apple-teal: #64d2ff;
+      --apple-indigo: #5e5ce6;
+      --accent-glow: rgba(10, 132, 255, 0.32);
+      --ambient-orb-1: rgba(10, 132, 255, 0.18);
+      --ambient-orb-2: rgba(48, 209, 88, 0.14);
+      --ambient-orb-3: rgba(191, 90, 242, 0.15);
     }
 
-    /* Light Theme Contrast Syncing */
+    /* Apple Light Mode Contrast Syncing (macOS Sequoia / iOS Light Palette) */
     .light, [data-theme="light"] {
-      --background: #f8fafc;
-      --foreground: #09090b;
-      --muted-foreground: #334155;
-      --glass-surface-bg: rgba(255, 255, 255, 0.94);
-      --glass-surface-border: rgba(0, 0, 0, 0.14);
-      --glass-card-bg: rgba(244, 244, 245, 0.94);
-      --glass-card-border: rgba(0, 0, 0, 0.10);
-      --glass-pill-bg: rgba(0, 0, 0, 0.05);
-      --glass-pill-border: rgba(0, 0, 0, 0.12);
-      --text-contrast-primary: #09090b;
-      --text-contrast-secondary: #1e293b;
-      --text-contrast-tertiary: #475569;
-      --accent-color: #0062c4;
-      --accent-glow: rgba(0, 113, 227, 0.20);
+      --background: #f2f2f7;
+      --foreground: #1d1d1f;
+      --muted-foreground: #424245;
+      --muted-foreground-subtle: #6e6e73;
+
+      --glass-surface-bg: rgba(255, 255, 255, 0.90);
+      --glass-surface-border: rgba(0, 0, 0, 0.10);
+      --glass-card-bg: rgba(255, 255, 255, 0.80);
+      --glass-card-border: rgba(0, 0, 0, 0.08);
+      --glass-pill-bg: rgba(0, 0, 0, 0.04);
+      --glass-pill-border: rgba(0, 0, 0, 0.09);
+
+      --apple-blue: #0071e3;
+      --apple-green: #34c759;
+      --apple-orange: #ff9500;
+      --apple-red: #ff3b30;
+      --apple-purple: #af52de;
+      --apple-teal: #00a2c7;
+      --apple-indigo: #5856d6;
+      --accent-glow: rgba(0, 113, 227, 0.22);
+      --ambient-orb-1: rgba(0, 113, 227, 0.12);
+      --ambient-orb-2: rgba(52, 199, 89, 0.10);
+      --ambient-orb-3: rgba(175, 82, 222, 0.10);
     }
 
     @media (prefers-color-scheme: light) {
       :root:not(.dark) {
-        --background: #f8fafc;
-        --foreground: #09090b;
-        --muted-foreground: #334155;
-        --glass-surface-bg: rgba(255, 255, 255, 0.94);
-        --glass-surface-border: rgba(0, 0, 0, 0.14);
-        --glass-card-bg: rgba(244, 244, 245, 0.94);
-        --glass-card-border: rgba(0, 0, 0, 0.10);
-        --glass-pill-bg: rgba(0, 0, 0, 0.05);
-        --glass-pill-border: rgba(0, 0, 0, 0.12);
-        --text-contrast-primary: #09090b;
-        --text-contrast-secondary: #1e293b;
-        --text-contrast-tertiary: #475569;
-        --accent-color: #0062c4;
-        --accent-glow: rgba(0, 113, 227, 0.20);
+        --background: #f2f2f7;
+        --foreground: #1d1d1f;
+        --muted-foreground: #424245;
+        --muted-foreground-subtle: #6e6e73;
+
+        --glass-surface-bg: rgba(255, 255, 255, 0.90);
+        --glass-surface-border: rgba(0, 0, 0, 0.10);
+        --glass-card-bg: rgba(255, 255, 255, 0.80);
+        --glass-card-border: rgba(0, 0, 0, 0.08);
+        --glass-pill-bg: rgba(0, 0, 0, 0.04);
+        --glass-pill-border: rgba(0, 0, 0, 0.09);
+
+        --apple-blue: #0071e3;
+        --apple-green: #34c759;
+        --apple-orange: #ff9500;
+        --apple-red: #ff3b30;
+        --apple-purple: #af52de;
+        --apple-teal: #00a2c7;
+        --apple-indigo: #5856d6;
+        --accent-glow: rgba(0, 113, 227, 0.22);
+        --ambient-orb-1: rgba(0, 113, 227, 0.12);
+        --ambient-orb-2: rgba(52, 199, 89, 0.10);
+        --ambient-orb-3: rgba(175, 82, 222, 0.10);
       }
     }
 
     html {
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
       scroll-behavior: smooth;
     }
 
-    /* Ambient Liquid Mesh Aura */
+    /* Ambient Liquid Mesh Floating Aura */
     .liquid-mesh {
-      background: radial-gradient(circle at 10% 12%, rgba(0, 113, 227, 0.16) 0%, transparent 45%),
-                  radial-gradient(circle at 90% 18%, rgba(52, 199, 89, 0.12) 0%, transparent 40%),
-                  radial-gradient(circle at 50% 88%, rgba(94, 92, 230, 0.14) 0%, transparent 50%);
+      background-color: var(--background);
+      background-image: 
+        radial-gradient(circle at 12% 14%, var(--ambient-orb-1) 0%, transparent 45%),
+        radial-gradient(circle at 88% 22%, var(--ambient-orb-2) 0%, transparent 42%),
+        radial-gradient(circle at 50% 86%, var(--ambient-orb-3) 0%, transparent 52%);
+      background-attachment: fixed;
     }
 
-    /* Liquid Glass Material Surfaces with Contrast Adaptive Properties */
+    /* Liquid Glass Material Surfaces with Specular Refraction */
     .glass-surface {
       background: var(--glass-surface-bg);
-      backdrop-filter: blur(28px) saturate(190%);
-      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      backdrop-filter: blur(36px) saturate(200%);
+      -webkit-backdrop-filter: blur(36px) saturate(200%);
       border: 1px solid var(--glass-surface-border);
-      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.28), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
+      box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.32), inset 0 1px 1px 0 rgba(255, 255, 255, 0.26);
     }
 
     .glass-card {
       background: var(--glass-card-bg);
-      backdrop-filter: blur(22px) saturate(180%);
-      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
       border: 1px solid var(--glass-card-border);
-      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.20);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .glass-card:hover {
       transform: translateY(-1.5px);
-      border-color: rgba(0, 113, 227, 0.45);
-      box-shadow: 0 16px 32px -10px var(--accent-glow), inset 0 1px 0 0 rgba(255, 255, 255, 0.30);
+      border-color: rgba(10, 132, 255, 0.45);
+      box-shadow: 0 16px 36px -10px var(--accent-glow), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
     }
 
     .glass-pill {
       background: var(--glass-pill-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border: 1px solid var(--glass-pill-border);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.16);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .glass-pill-active {
-      background: rgba(0, 113, 227, 0.24);
-      color: var(--accent-color);
-      border: 1px solid rgba(0, 113, 227, 0.55);
-      box-shadow: 0 4px 14px var(--accent-glow), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      background: rgba(10, 132, 255, 0.22);
+      color: var(--apple-blue);
+      border: 1px solid rgba(10, 132, 255, 0.55);
+      box-shadow: 0 4px 16px var(--accent-glow), inset 0 1px 1px rgba(255, 255, 255, 0.40);
     }
 
     /* Keyframe animations */
     @keyframes pulseGlow {
       0%, 100% { opacity: 0.85; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.06); filter: drop-shadow(0 0 8px rgba(52, 199, 89, 0.7)); }
+      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(48, 209, 88, 0.8)); }
     }
     .pulse-glow { animation: pulseGlow 2.5s infinite ease-in-out; }
 
@@ -126,9 +158,29 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(140, 140, 150, 0.35); border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(140, 140, 150, 0.55); }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Toast HUD Transition */
+    #toast-hud {
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
   </style>
 </head>
-<body class="min-h-full bg-[var(--background)] text-[var(--foreground)] liquid-mesh antialiased p-3 sm:p-5 md:p-7 lg:p-9 flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">
+<body class="min-h-full bg-[var(--background)] text-[var(--foreground)] liquid-mesh antialiased p-3.5 sm:p-5 md:p-7 lg:p-9 flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">
+
+  <!-- Apple Dynamic Island Toast HUD Pill (Smooth Floating Capsule) -->
+  <aside id="toast-hud" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none transform -translate-y-16 opacity-0 flex items-center gap-3 px-4 py-2.5 rounded-2xl glass-surface border border-[var(--glass-surface-border)] shadow-2xl backdrop-blur-2xl" role="status" aria-live="polite">
+    <div id="toast-icon-container" class="w-7 h-7 rounded-xl bg-blue-500/20 text-blue-500 border border-blue-400/35 flex items-center justify-center shrink-0">
+      <svg id="toast-icon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <div>
+      <div id="toast-title" class="text-xs sm:text-sm font-bold text-[var(--foreground)] tracking-tight">Copied to Clipboard</div>
+      <div id="toast-message" class="text-[11px] sm:text-xs text-[var(--muted-foreground)] font-mono truncate max-w-[260px] sm:max-w-md">Command copied successfully</div>
+    </div>
+  </aside>
 
   <!-- Core Content Wrapper -->
   <div class="max-w-7xl w-full mx-auto space-y-6">
@@ -199,7 +251,7 @@
       </div>
 
       <!-- Segmented Control Navigation Bar (Auto-Centering Glass Island) -->
-      <nav id="nav-tabs-container" class="mt-6 pt-5 border-t border-[var(--glass-surface-border)] flex items-center justify-between gap-3 overflow-x-auto pb-1">
+      <nav id="nav-tabs-container" class="mt-6 pt-5 border-t border-[var(--glass-surface-border)] flex items-center justify-between gap-3 overflow-x-auto pb-1 scrollbar-none">
         <div class="inline-flex p-1.5 rounded-2xl glass-pill text-xs sm:text-sm font-medium gap-1 min-w-max">
           
           <button onclick="switchTab('tab-storage')" id="btn-tab-storage" class="nav-tab glass-pill-active flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 font-bold">
@@ -220,7 +272,7 @@
               <line x1="9" y1="20" x2="9" y2="23"></line>
               <line x1="15" y1="20" x2="15" y2="23"></line>
             </svg>
-            <span>Wire Protocol Inspector</span>
+            <span>Wire Protocol Dissector</span>
           </button>
 
           <button onclick="switchTab('tab-diagnostics')" id="btn-tab-diagnostics" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
@@ -260,22 +312,67 @@
     <!-- TAB 1: Storage Geometry & Dynamic PIT Capacity Inspector -->
     <!-- ======================================================== -->
     <main id="content-tab-storage" class="space-y-6">
+
+      <!-- Glass Hero Container -->
       <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         
+        <!-- Section Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h2 class="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight text-[var(--foreground)]">Flash Storage & PIT Dissector</h2>
             <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium" id="pit-meta-subtitle">
-              Parsed dynamically from binary PIT stream &bull; Live sector geometry calculation
+              Parsing binary PIT data...
             </p>
           </div>
-          <!-- Filter Buttons with High Contrast & Auto-Center -->
-          <div id="filter-pills-container" class="flex items-center gap-2 overflow-x-auto pb-1 text-xs sm:text-sm max-w-full">
+
+          <!-- Dynamic Partition Filter Bar with Centered Auto-Slide -->
+          <div id="filter-pills-container" class="flex gap-2 text-xs overflow-x-auto pb-1 scrollbar-none">
             <button onclick="filterPartitions('all', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-bold text-blue-500 border-blue-500/50 whitespace-nowrap">All (<span id="filter-count-all">0</span>)</button>
             <button onclick="filterPartitions('core', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Kernel & Boot (<span id="filter-count-core">0</span>)</button>
             <button onclick="filterPartitions('super', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Dynamic Super (<span id="filter-count-super">0</span>)</button>
             <button onclick="filterPartitions('storage', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Storage (<span id="filter-count-storage">0</span>)</button>
             <button onclick="filterPartitions('nvram', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Protected NVRAM (<span id="filter-count-nvram">0</span>)</button>
+          </div>
+        </div>
+
+        <!-- FIRMWARE ARCHIVE & IMAGE BROWSER (DYNAMIC BROWSE / SELECT) -->
+        <div id="firmware-browser-card" class="glass-card rounded-2xl p-4 sm:p-5 mb-6 border border-[var(--glass-card-border)] relative overflow-hidden transition-all duration-300">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+            <div>
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <h3 class="text-xs sm:text-sm font-bold text-[var(--foreground)]">Local Firmware Archive & Image Browser</h3>
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-500/15 text-blue-500" id="fw-detected-count">Sample Set Loaded</span>
+              </div>
+              <p class="text-[11px] sm:text-xs text-[var(--muted-foreground)] mt-0.5 font-medium">
+                Browse local directory or drag-and-drop Samsung firmware tarballs (<code class="font-mono text-blue-500">AP_*.tar.md5</code>, <code class="font-mono text-blue-500">BL_*</code>, <code class="font-mono text-blue-500">CP_*</code>, <code class="font-mono text-blue-500">CSC_*</code>, <code class="font-mono text-blue-500">.pit</code>, <code class="font-mono text-blue-500">.img.lz4</code>)
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label class="px-3.5 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm transition-all">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>Browse Local Firmware...</span>
+                <input type="file" id="fw-file-picker" multiple class="hidden" onchange="handleFirmwareFiles(event)">
+              </label>
+
+              <button onclick="loadSampleStockFirmware()" class="px-3 py-1.5 rounded-xl glass-pill hover:border-blue-400/50 text-xs font-semibold text-[var(--foreground)] transition-colors">
+                Load Stock Sample Set
+              </button>
+            </div>
+          </div>
+
+          <!-- Drag and Drop Active Zone & File Pill Carousel -->
+          <div id="fw-dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" class="rounded-xl border border-dashed border-[var(--glass-card-border)] p-3 transition-colors">
+            <div id="firmware-files-carousel" class="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none items-center">
+              <!-- Dynamically populated from script -->
+            </div>
           </div>
         </div>
 
@@ -296,7 +393,7 @@
 
           <!-- Tier 1: Proportional Bar (Dynamically Populated + Auto-Scroll Center) -->
           <div id="capacity-bar-track" class="w-full rounded-2xl bg-black/40 border border-[var(--glass-card-border)] p-1.5 shadow-inner select-none overflow-x-auto scrollbar-none">
-            <div id="dynamic-capacity-segments" class="flex items-center gap-1.5 min-w-[640px] sm:min-w-full h-11 sm:h-12">
+            <div id="dynamic-capacity-segments" class="flex items-center gap-1.5 min-w-[680px] sm:min-w-full h-11 sm:h-12">
               <!-- Dynamically populated from binary PIT parsing -->
             </div>
           </div>
@@ -312,14 +409,13 @@
           
           <!-- Partition Grid List (7 Cols) -->
           <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden flex flex-col">
-            <div class="p-4 border-b border-[var(--glass-card-border)] bg-black/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-semibold">
+            <div class="p-4 sm:p-5 border-b border-[var(--glass-card-border)] flex items-center justify-between gap-3 flex-wrap">
               <div class="flex items-center gap-2">
                 <span class="text-[var(--foreground)] font-bold">Partition Table Inventory</span>
                 <span class="text-[var(--muted-foreground)] font-mono text-xs font-semibold" id="partition-counter">Parsing...</span>
               </div>
-              <!-- Live Search -->
-              <div class="relative w-full sm:w-48">
-                <input type="text" id="partition-search-input" placeholder="Search partition..." oninput="handlePartitionSearch()" class="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/30 border border-[var(--glass-pill-border)] text-xs font-mono text-[var(--foreground)] placeholder-[var(--text-contrast-tertiary)] outline-none focus:border-blue-400">
+              <div class="relative w-full sm:w-56">
+                <input type="text" id="partition-search-input" placeholder="Search partition..." oninput="handlePartitionSearch()" class="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/30 border border-[var(--glass-pill-border)] text-xs font-mono text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none focus:border-blue-400">
                 <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[var(--muted-foreground)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="11" cy="11" r="8"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -327,7 +423,7 @@
               </div>
             </div>
 
-            <div class="divide-y divide-[var(--glass-card-border)] max-h-96 overflow-y-auto" id="partition-list-container">
+            <div class="divide-y divide-[var(--glass-card-border)] max-h-96 overflow-y-auto scrollbar-none" id="partition-list-container">
               <!-- Dynamically populated via script -->
             </div>
           </div>
@@ -407,7 +503,7 @@
       <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         <div class="mb-6">
           <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Odin Wire Protocol Reverse Engineered Specification</h2>
-          <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Wire-level state machine reconstructed from Samsung LOKE bootloader memory analysis</p>
+          <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Wire-level state machine reconstructed from Samsung LOKE Little Kernel (LK) decompilation</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -440,7 +536,7 @@
             </div>
             <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Sequence Streaming</h3>
             <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
-              Transmits 512-byte aligned macro buffers. On the final sequence block, bootloader validates SHA-256 and OEM RSA public keys.
+              Transmits 512-byte aligned macro buffers. On final sequence block, bootloader validates SHA-256 and OEM RSA public keys.
             </p>
           </div>
 
@@ -451,13 +547,73 @@
             </div>
             <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Session Commit</h3>
             <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
-              Clears the emergency softbrick flag in secure param storage and executes device reset to One UI.
+              Clears emergency softbrick flag in secure param storage (<code class="text-blue-500 font-bold">0x01 -> 0x00</code>) and executes device reset to One UI.
             </p>
           </div>
         </div>
 
+        <!-- INTERACTIVE LOKE WIRE PACKET DISSECTOR (REA DYNAMIC HEX INSPECTOR) -->
+        <div class="glass-card rounded-2xl p-5 sm:p-6 mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 pulse-glow"></span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Real-Time 1024-Byte Wire Packet Frame Dissector</h3>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] mt-0.5 font-medium">Select an opcode sequence frame to inspect its binary byte serialization and Little Kernel LK disassembly</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-500 px-2.5 py-1 rounded-lg bg-blue-500/15 border border-blue-400/30" id="packet-current-badge">CMD_SESSION_SETUP (0x64:0x00)</span>
+            </div>
+          </div>
+
+          <!-- Frame Selector Row (Auto-Slide Center) -->
+          <div id="packet-frames-container" class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-4">
+            <button onclick="renderLokeFrame('0x64_init', this)" class="loke-frame-btn glass-pill-active px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all">0x64:00 (Session Setup)</button>
+            <button onclick="renderLokeFrame('0x64_erase', this)" class="loke-frame-btn glass-pill px-3 py-1.5 rounded-xl text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap transition-all">0x64:07 (NAND Wipe USERDATA)</button>
+            <button onclick="renderLokeFrame('0x65_pit', this)" class="loke-frame-btn glass-pill px-3 py-1.5 rounded-xl text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap transition-all">0x65:00 (PIT File Transfer)</button>
+            <button onclick="renderLokeFrame('0x66_flash', this)" class="loke-frame-btn glass-pill px-3 py-1.5 rounded-xl text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap transition-all">0x66:00 (Flash Stream Init)</button>
+            <button onclick="renderLokeFrame('0x66_chunk', this)" class="loke-frame-btn glass-pill px-3 py-1.5 rounded-xl text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap transition-all">0x66:02 (1MB Chunk Commit)</button>
+            <button onclick="renderLokeFrame('0x67_end', this)" class="loke-frame-btn glass-pill px-3 py-1.5 rounded-xl text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap transition-all">0x67:01 (Session End & Reboot)</button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <!-- Left: Hex Dump Dissector (7 cols) -->
+            <div class="lg:col-span-7 rounded-xl bg-zinc-950 p-4 border border-zinc-800 font-mono text-xs overflow-x-auto text-zinc-300 space-y-1" id="packet-hex-view">
+              <!-- Dynamically populated hex rows -->
+            </div>
+
+            <!-- Right: Field Breakdown & REA LK Note (5 cols) -->
+            <div class="lg:col-span-5 space-y-3.5 text-xs sm:text-sm">
+              <div class="p-3.5 rounded-xl glass-pill space-y-2 border border-[var(--glass-card-border)]">
+                <div class="font-bold text-[var(--foreground)] flex justify-between">
+                  <span>Field Breakdown</span>
+                  <span class="font-mono text-blue-500 font-bold" id="packet-field-total">1024 Bytes Total</span>
+                </div>
+                <div class="space-y-1.5 font-mono text-xs" id="packet-fields-list">
+                  <!-- Dynamically populated fields -->
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/25 space-y-1">
+                <div class="font-bold text-blue-500 flex items-center gap-1.5 text-xs">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span>REA Little Kernel Disassembly (Ghidra MCP)</span>
+                </div>
+                <p id="packet-rea-note" class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                  Loading decompiled LK switch-case handler...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="glass-card rounded-2xl p-5 sm:p-6">
-          <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)] mb-4">Protocol Frame Structure (1024-Byte Control Block)</h3>
+          <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)] mb-4">Protocol Frame Structure Specification</h3>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs sm:text-sm">
               <thead>
@@ -530,14 +686,19 @@
                 <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Teal Emergency Recovery Softbrick</h3>
               </div>
               <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
-                Screen displays: <span class="font-mono text-blue-500 font-bold">"An error has occurred while updating the device software."</span> Caused by interrupted flashing or invalid kernel signature.
+                Device powers on to the light-blue screen displaying: <em class="text-[var(--foreground)]">"An error has occurred while updating the device software. Use the Emergency recovery function in the Smart Switch PC software."</em>
               </p>
-              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-blue-400 break-all select-all font-semibold">
-                exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
+              <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-xs text-[var(--foreground)] space-y-1">
+                <div class="font-bold text-blue-500">Root Cause Dissection</div>
+                <p class="text-[var(--muted-foreground)]">The persistent <code class="text-blue-500">param</code> partition flag is locked at <code class="text-blue-500">0x01</code> due to an incomplete or aborted flash attempt.</p>
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 border border-blue-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
-              Load Scenario in Command Studio
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-500 border border-blue-400/40 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all">
+              <span>Load Boot Rescue Pipeline</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
             </button>
           </div>
 
@@ -545,53 +706,68 @@
             <div class="space-y-3">
               <div class="flex items-center gap-2.5">
                 <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/20 text-amber-500 border border-amber-400/30">SCENARIO 2</span>
-                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Broken Power Key Recovery Trap</h3>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Broken Power Key Bootloop Trap</h3>
               </div>
               <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
-                Stock recovery prompts: <span class="font-mono text-amber-500 font-bold">"Cannot load Android system. Your data may be corrupt."</span> but the physical power key is broken and cannot confirm the wipe.
+                Physical Power button is physically broken or stuck. The stock touch recovery requires pressing the Power key to confirm factory data reset.
               </p>
-              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-amber-400 break-all select-all font-semibold">
-                exynos-loke-rescue emergency-wipe-reboot
+              <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-[var(--foreground)] space-y-1">
+                <div class="font-bold text-amber-500">Hardware Bypass Solution</div>
+                <p class="text-[var(--muted-foreground)]">Issue low-level hardware NAND format opcode <code class="text-amber-500">0x64:0x07</code> directly from Download Mode, wiping userdata and rebooting automatically.</p>
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('emergency-wipe-reboot')" class="w-full py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border border-amber-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
-              Load Scenario in Command Studio
+            <button onclick="applyDiagnosticMode('emergency-wipe-reboot')" class="w-full py-2.5 px-4 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-500 border border-amber-400/40 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all">
+              <span>Load Emergency Wipe Pipeline</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
             </button>
           </div>
 
           <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div class="space-y-3">
               <div class="flex items-center gap-2.5">
-                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-400/30">SCENARIO 3</span>
-                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Full Stock OS Reinstallation</h3>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-purple-500/20 text-purple-500 border border-purple-400/30">SCENARIO 3</span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Dynamic Super Partition Corruption</h3>
               </div>
               <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
-                Corrupt vendor/system dynamic partitions in `SUPER`, bootloops past Samsung logo, or returning to clean official One UI.
+                Flashing fails with <em class="text-[var(--foreground)]">"Dynamic partition pre-flight check failed"</em> in samloader due to mismatched logical partition extents left over by custom ROMs.
               </p>
-              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-emerald-400 break-all select-all font-semibold">
-                exynos-loke-rescue full-raw-restore -s ~/Downloads/stock -e
+              <div class="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/25 text-xs text-[var(--foreground)] space-y-1">
+                <div class="font-bold text-purple-500">Raw Write Solution</div>
+                <p class="text-[var(--muted-foreground)]">Stream super.img directly to hardware block address, bypassing liblp client-side pre-flight metadata validation.</p>
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('full-raw-restore')" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
-              Load Scenario in Command Studio
+            <button onclick="applyDiagnosticMode('full-raw-restore')" class="w-full py-2.5 px-4 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-500 border border-purple-400/40 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all">
+              <span>Load Full Restore Pipeline</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
             </button>
           </div>
 
           <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div class="space-y-3">
               <div class="flex items-center gap-2.5">
-                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-400/30">SCENARIO 4</span>
-                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Lock (-1)</h3>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-rose-500/20 text-rose-500 border border-rose-400/30">SCENARIO 4</span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">VaultKeeper KG State: Prenormal</h3>
               </div>
               <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
-                Flashing custom binaries blocked by bootloader: <span class="font-mono text-rose-500 font-bold">"Custom Binary Blocked by OEM Lock"</span>. VaultKeeper Prenormal lock is active.
+                Flashing custom binaries (TWRP, Lineage Recovery, Magisk boot) triggers instant <code class="text-rose-500">LOKE FAIL! [code: -1]</code>.
               </p>
-              <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] font-mono text-xs sm:text-sm text-rose-400 break-all select-all font-semibold">
-                exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
+              <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-xs text-[var(--foreground)] space-y-1">
+                <div class="font-bold text-rose-500">Knox Guard Synchronization</div>
+                <p class="text-[var(--muted-foreground)]">Boot clean stock firmware once, connect to Wi-Fi for 60 seconds to sync Knox Guard state, and confirm OEM unlocking is greyed out before custom flashing.</p>
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
-              Load Scenario in Command Studio
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-500 border border-rose-400/40 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all">
+              <span>Restore Stock First</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
             </button>
           </div>
         </div>
@@ -599,7 +775,7 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 4: Command Studio (macOS Style Terminal)            -->
+    <!-- TAB 4: Interactive Command Studio                       -->
     <!-- ======================================================== -->
     <section id="content-tab-studio" class="hidden space-y-6">
       <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
@@ -612,7 +788,7 @@
           <div class="lg:col-span-7 space-y-5">
             <div>
               <label class="block text-xs sm:text-sm font-bold text-[var(--foreground)] mb-2.5">Recovery Mode Selection</label>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm">
+              <div id="mode-selection-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm">
                 
                 <label class="flex items-center gap-3.5 p-3.5 rounded-xl glass-card cursor-pointer">
                   <input type="radio" name="mode" value="rescue-boot" checked onchange="updateCommand()" class="w-4 h-4 accent-blue-500">
@@ -661,78 +837,99 @@
             </div>
 
             <div id="path-input-group" class="space-y-2">
-              <label class="block text-xs sm:text-sm font-bold text-[var(--foreground)]">Firmware Path / Archive</label>
+              <div class="flex justify-between items-center">
+                <label class="block text-xs sm:text-sm font-bold text-[var(--foreground)]">Firmware Path / Archive</label>
+                <button type="button" onclick="document.getElementById('fw-file-picker').click()" class="text-xs text-blue-500 font-semibold hover:underline">Browse...</button>
+              </div>
               <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] text-xs sm:text-sm font-mono text-[var(--foreground)] font-medium focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none transition-all">
             </div>
 
-            <div class="space-y-3 pt-3 border-t border-[var(--glass-card-border)] text-xs sm:text-sm">
+            <div class="space-y-2.5">
               <label class="block font-bold text-[var(--foreground)]">Execution Options</label>
-              
-              <label class="flex items-center justify-between p-3.5 rounded-xl glass-card cursor-pointer">
-                <div>
-                  <div class="font-bold text-[var(--foreground)]">Erase USERDATA partition (-e)</div>
-                  <div class="text-xs text-[var(--muted-foreground)] font-medium">Executes low-level hardware NAND wipe</div>
-                </div>
-                <input type="checkbox" id="flag-erase" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
-              </label>
+              <div class="space-y-2 text-xs sm:text-sm">
+                
+                <label class="flex items-center gap-3 p-3 rounded-xl glass-card cursor-pointer">
+                  <input type="checkbox" id="flag-erase" onchange="updateCommand()" class="w-4 h-4 rounded accent-blue-500">
+                  <div>
+                    <div class="font-bold text-[var(--foreground)]">Erase USERDATA partition (-e)</div>
+                    <div class="text-xs text-[var(--muted-foreground)] font-medium">Executes low-level hardware NAND wipe</div>
+                  </div>
+                </label>
 
-              <label class="flex items-center justify-between p-3.5 rounded-xl glass-card cursor-pointer">
-                <div>
-                  <div class="font-bold text-[var(--foreground)]">Keep device in Download Mode (--no-reboot)</div>
-                  <div class="text-xs text-[var(--muted-foreground)] font-medium">Prevents automatic device reboot after session commit</div>
-                </div>
-                <input type="checkbox" id="flag-no-reboot" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
-              </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl glass-card cursor-pointer">
+                  <input type="checkbox" id="flag-no-reboot" onchange="updateCommand()" class="w-4 h-4 rounded accent-blue-500">
+                  <div>
+                    <div class="font-bold text-[var(--foreground)]">Keep device in Download Mode (--no-reboot)</div>
+                    <div class="text-xs text-[var(--muted-foreground)] font-medium">Prevents automatic device reboot after session commit</div>
+                  </div>
+                </label>
 
-              <label class="flex items-center justify-between p-3.5 rounded-xl glass-card cursor-pointer">
-                <div>
-                  <div class="font-bold text-[var(--foreground)]">Verbose packet telemetry (-v)</div>
-                  <div class="text-xs text-[var(--muted-foreground)] font-medium">Logs raw 512/1024-byte USB bulk transfers</div>
-                </div>
-                <input type="checkbox" id="flag-verbose" onchange="updateCommand()" class="w-4 h-4 accent-blue-500 rounded">
-              </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl glass-card cursor-pointer">
+                  <input type="checkbox" id="flag-verbose" onchange="updateCommand()" class="w-4 h-4 rounded accent-blue-500">
+                  <div>
+                    <div class="font-bold text-[var(--foreground)]">Verbose packet telemetry (-v)</div>
+                    <div class="text-xs text-[var(--muted-foreground)] font-medium">Logs raw 512/1024-byte USB bulk transfers</div>
+                  </div>
+                </label>
+
+              </div>
             </div>
           </div>
 
-          <div class="lg:col-span-5 flex flex-col justify-between">
-            <div class="bg-zinc-950 text-zinc-100 rounded-2xl p-5 sm:p-6 border border-zinc-800 shadow-2xl">
-              <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800">
-                <div class="flex items-center gap-2">
-                  <span class="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shadow-sm"></span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-amber-500 inline-block shadow-sm"></span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span>
-                </div>
-                <span class="text-xs font-mono text-zinc-400 font-bold">Terminal &mdash; zsh</span>
+          <!-- Right Column: Command Preview & Description -->
+          <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs sm:text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Terminal Invocator</span>
+                <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-500/20 text-emerald-500">Deterministic</span>
               </div>
 
-              <div class="font-mono text-xs sm:text-sm space-y-2.5">
-                <div class="text-zinc-400 font-medium"># Linux recovery execution command</div>
-                <div class="text-sky-300 font-bold break-all select-all leading-relaxed" id="cmd-output">
+              <!-- Terminal Box -->
+              <div class="rounded-2xl bg-zinc-950 p-4 sm:p-5 border border-zinc-800 text-zinc-100 font-mono text-xs sm:text-sm shadow-xl relative overflow-hidden">
+                <div class="flex items-center justify-between text-zinc-400 text-xs mb-3 pb-2 border-b border-zinc-800">
+                  <span class="flex items-center gap-1.5 font-semibold">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span class="ml-2 font-mono text-[11px] text-zinc-400">bash &mdash; 80x24</span>
+                  </span>
+                  <span class="text-[11px]">POSIX Compliant</span>
+                </div>
+                <div id="cmd-output" class="text-blue-400 font-bold whitespace-pre-wrap break-all leading-relaxed">
                   exynos-loke-rescue rescue-boot -a ~/Downloads/stock
                 </div>
               </div>
 
-              <div class="mt-5 pt-3.5 border-t border-zinc-800 text-xs sm:text-sm text-zinc-300 leading-relaxed font-medium" id="cmd-explanation">
-                Extracts signed boot, vbmeta, and recovery from the stock AP archive and commits them to clear emergency recovery screens.
+              <!-- Description Box -->
+              <div class="p-4 rounded-xl glass-card space-y-1.5 border border-[var(--glass-card-border)]">
+                <div class="text-xs sm:text-sm font-bold text-[var(--foreground)] flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span>Operation Overview</span>
+                </div>
+                <p id="cmd-explanation" class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                  Extracts signed boot, vbmeta, and recovery from the stock AP archive and commits them to clear emergency recovery screens.
+                </p>
               </div>
             </div>
 
-            <div class="mt-4">
-              <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-3.5 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 transition-all shadow-md">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span id="copy-text">Copy Command to Clipboard</span>
-              </button>
-            </div>
+            <button onclick="copyGeneratedCommand()" id="copy-btn" class="w-full py-3.5 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copy-text">Copy Command to Clipboard</span>
+            </button>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 5: Live Interactive Flash Simulator                 -->
+    <!-- TAB 5: Live Flash Simulator                             -->
     <!-- ======================================================== -->
     <section id="content-tab-simulator" class="hidden space-y-6">
       <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
@@ -779,7 +976,7 @@
             </div>
           </div>
 
-          <div class="p-4 rounded-xl bg-zinc-950 font-mono text-xs text-zinc-200 h-36 overflow-y-auto space-y-1.5 border border-zinc-800" id="sim-log">
+          <div class="p-4 rounded-xl bg-zinc-950 font-mono text-xs text-zinc-200 h-36 overflow-y-auto space-y-1.5 border border-zinc-800 scrollbar-none" id="sim-log">
             <div class="text-zinc-400 font-semibold">> Mock LOKE Device ready. Press "Start Live Simulation" to begin testbed session.</div>
           </div>
         </div>
@@ -787,7 +984,7 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 6: Safety Invariants & Partition Matrix             -->
+    <!-- TAB 6: Safety Protocol & Invariant Protections          -->
     <!-- ======================================================== -->
     <section id="content-tab-safety" class="hidden space-y-6">
       <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
@@ -796,56 +993,67 @@
           <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Transport-level verification preventing permanent radio hardware bricking or IMEI loss</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs sm:text-sm">
-          <div class="glass-card rounded-2xl p-5 sm:p-6 border-rose-500/35 bg-rose-500/10 space-y-3.5">
-            <div class="flex items-center gap-2 text-rose-500 font-bold text-sm sm:text-base">
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-              <span>Strict Read-Only Partitions (Locked by Engine)</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-500 flex items-center justify-center font-bold">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">NVRAM & Baseband Write Invariant</h3>
+                <span class="text-xs font-mono text-rose-500 font-semibold">Strict Compile-Time Enforcement</span>
+              </div>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">
-              These partitions store factory baseband calibrations and cryptographically anchored device identifiers. Flash writes are blocked at the host level before packet generation.
+              The cellular modem subsystem on Samsung Shannon SoCs relies on cryptographic NVRAM calibration partitions. Overwriting or wiping these blocks destroys factory radio coefficients, resulting in permanent baseband crashloops and irreversible IMEI loss.
             </p>
             <ul class="space-y-2.5 text-[var(--foreground)]">
-              <li class="flex items-start gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-500 font-bold">EFS / SEC_EFS:</strong> Radio calibrations, IMEI and cellular certificates.</span>
+              <li class="flex items-center gap-2 font-mono text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                <span>EFS & SEC_EFS: Protected by hard refusal in flasher.rs</span>
               </li>
-              <li class="flex items-start gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-500 font-bold">CPEFS / NVDATA:</strong> Cellular modem non-volatile parameter store.</span>
+              <li class="flex items-center gap-2 font-mono text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                <span>CPEFS: Cellular Processor baseband cache write-locked</span>
               </li>
-              <li class="flex items-start gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-rose-500 font-bold">TNV / PERSDATA:</strong> Factory hardware keystore trust anchors.</span>
+              <li class="flex items-center gap-2 font-mono text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                <span>KEYSTORAGE & KEYREFUGE: Hardware Knox keystore protected</span>
               </li>
             </ul>
           </div>
 
-          <div class="glass-card rounded-2xl p-5 sm:p-6 border-emerald-500/35 bg-emerald-500/10 space-y-3.5">
-            <div class="flex items-center gap-2 text-emerald-500 font-bold text-sm sm:text-base">
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              <span>Permitted Flash Targets (Deterministic Verification)</span>
+          <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">PIT Boundary Pre-Flight Verification</h3>
+                <span class="text-xs font-mono text-emerald-500 font-semibold">Runtime Sector Mathematics</span>
+              </div>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">
-              Verified operating system partitions eligible for sequence streaming and cryptographic signature verification by the LOKE bootloader.
+              Before a single USB sequence packet is transmitted across the wire, <code class="text-blue-500 font-bold">exynos-loke-rescue</code> cross-references the raw image payload size against the exact allocated block count in the target device's live partition table.
             </p>
             <ul class="space-y-2.5 text-[var(--foreground)]">
-              <li class="flex items-start gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-500 font-bold">BOOT / RECOVERY / VBMETA:</strong> Kernel, ramdisk, and AVB 2.0 signatures.</span>
+              <li class="flex items-center gap-2 font-mono text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Payload Size &le; PIT.block_count &times; 512 bytes enforced</span>
               </li>
-              <li class="flex items-start gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-500 font-bold">SUPER:</strong> Dynamic system, vendor, product, and odm container.</span>
+              <li class="flex items-center gap-2 font-mono text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Zero dynamic unsparse buffer overflows</span>
               </li>
-              <li class="flex items-start gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
-                <span><strong class="font-mono text-emerald-500 font-bold">USERDATA:</strong> Low-level hardware erase (Opcode 0x64 Subcmd 0x07).</span>
+              <li class="flex items-center gap-2 font-mono text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Deterministic Little Kernel (LK) ACK validation</span>
               </li>
             </ul>
           </div>
@@ -857,9 +1065,9 @@
     <footer class="text-center text-xs sm:text-sm text-[var(--muted-foreground)] pt-4 pb-6 flex items-center justify-center gap-2 font-medium">
       <span>Exynos LOKE Rescue</span>
       <span>&bull;</span>
-      <span>Liquid Glass Dynamic Engine</span>
+      <span>Clean-Room Odin Protocol Implementation</span>
       <span>&bull;</span>
-      <span>Linux Native 04e8:685d Driver</span>
+      <span>MIT License</span>
     </footer>
 
   </div>
@@ -867,12 +1075,49 @@
   <!-- Real-Time Binary PIT Parsing & Dynamic Reactive Behaviors -->
   <script>
     // Embedded Base64 binary PIT seed data (real Galaxy A21s A21S_EUR_OPEN.pit)
-    const EMBEDDED_A21S_PIT_B64 = "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";
+    const EMBEDDED_A21S_PIT_B64 = "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FwAAAAUAAAABAAAAACgJAAAEAAAAAAAAAAAAAFBFUlNJU1RFTlQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAGAAAAAUAAAABAAAAACwJAAAIAAAAAAAAAAAAAENPTU1PTgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAGQAAAAUAAAABAAAAADQJAAAwAAAAAAAAAAAAAE1PUC1NQ0YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAGgAAAAUAAAABAAAAAFQJAAA0AAAAAAAAAAAAAE1PUC1XRkYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAGwAAAAUAAAABAAAAAKQJAAAQAAAAAAAAAAAAAE1PUC1DU0YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAHAAAAAUAAAAFAAAAALQJAAAQAAAAAAAAAAAAAE1FVEFEQVRBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbWV0YWRhdGEuaW1nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAHQAAAAUAAAABAAAAADQLAAAMAAAAAAAAAAAAAFJFU0VSVkVEMgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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";
 
     let parsedPit = { count: 0, entries: [] };
     let currentSelectedPartition = null;
     let currentFilter = 'all';
     let searchQuery = '';
+    let currentThemeMode = 'auto';
+    let detectedFirmwareFiles = [];
+
+    // Toast HUD Notification System (Smooth Dynamic Island)
+    let toastTimeout = null;
+    function showToast(title, message, iconType = 'check') {
+      const toast = document.getElementById('toast-hud');
+      const toastTitle = document.getElementById('toast-title');
+      const toastMsg = document.getElementById('toast-message');
+      const iconContainer = document.getElementById('toast-icon-container');
+      const toastIcon = document.getElementById('toast-icon');
+
+      if (!toast) return;
+
+      toastTitle.innerText = title;
+      toastMsg.innerText = message;
+
+      if (iconType === 'check') {
+        iconContainer.className = "w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-500 border border-emerald-400/35 flex items-center justify-center shrink-0";
+        toastIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+      } else if (iconType === 'copy') {
+        iconContainer.className = "w-7 h-7 rounded-xl bg-blue-500/20 text-blue-500 border border-blue-400/35 flex items-center justify-center shrink-0";
+        toastIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>';
+      } else if (iconType === 'file') {
+        iconContainer.className = "w-7 h-7 rounded-xl bg-purple-500/20 text-purple-500 border border-purple-400/35 flex items-center justify-center shrink-0";
+        toastIcon.innerHTML = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline>';
+      }
+
+      toast.classList.remove('-translate-y-16', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-16', 'opacity-0');
+      }, 2600);
+    }
 
     // Auto-slide utility: scrolls element to center of container horizontally or vertically
     function scrollIntoCenter(element, container) {
@@ -990,6 +1235,7 @@
         }
         parsedPit = parseBinaryPitBuffer(bytes.buffer);
         applyParsedPitData(parsedPit, "A21S_EUR_OPEN.pit (42 partitions)");
+        loadSampleStockFirmware();
       } catch (e) {
         console.error("Failed to parse embedded PIT", e);
       }
@@ -1006,8 +1252,9 @@
           parsedPit = parseBinaryPitBuffer(e.target.result);
           document.getElementById('label-upload-pit').innerText = file.name;
           applyParsedPitData(parsedPit, `${file.name} (${parsedPit.count} partitions)`);
+          showToast("Loaded Custom PIT", `${file.name} successfully parsed (${parsedPit.count} partitions)`, "file");
         } catch (err) {
-          alert("Error parsing PIT file: " + err.message);
+          showToast("PIT Parse Error", err.message, "file");
         }
       };
       reader.readAsArrayBuffer(file);
@@ -1028,7 +1275,6 @@
       // Calculate total dynamic storage
       let totalBytes = pit.entries.reduce((acc, p) => acc + p.sizeBytes, 0);
       if (totalBytes < 1024 * 1024 * 1024) {
-        // If userdata block_count is 0 in some PIT files (dynamic remaining), estimate default 32GB flash
         totalBytes = 32 * 1024 * 1024 * 1024;
       }
       document.getElementById('total-capacity-display').innerText = `~${formatBytes(totalBytes)} Flash Space`;
@@ -1053,11 +1299,9 @@
       const container = document.getElementById('dynamic-capacity-segments');
       container.innerHTML = '';
 
-      // Find major consumers
       const majorNames = ['USERDATA', 'SUPER', 'CACHE', 'RECOVERY', 'BOOT', 'RADIO', 'EFS', 'VENDOR', 'SYSTEM'];
       const majorEntries = entries.filter(p => majorNames.includes(p.name) || p.sizeBytes > 15 * 1024 * 1024);
 
-      // Color mapper
       const colors = {
         'SUPER': 'bg-emerald-500 hover:bg-emerald-400 text-white',
         'USERDATA': 'bg-amber-500 hover:bg-amber-400 text-white',
@@ -1078,7 +1322,7 @@
         }
 
         let pct = ((sizeVal / totalBytes) * 100);
-        pct = Math.max(4.0, pct); // Enforce visual floor so small partitions are always visible
+        pct = Math.max(4.0, pct);
 
         const colorClass = colors[p.name] || 'bg-blue-600 hover:bg-blue-500 text-white';
         const seg = document.createElement('div');
@@ -1278,10 +1522,135 @@
       if (!currentSelectedPartition) return;
       const cmd = `exynos-loke-rescue flash-raw -p ${currentSelectedPartition.name} ~/Downloads/stock/${currentSelectedPartition.file}`;
       navigator.clipboard.writeText(cmd).then(() => {
-        const text = document.getElementById('btn-copy-partition-text');
-        text.innerText = 'Copied to Clipboard!';
-        setTimeout(() => { text.innerText = 'Copy Partition Flash Command'; }, 2000);
+        showToast("Copied Partition Command", cmd, "copy");
       });
+    }
+
+    // Firmware Archive & Image Browser (Dynamic File Handling)
+    function handleFirmwareFiles(event) {
+      const files = Array.from(event.target.files);
+      if (!files || files.length === 0) return;
+      processIncomingFirmwareFiles(files);
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+      document.getElementById('fw-dropzone').classList.add('border-blue-500', 'bg-blue-500/10');
+    }
+
+    function handleDragLeave(event) {
+      event.preventDefault();
+      document.getElementById('fw-dropzone').classList.remove('border-blue-500', 'bg-blue-500/10');
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+      document.getElementById('fw-dropzone').classList.remove('border-blue-500', 'bg-blue-500/10');
+      const files = Array.from(event.dataTransfer.files);
+      if (files && files.length > 0) {
+        processIncomingFirmwareFiles(files);
+      }
+    }
+
+    function processIncomingFirmwareFiles(files) {
+      files.forEach(f => {
+        let type = 'RAW';
+        const nameUpper = f.name.toUpperCase();
+        if (nameUpper.startsWith('AP_')) type = 'AP';
+        else if (nameUpper.startsWith('BL_')) type = 'BL';
+        else if (nameUpper.startsWith('CP_')) type = 'CP';
+        else if (nameUpper.startsWith('CSC_')) type = 'CSC';
+        else if (nameUpper.endsWith('.PIT')) type = 'PIT';
+        else if (nameUpper.includes('BOOT')) type = 'BOOT';
+        else if (nameUpper.includes('RECOVERY')) type = 'REC';
+        else if (nameUpper.includes('SUPER')) type = 'SUPER';
+
+        detectedFirmwareFiles.unshift({
+          name: f.name,
+          size: f.size,
+          type: type,
+          rawFile: f
+        });
+
+        // If a .pit file was uploaded, parse it immediately
+        if (nameUpper.endsWith('.PIT')) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              parsedPit = parseBinaryPitBuffer(e.target.result);
+              document.getElementById('label-upload-pit').innerText = f.name;
+              applyParsedPitData(parsedPit, `${f.name} (${parsedPit.count} partitions)`);
+              showToast("Loaded Custom PIT", `${f.name} parsed successfully`, "file");
+            } catch (err) {
+              showToast("PIT Parse Error", err.message, "file");
+            }
+          };
+          reader.readAsArrayBuffer(f);
+        }
+      });
+
+      renderFirmwareCarousel();
+      showToast("Firmware Files Loaded", `${files.length} archive files inspected`, "file");
+    }
+
+    function loadSampleStockFirmware() {
+      detectedFirmwareFiles = [
+        { name: "AP_A217FXXSCDXE2_boot.img.lz4", size: 37748736, type: "BOOT" },
+        { name: "AP_A217FXXSCDXE2_recovery.img.lz4", size: 70414336, type: "REC" },
+        { name: "AP_A217FXXSCDXE2_super.img.lz4", size: 5557452800, type: "SUPER" },
+        { name: "AP_A217FXXSCDXE2_vbmeta.img.lz4", size: 8192, type: "VBMETA" },
+        { name: "CSC_OMN_A217FOXMDXE1.pit", size: 5632, type: "PIT" },
+        { name: "BL_A217FXXSCDXE2_sboot.bin.lz4", size: 2097152, type: "BL" },
+        { name: "CP_A217FXXSCDXE2_modem.bin.lz4", size: 48234496, type: "CP" }
+      ];
+      renderFirmwareCarousel();
+    }
+
+    function renderFirmwareCarousel() {
+      const carousel = document.getElementById('firmware-files-carousel');
+      carousel.innerHTML = '';
+      document.getElementById('fw-detected-count').innerText = `${detectedFirmwareFiles.length} Detected`;
+
+      detectedFirmwareFiles.forEach((f, idx) => {
+        const pill = document.createElement('div');
+        pill.id = `fw-pill-${idx}`;
+        pill.className = "flex items-center gap-2.5 px-3 py-2 rounded-xl glass-pill hover:border-blue-400/50 cursor-pointer shrink-0 transition-all";
+        pill.onclick = () => {
+          selectFirmwareTarget(f, pill);
+        };
+
+        const typeColor = f.type === 'AP' || f.type === 'SUPER' ? 'bg-emerald-500/20 text-emerald-500' :
+                          f.type === 'BOOT' || f.type === 'REC' ? 'bg-blue-500/20 text-blue-500' :
+                          f.type === 'PIT' ? 'bg-purple-500/20 text-purple-500' : 'bg-zinc-500/20 text-zinc-300';
+
+        pill.innerHTML = `
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${typeColor}">${f.type}</span>
+          <div class="text-left">
+            <div class="text-xs font-bold text-[var(--foreground)] truncate max-w-[150px]">${f.name}</div>
+            <div class="text-[11px] font-mono text-[var(--muted-foreground)]">${formatBytes(f.size)}</div>
+          </div>
+        `;
+        carousel.appendChild(pill);
+      });
+    }
+
+    function selectFirmwareTarget(fwItem, pillElem) {
+      document.querySelectorAll('#firmware-files-carousel > div').forEach(p => p.classList.remove('ring-2', 'ring-blue-500'));
+      pillElem.classList.add('ring-2', 'ring-blue-500');
+      scrollIntoCenter(pillElem, document.getElementById('firmware-files-carousel'));
+
+      // If it corresponds to a partition name, select it
+      let targetPartName = 'BOOT';
+      if (fwItem.type === 'SUPER') targetPartName = 'SUPER';
+      else if (fwItem.type === 'REC') targetPartName = 'RECOVERY';
+      else if (fwItem.type === 'VBMETA') targetPartName = 'VBMETA';
+
+      const match = parsedPit.entries.find(p => p.name === targetPartName);
+      if (match) {
+        selectPartition(match.name, match.id, match.blocks, match.binary_type === 0 ? 'AP' : 'CP', fwItem.name, match.desc);
+      }
+
+      showToast("Firmware Target Mounted", `${fwItem.name} targeted in studio & simulator`, "check");
     }
 
     // Tab Switcher with Auto-Center Slide
@@ -1367,19 +1736,11 @@
     function copyGeneratedCommand() {
       const cmd = document.getElementById('cmd-output').innerText;
       navigator.clipboard.writeText(cmd).then(() => {
-        const text = document.getElementById('copy-text');
-        text.innerText = 'Copied to Clipboard!';
-        const btn = document.getElementById('copy-btn');
-        btn.classList.add('bg-emerald-600');
-        setTimeout(() => {
-          text.innerText = 'Copy Command to Clipboard';
-          btn.classList.remove('bg-emerald-600');
-        }, 2000);
+        showToast("Copied CLI Command", cmd, "copy");
       });
     }
 
-    // Toggle Theme Mode for Contrast Syncing
-    let currentThemeMode = 'auto';
+    // Toggle Theme Mode for Dynamic Contrast Syncing
     function toggleThemeMode() {
       const root = document.documentElement;
       if (currentThemeMode === 'auto') {
@@ -1397,6 +1758,7 @@
         root.classList.remove('light', 'dark');
         document.getElementById('theme-mode-text').innerText = 'Theme: Auto';
       }
+      showToast("Theme Synchronized", `Switched to ${currentThemeMode.toUpperCase()} mode`, "check");
     }
 
     // Live Flash Simulator State Machine
@@ -1435,11 +1797,12 @@
         addLog('Session aborted safely without corrupting baseband radio calibration.', 'text-amber-400 font-semibold');
         document.getElementById('sim-state').innerText = 'ABORT (PROTECTED)';
         document.getElementById('btn-sim-text').innerText = 'Start Live Simulation';
+        showToast("Flash Invariant Triggered", `Refused ${part.name} write to protect IMEI`, "check");
         return;
       }
 
       const totalBytes = part.sizeBytes > 0 ? part.sizeBytes : 37748736;
-      const chunkSize = 1048576; // 1 MiB
+      const chunkSize = 1048576;
       const totalChunks = Math.max(8, Math.ceil(totalBytes / chunkSize));
       let currentChunk = 0;
 
@@ -1479,12 +1842,179 @@
           addLog(`Transfer of ${part.file} (${formatBytes(totalBytes)}) successfully completed!`, 'text-emerald-400 font-bold');
           addLog('Session Close (0x67:0x01) emitted. Little Kernel committing param 0x01 -> 0x00.', 'text-emerald-400');
           addLog('Device verified signature SEANDROIDENFORCE. Initiating reboot into One UI.', 'text-cyan-400 font-bold');
+          showToast("Simulation Finished", `${part.file} flashed with exit code 0`, "check");
         }
       }, 100);
     }
 
-    // Initialize Dynamic PIT Parser on Startup
+    // Dynamic 1024-Byte Wire Packet Dissector (REA Live Hex Generator)
+    const LOKE_FRAMES = {
+      '0x64_init': {
+        name: 'CMD_SESSION_SETUP (0x64:0x00)',
+        opcode: 0x64,
+        subcmd: 0x00,
+        arg1: 1048576, // 1MB macro buffer
+        arg2: 0,
+        arg3: 0,
+        fields: [
+          { name: 'cmd_id', val: '0x00000064', desc: 'CMD_SESSION_SETUP' },
+          { name: 'subcmd_id', val: '0x00000000', desc: 'INIT_PROTOCOL (Odin v3 128KB negotiation)' },
+          { name: 'arg1', val: '0x00100000', desc: '1,048,576 byte macro buffer window' },
+          { name: 'arg2', val: '0x00000000', desc: 'Reserved' },
+          { name: 'arg3', val: '0x00000000', desc: 'Padding flag' }
+        ],
+        reaNote: "Little Kernel LK switch at 0x8F001040 evaluates case 0x64. Subcommand 0x00 initializes memory transfer ring buffers. Sending subcmd 0x05 on Exynos 850 triggers bulk read error -7."
+      },
+      '0x64_erase': {
+        name: 'CMD_SESSION_SETUP (0x64:0x07)',
+        opcode: 0x64,
+        subcmd: 0x07,
+        arg1: 37, // USERDATA partition ID
+        arg2: 0,
+        arg3: 0,
+        fields: [
+          { name: 'cmd_id', val: '0x00000064', desc: 'CMD_SESSION_SETUP' },
+          { name: 'subcmd_id', val: '0x00000007', desc: 'HARDWARE_NAND_FORMAT' },
+          { name: 'arg1', val: '0x00000025', desc: 'Partition ID #37 (USERDATA)' },
+          { name: 'arg2', val: '0x00000000', desc: 'Erase flags' },
+          { name: 'arg3', val: '0x00000000', desc: 'Confirmation token' }
+        ],
+        reaNote: "LK invokes eMMC/UFS controller hardware trim. Bypasses physical broken power keys by formatting userdata from USB Download Mode without stock recovery."
+      },
+      '0x65_pit': {
+        name: 'CMD_PIT_TRANSFER (0x65:0x00)',
+        opcode: 0x65,
+        subcmd: 0x00,
+        arg1: 5632, // 5.5 KB PIT file length
+        arg2: 0,
+        arg3: 0,
+        fields: [
+          { name: 'cmd_id', val: '0x00000065', desc: 'CMD_PIT_FILE' },
+          { name: 'subcmd_id', val: '0x00000000', desc: 'PREPARE_PIT_STREAM' },
+          { name: 'arg1', val: '0x00001600', desc: '5,632 bytes payload size' },
+          { name: 'arg2', val: '0x00000000', desc: 'Partition table revision 0x01' },
+          { name: 'arg3', val: '0x00000000', desc: 'Reserved' }
+        ],
+        reaNote: "LOKE receives and validates 0x12349876 binary magic. Pre-allocates flash controller partition geometry tables before binary flashing."
+      },
+      '0x66_flash': {
+        name: 'CMD_FLASH_PARTITION (0x66:0x00)',
+        opcode: 0x66,
+        subcmd: 0x00,
+        arg1: 37748736, // 36MB boot.img
+        arg2: 18, // BOOT
+        arg3: 0,
+        fields: [
+          { name: 'cmd_id', val: '0x00000066', desc: 'CMD_FLASH_PARTITION' },
+          { name: 'subcmd_id', val: '0x00000000', desc: 'START_PARTITION_STREAM' },
+          { name: 'arg1', val: '0x02400000', desc: '37,748,736 bytes total image payload' },
+          { name: 'arg2', val: '0x00000012', desc: 'Partition ID #18 (BOOT)' },
+          { name: 'arg3', val: '0x00000000', desc: 'Initial sequence index' }
+        ],
+        reaNote: "LK mounts flash target into RAM streaming window. Rejects unsigned binaries with [0xFFFFFFFF, -1] if Knox Guard state is Prenormal."
+      },
+      '0x66_chunk': {
+        name: 'CMD_FLASH_PARTITION (0x66:0x02)',
+        opcode: 0x66,
+        subcmd: 0x02,
+        arg1: 1048576, // 1MB
+        arg2: 1, // Sequence #1
+        arg3: 0,
+        fields: [
+          { name: 'cmd_id', val: '0x00000066', desc: 'CMD_FLASH_PARTITION' },
+          { name: 'subcmd_id', val: '0x00000002', desc: 'COMMIT_SEQUENCE_CHUNK' },
+          { name: 'arg1', val: '0x00100000', desc: '1,048,576 bytes chunk size' },
+          { name: 'arg2', val: '0x00000001', desc: 'Sequence ID index' },
+          { name: 'arg3', val: '0x00000000', desc: 'More chunks pending' }
+        ],
+        reaNote: "Transmits bulk sequence. Device responds with 0x02 ACK in status frame before host transmits the next sequence buffer."
+      },
+      '0x67_end': {
+        name: 'CMD_SESSION_END (0x67:0x01)',
+        opcode: 0x67,
+        subcmd: 0x01,
+        arg1: 0,
+        arg2: 0,
+        arg3: 0,
+        fields: [
+          { name: 'cmd_id', val: '0x00000067', desc: 'CMD_SESSION_END' },
+          { name: 'subcmd_id', val: '0x00000001', desc: 'COMMIT_AND_REBOOT' },
+          { name: 'arg1', val: '0x00000000', desc: 'Reboot mode (0x01 = normal reboot)' },
+          { name: 'arg2', val: '0x00000000', desc: 'Commit status flag' },
+          { name: 'arg3', val: '0x00000000', desc: 'Success acknowledge token' }
+        ],
+        reaNote: "Little Kernel executes case 0x67: commits secure param partition softbrick flag from 0x01 -> 0x00, clearing the emergency screen and resetting hardware."
+      }
+    };
+
+    function renderLokeFrame(key, btnElem) {
+      const data = LOKE_FRAMES[key];
+      if (!data) return;
+
+      document.querySelectorAll('.loke-frame-btn').forEach(b => {
+        b.classList.remove('glass-pill-active', 'font-bold');
+        b.classList.add('glass-pill', 'text-[var(--muted-foreground)]');
+      });
+      btnElem.classList.add('glass-pill-active', 'font-bold');
+      btnElem.classList.remove('text-[var(--muted-foreground)]');
+      scrollIntoCenter(btnElem, document.getElementById('packet-frames-container'));
+
+      document.getElementById('packet-current-badge').innerText = data.name;
+      document.getElementById('packet-rea-note').innerText = data.reaNote;
+
+      // Construct dynamic 1024-byte buffer
+      const buffer = new ArrayBuffer(1024);
+      const view = new DataView(buffer);
+      view.setUint32(0, data.opcode, true);
+      view.setUint32(4, data.subcmd, true);
+      view.setUint32(8, data.arg1, true);
+      view.setUint32(12, data.arg2, true);
+      view.setUint32(16, data.arg3, true);
+
+      // Render Hex Dump
+      const hexView = document.getElementById('packet-hex-view');
+      hexView.innerHTML = '';
+      const bytes = new Uint8Array(buffer);
+
+      // Display first 96 bytes + tail
+      for (let offset = 0; offset < 96; offset += 16) {
+        let hexPart = '';
+        let asciiPart = '';
+        for (let i = 0; i < 16; i++) {
+          const b = bytes[offset + i];
+          hexPart += b.toString(16).padStart(2, '0') + ' ';
+          if (i === 7) hexPart += ' ';
+          asciiPart += (b >= 32 && b <= 126) ? String.fromCharCode(b) : '.';
+        }
+        const offsetStr = offset.toString(16).padStart(8, '0');
+        const row = document.createElement('div');
+        row.className = "flex gap-3";
+        row.innerHTML = `<span class="text-zinc-500">${offsetStr}</span> <span class="text-blue-400">${hexPart}</span> <span class="text-emerald-400 font-bold">|${asciiPart}|</span>`;
+        hexView.appendChild(row);
+      }
+
+      const dots = document.createElement('div');
+      dots.className = "text-zinc-600 pl-2";
+      dots.innerText = "... [0x0060 - 0x03FF zero-padding to 1024 bytes] ...";
+      hexView.appendChild(dots);
+
+      // Render Fields Breakdown
+      const fieldsList = document.getElementById('packet-fields-list');
+      fieldsList.innerHTML = '';
+      data.fields.forEach(f => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between text-[11px] pb-1 border-b border-[var(--glass-card-border)]";
+        item.innerHTML = `
+          <div><span class="text-blue-500 font-bold">${f.name}</span>: <span class="text-[var(--foreground)]">${f.desc}</span></div>
+          <span class="font-bold text-zinc-400">${f.val}</span>
+        `;
+        fieldsList.appendChild(item);
+      });
+    }
+
+    // Initialize on Page Load
     loadInitialPit();
+    renderLokeFrame('0x64_init', document.querySelector('.loke-frame-btn'));
   </script>
 </body>
 </html>
