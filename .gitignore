@@ -1,0 +1,24 @@
+# Firmware archives and compressed packages
+*.zip
+*.tar
+*.tar.md5
+
+# Extracted partitions and images
+*.lz4
+*.img
+*.bin
+
+# Firmware download working directories
+stock_fw/
+firmware/
+extracted/
+
+# Logs and debug traces
+*.log
+samloader.log
+
+# System & editor files
+.DS_Store
+Thumbs.db
+*~
+*.swp
