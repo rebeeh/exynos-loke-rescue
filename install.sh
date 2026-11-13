@@ -95,7 +95,7 @@ fi
 # 4. Verify Installation
 if [[ -x "${INSTALL_DIR}/${BIN_NAME}" ]]; then
     echo ""
-    echo "✓ ${BIN_NAME} successfully installed to ${INSTALL_DIR}/${BIN_NAME}"
+    echo "[OK] ${BIN_NAME} successfully installed to ${INSTALL_DIR}/${BIN_NAME}"
     "${INSTALL_DIR}/${BIN_NAME}" --version
 else
     echo "ERROR: Installation verification failed."

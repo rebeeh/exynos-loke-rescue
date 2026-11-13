@@ -94,4 +94,4 @@ else
 fi
 
 echo ""
-echo "✓ Release binary passed security and hardening audit successfully."
+echo "[OK] Release binary passed security and hardening audit successfully."

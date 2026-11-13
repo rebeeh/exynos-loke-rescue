@@ -1,4 +1,4 @@
-# Exynos LOKE Rescue (`exynos-loke-rescue`) 📱⚡
+# Exynos LOKE Rescue (`exynos-loke-rescue`)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)]()
@@ -13,32 +13,32 @@
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-1. [Executive Overview & Architectural Mandate](#-executive-overview--architectural-mandate)
-2. [Clean-Room Reverse Engineering Methodology with REA](#-clean-room-reverse-engineering-methodology-with-rea)
+1. [Executive Overview & Architectural Mandate](#executive-overview--architectural-mandate)
+2. [Clean-Room Reverse Engineering Methodology with REA](#clean-room-reverse-engineering-methodology-with-rea)
    - [Legal & Architectural Clean-Room Separation](#legal--architectural-clean-room-separation)
    - [Live USB Wire Telemetry Capture (`usbmon` + `tshark`)](#live-usb-wire-telemetry-capture-usbmon--tshark)
    - [REA & Ghidra Analysis of `odin4` & `sboot.bin`](#rea--ghidra-analysis-of-odin4--sbootbin)
    - [Differential Analysis: Odin v3 vs. Odin v4](#differential-analysis-odin-v3-vs-odin-v4)
-3. [Dual-Engine Architecture](#-dual-engine-architecture)
+3. [Dual-Engine Architecture](#dual-engine-architecture)
    - [Engine 1: 100% Native Rust LOKE Transport (`nusb`)](#engine-1-100-native-rust-loke-transport-nusb)
    - [Engine 2: Zero-Copy Archive Streamer & Supervisor](#engine-2-zero-copy-archive-streamer--supervisor)
-4. [Repository Hierarchy](#-repository-hierarchy)
-5. [Installation & Setup](#-installation--setup)
-6. [Protocol Telemetry & Dissection](#-protocol-telemetry--dissection)
-7. [CLI Command Reference](#-cli-command-reference)
-8. [Operational Runbooks](#-operational-runbooks)
+4. [Repository Hierarchy](#repository-hierarchy)
+5. [Installation & Setup](#installation--setup)
+6. [Protocol Telemetry & Dissection](#protocol-telemetry--dissection)
+7. [CLI Command Reference](#cli-command-reference)
+8. [Operational Runbooks](#operational-runbooks)
    - [Runbook A: Clearing "An error has occurred..."](#runbook-a-clearing-the-blue-an-error-has-occurred-screen)
    - [Runbook B: Recovering from Post-LineageOS Dynamic `super` Bootloops](#runbook-b-recovering-from-post-lineageos-dynamic-super-bootloops)
    - [Runbook C: Resolving `LOKE FAIL! [code: -1]` & VaultKeeper Locks](#runbook-c-resolving-loke-fail-code--1--vaultkeeper-prenormal-locks)
    - [Runbook D: Clean LineageOS Installation Post-Recovery](#runbook-d-clean-lineageos-installation-post-recovery)
    - [Runbook E: Resolving "Dynamic partition pre-flight check failed"](#runbook-e-resolving-the-dynamic-partition-pre-flight-check-failed-error)
-9. [Security & Partition Safety Invariants](#-security-and-partition-safety-invariants)
+9. [Security & Partition Safety Invariants](#security-and-partition-safety-invariants)
 
 ---
 
-## 📌 Executive Overview & Architectural Mandate
+## Executive Overview & Architectural Mandate
 
 Modern Samsung Galaxy smartphones powered by Exynos System-on-Chips (SoCs) implement a proprietary low-level flashing interface inside their secondary bootloader (`sboot.bin`), internally named **LOKE** (the device-side counterpart to Samsung's desktop **Odin** flashing protocol).
 
@@ -54,7 +54,7 @@ Across GNU/Linux environments, developers and custom ROM maintainers (such as Li
 
 ---
 
-## 🔬 Clean-Room Reverse Engineering Methodology with REA
+## Clean-Room Reverse Engineering Methodology with REA
 
 ### Legal & Architectural Clean-Room Separation
 To guarantee clean intellectual property boundaries and strict MIT License compatibility, all protocol specifications were produced via a two-phase clean-room process:
@@ -94,7 +94,7 @@ To prepare `sboot.bin` for REA / Ghidra analysis:
 
 ---
 
-## ⚡ Dual-Engine Architecture
+## Dual-Engine Architecture
 
 ```mermaid
 flowchart TD
@@ -113,12 +113,12 @@ flowchart TD
     OdinV4 --> Streamer
 
     Streamer --> FlashLoop["LOKE Partition Flash (0x66)\nStreams chunks with live progress"]
-    FlashLoop --> SessionClose["Session End (0x67)\nCommits param flag 0x01 -> 0x00\nClears Emergency Screen! 🎉"]
+    FlashLoop --> SessionClose["Session End (0x67)\nCommits param flag 0x01 -> 0x00\nClears Emergency Screen!"]
 ```
 
 ---
 
-## 📂 Repository Hierarchy
+## Repository Hierarchy
 
 ```text
 exynos-loke-rescue/
@@ -166,7 +166,7 @@ exynos-loke-rescue/
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 Like `samloader-rs`, `exynos-loke-rescue` is distributed as portable standalone static musl binaries with zero glibc or dynamic C runtime dependencies. It runs on any Linux distribution without requiring complex package setup.
 
@@ -213,7 +213,7 @@ podman run --rm -it --privileged \
 
 ---
 
-## 🔍 Protocol Telemetry & Dissection
+## Protocol Telemetry & Dissection
 
 ### Wireshark / TShark Lua Dissector
 Analyze USB bulk packets in real time or offline from captured `.pcapng` traces using the bundled LOKE protocol dissector:
@@ -233,7 +233,7 @@ make audit
 
 ---
 
-## 💻 CLI Command Reference
+## CLI Command Reference
 
 ### 1. Sanitize USB Stack
 ```bash
@@ -317,7 +317,7 @@ exynos-loke-rescue simulate-flash --fault-vaultkeeper
 
 ---
 
-## 📖 Operational Runbooks
+## Operational Runbooks
 
 ### Runbook A: Clearing the Blue "An error has occurred..." Screen
 1. Connect device via USB-A 2.0 cable to host.
@@ -331,7 +331,7 @@ exynos-loke-rescue simulate-flash --fault-vaultkeeper
    * Hold **Volume Down + Power** for 8 seconds until the screen goes black.
    * Immediately hold **Volume Up + Volume Down** with USB connected to enter Download Mode.
 2. Run `exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock -e`.
-3. Device automatically erases corrupt leftover userdata and reboots directly into One UI!
+3. Device automatically erases corrupt leftover userdata and reboots directly into One UI.
 
 ### Runbook C: Resolving `LOKE FAIL! [code: -1]` & VaultKeeper Prenormal Locks
 1. If custom recovery flashing is rejected with `[code: -1]`, VaultKeeper has locked `KG State` to `Prenormal`.
@@ -400,12 +400,13 @@ $$\text{"Cannot load Android system. Your data may be corrupt. Try factory data 
    exynos-loke-rescue emergency-wipe-reboot
    ```
 5. `exynos-loke-rescue` transmits opcode `0x64:0x07` (hardware NAND format of USERDATA) and `0x67:0x01` (reboot). The phone restarts straight into One UI, completely bypassing Stock Recovery!
+```bash
 exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock
 ```
 
 ---
 
-## 🔒 Security and Partition Safety Invariants
+## Security and Partition Safety Invariants
 
 * **IMEI & Baseband Invariance:** Partitions `EFS`, `SEC_EFS`, `CPEFS`, and `NVDATA` are strictly protected from modification.
 * **PIT Boundary Validation:** `nusb_transport.rs` cross-references every image against `PITEntry.size_bytes()` before transmitting over USB.
@@ -413,7 +414,7 @@ exynos-loke-rescue full-raw-restore --stock-dir ~/Downloads/stock
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).  
 Clean-room protocol specification derived via REA and Linux `usbmon` telemetry.  

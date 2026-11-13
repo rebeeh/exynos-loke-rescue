@@ -69,6 +69,6 @@ sha256sum "${ZIP_NAME}" > "${ZIP_NAME}.sha256"
 sha256sum "${TAR_NAME}" > "${TAR_NAME}.sha256"
 cd - >/dev/null
 
-echo "✓ Created release artifacts in ${DIST_DIR}/:"
+echo "[OK] Created release artifacts in ${DIST_DIR}/:"
 echo "  - ${ZIP_NAME} ($(stat -c%s "${DIST_DIR}/${ZIP_NAME}") bytes)"
 echo "  - ${TAR_NAME} ($(stat -c%s "${DIST_DIR}/${TAR_NAME}") bytes)"

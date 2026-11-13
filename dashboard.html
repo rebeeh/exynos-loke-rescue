@@ -8,41 +8,56 @@
   <style>
     /* Apple Liquid Glass Design System Core Tokens with Dynamic Contrast Syncing */
     :root {
-      --glass-surface-bg: rgba(255, 255, 255, 0.05);
-      --glass-surface-border: rgba(255, 255, 255, 0.14);
-      --glass-card-bg: rgba(255, 255, 255, 0.035);
-      --glass-card-border: rgba(255, 255, 255, 0.10);
-      --glass-pill-bg: rgba(255, 255, 255, 0.07);
-      --glass-pill-border: rgba(255, 255, 255, 0.14);
+      --background: #09090b;
+      --foreground: #f4f4f5;
+      --muted-foreground: #d4d4d8;
+      --glass-surface-bg: rgba(24, 24, 27, 0.75);
+      --glass-surface-border: rgba(255, 255, 255, 0.16);
+      --glass-card-bg: rgba(39, 39, 42, 0.65);
+      --glass-card-border: rgba(255, 255, 255, 0.12);
+      --glass-pill-bg: rgba(255, 255, 255, 0.08);
+      --glass-pill-border: rgba(255, 255, 255, 0.16);
       --text-contrast-primary: #f4f4f5;
-      --text-contrast-secondary: #a1a1aa;
-      --text-contrast-tertiary: #71717a;
+      --text-contrast-secondary: #d4d4d8;
+      --text-contrast-tertiary: #a1a1aa;
+      --accent-color: #0071e3;
+      --accent-glow: rgba(0, 113, 227, 0.30);
     }
 
     /* Light Theme Contrast Syncing */
     .light, [data-theme="light"] {
-      --glass-surface-bg: rgba(255, 255, 255, 0.90);
-      --glass-surface-border: rgba(0, 0, 0, 0.12);
-      --glass-card-bg: rgba(255, 255, 255, 0.82);
-      --glass-card-border: rgba(0, 0, 0, 0.09);
-      --glass-pill-bg: rgba(0, 0, 0, 0.04);
-      --glass-pill-border: rgba(0, 0, 0, 0.10);
+      --background: #f8fafc;
+      --foreground: #09090b;
+      --muted-foreground: #334155;
+      --glass-surface-bg: rgba(255, 255, 255, 0.94);
+      --glass-surface-border: rgba(0, 0, 0, 0.14);
+      --glass-card-bg: rgba(244, 244, 245, 0.94);
+      --glass-card-border: rgba(0, 0, 0, 0.10);
+      --glass-pill-bg: rgba(0, 0, 0, 0.05);
+      --glass-pill-border: rgba(0, 0, 0, 0.12);
       --text-contrast-primary: #09090b;
-      --text-contrast-secondary: #3f3f46;
-      --text-contrast-tertiary: #52525b;
+      --text-contrast-secondary: #1e293b;
+      --text-contrast-tertiary: #475569;
+      --accent-color: #0062c4;
+      --accent-glow: rgba(0, 113, 227, 0.20);
     }
 
     @media (prefers-color-scheme: light) {
       :root:not(.dark) {
-        --glass-surface-bg: rgba(255, 255, 255, 0.90);
-        --glass-surface-border: rgba(0, 0, 0, 0.12);
-        --glass-card-bg: rgba(255, 255, 255, 0.82);
-        --glass-card-border: rgba(0, 0, 0, 0.09);
-        --glass-pill-bg: rgba(0, 0, 0, 0.04);
-        --glass-pill-border: rgba(0, 0, 0, 0.10);
+        --background: #f8fafc;
+        --foreground: #09090b;
+        --muted-foreground: #334155;
+        --glass-surface-bg: rgba(255, 255, 255, 0.94);
+        --glass-surface-border: rgba(0, 0, 0, 0.14);
+        --glass-card-bg: rgba(244, 244, 245, 0.94);
+        --glass-card-border: rgba(0, 0, 0, 0.10);
+        --glass-pill-bg: rgba(0, 0, 0, 0.05);
+        --glass-pill-border: rgba(0, 0, 0, 0.12);
         --text-contrast-primary: #09090b;
-        --text-contrast-secondary: #3f3f46;
-        --text-contrast-tertiary: #52525b;
+        --text-contrast-secondary: #1e293b;
+        --text-contrast-tertiary: #475569;
+        --accent-color: #0062c4;
+        --accent-glow: rgba(0, 113, 227, 0.20);
       }
     }
 
@@ -50,13 +65,14 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      scroll-behavior: smooth;
     }
 
-    /* Liquid Mesh Aura */
+    /* Ambient Liquid Mesh Aura */
     .liquid-mesh {
-      background: radial-gradient(circle at 10% 10%, rgba(0, 113, 227, 0.14) 0%, transparent 45%),
-                  radial-gradient(circle at 90% 20%, rgba(52, 199, 89, 0.10) 0%, transparent 40%),
-                  radial-gradient(circle at 50% 90%, rgba(94, 92, 230, 0.12) 0%, transparent 50%);
+      background: radial-gradient(circle at 10% 12%, rgba(0, 113, 227, 0.16) 0%, transparent 45%),
+                  radial-gradient(circle at 90% 18%, rgba(52, 199, 89, 0.12) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 88%, rgba(94, 92, 230, 0.14) 0%, transparent 50%);
     }
 
     /* Liquid Glass Material Surfaces with Contrast Adaptive Properties */
@@ -65,22 +81,22 @@
       backdrop-filter: blur(28px) saturate(190%);
       -webkit-backdrop-filter: blur(28px) saturate(190%);
       border: 1px solid var(--glass-surface-border);
-      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.28), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
     }
 
     .glass-card {
       background: var(--glass-card-bg);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(22px) saturate(180%);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
       border: 1px solid var(--glass-card-border);
-      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .glass-card:hover {
       transform: translateY(-1.5px);
-      border-color: rgba(0, 113, 227, 0.40);
-      box-shadow: 0 16px 32px -10px rgba(0, 113, 227, 0.20), inset 0 1px 0 0 rgba(255, 255, 255, 0.30);
+      border-color: rgba(0, 113, 227, 0.45);
+      box-shadow: 0 16px 32px -10px var(--accent-glow), inset 0 1px 0 0 rgba(255, 255, 255, 0.30);
     }
 
     .glass-pill {
@@ -92,10 +108,10 @@
     }
 
     .glass-pill-active {
-      background: rgba(0, 113, 227, 0.22);
-      color: #0071e3;
-      border: 1px solid rgba(0, 113, 227, 0.50);
-      box-shadow: 0 4px 14px rgba(0, 113, 227, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      background: rgba(0, 113, 227, 0.24);
+      color: var(--accent-color);
+      border: 1px solid rgba(0, 113, 227, 0.55);
+      box-shadow: 0 4px 14px var(--accent-glow), inset 0 1px 1px rgba(255, 255, 255, 0.35);
     }
 
     /* Keyframe animations */
@@ -105,7 +121,7 @@
     }
     .pulse-glow { animation: pulseGlow 2.5s infinite ease-in-out; }
 
-    /* Custom scrollbars */
+    /* Custom smooth scrollbars */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(140, 140, 150, 0.35); border-radius: 9999px; }
@@ -135,44 +151,64 @@
           </div>
           <div>
             <div class="flex items-center gap-2.5 flex-wrap">
-              <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue</h1>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-500 border border-blue-400/30 tracking-wide">v1.0.0</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-400/30 tracking-wide">Pure Rust nusb</span>
+              <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">Exynos LOKE Rescue</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/15 text-blue-500 border border-blue-400/30 tracking-wide">v1.0.0</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-400/30 tracking-wide">Pure Rust nusb</span>
             </div>
             <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium leading-relaxed">
-              Deterministic Odin v3/v4 Protocol Driver &bull; Hardware NAND Recovery &bull; Clean-Room Architecture
+              Deterministic Odin Protocol Driver &bull; Dynamic Binary PIT Parser &bull; Low-Level Hardware NAND Control
             </p>
           </div>
         </div>
 
-        <!-- Real-Time Hardware Status Badges (High Contrast) -->
+        <!-- Hardware & Theme Control Bar -->
         <div class="flex items-center gap-2.5 flex-wrap">
           <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-medium">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-glow"></span>
-            <span class="text-[var(--muted-foreground)]">Transport:</span>
-            <span class="font-mono font-semibold text-[var(--foreground)]">04e8:685d (LOKE)</span>
+            <span class="text-[var(--muted-foreground)] font-semibold">Transport:</span>
+            <span class="font-mono font-bold text-[var(--foreground)]">04e8:685d (LOKE)</span>
           </div>
-          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-medium">
-            <span class="text-[var(--muted-foreground)]">Target:</span>
-            <span class="font-mono font-bold text-blue-500">Galaxy A21s (SM-A217F)</span>
-          </div>
-          <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-medium">
-            <span class="text-[var(--muted-foreground)]">Protocol:</span>
-            <span class="font-mono text-purple-500 font-bold">Tier v3 (1MB Macro)</span>
-          </div>
+
+          <!-- Dynamic PIT File Upload Button -->
+          <label class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill hover:border-blue-400/50 cursor-pointer text-xs font-semibold text-blue-500 transition-colors">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span id="label-upload-pit">Load Custom .pit</span>
+            <input type="file" id="pit-file-input" accept=".pit" class="hidden" onchange="handlePitFileUpload(event)">
+          </label>
+
+          <!-- Theme Contrast Toggle -->
+          <button onclick="toggleThemeMode()" id="btn-theme-toggle" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-semibold text-[var(--foreground)] hover:border-blue-400/50 transition-colors">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <span id="theme-mode-text">Theme: Auto</span>
+          </button>
         </div>
       </div>
 
-      <!-- Segmented Control Navigation Bar (Glass Island) -->
-      <nav class="mt-6 pt-5 border-t border-[var(--glass-surface-border)] flex items-center justify-between gap-3 overflow-x-auto pb-1">
+      <!-- Segmented Control Navigation Bar (Auto-Centering Glass Island) -->
+      <nav id="nav-tabs-container" class="mt-6 pt-5 border-t border-[var(--glass-surface-border)] flex items-center justify-between gap-3 overflow-x-auto pb-1">
         <div class="inline-flex p-1.5 rounded-2xl glass-pill text-xs sm:text-sm font-medium gap-1 min-w-max">
-          <button onclick="switchTab('tab-storage')" id="btn-tab-storage" class="nav-tab glass-pill-active flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 font-semibold">
+          
+          <button onclick="switchTab('tab-storage')" id="btn-tab-storage" class="nav-tab glass-pill-active flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 font-bold">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
               <line x1="12" y1="22.08" x2="12" y2="12"></line>
             </svg>
-            <span>Storage Geometry (42)</span>
+            <span>Storage Geometry (<span id="nav-count-badge">42</span>)</span>
           </button>
 
           <button onclick="switchTab('tab-protocol')" id="btn-tab-protocol" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
@@ -215,126 +251,59 @@
             </svg>
             <span>Safety Invariants</span>
           </button>
+
         </div>
       </nav>
     </header>
 
     <!-- ======================================================== -->
-    <!-- TAB 1: Storage Geometry & Responsive Capacity Inspector  -->
+    <!-- TAB 1: Storage Geometry & Dynamic PIT Capacity Inspector -->
     <!-- ======================================================== -->
     <main id="content-tab-storage" class="space-y-6">
       <div class="glass-surface rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl relative overflow-hidden">
         
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Flash Storage & PIT Dissector</h2>
-            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium">Physical eMMC geometry & dynamic partition metadata from A21S_EUR_OPEN.pit</p>
+            <h2 class="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight text-[var(--foreground)]">Flash Storage & PIT Dissector</h2>
+            <p class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 font-medium" id="pit-meta-subtitle">
+              Parsed dynamically from binary PIT stream &bull; Live sector geometry calculation
+            </p>
           </div>
-          <!-- Filter Buttons with High Contrast -->
-          <div class="flex items-center gap-2 flex-wrap text-xs sm:text-sm">
-            <button onclick="filterPartitions('all')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-blue-500 border-blue-500/50">All (42)</button>
-            <button onclick="filterPartitions('core')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Kernel & Boot (5)</button>
-            <button onclick="filterPartitions('super')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Dynamic Super (1)</button>
-            <button onclick="filterPartitions('storage')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">User Storage (3)</button>
-            <button onclick="filterPartitions('nvram')" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Protected NVRAM (4)</button>
+          <!-- Filter Buttons with High Contrast & Auto-Center -->
+          <div id="filter-pills-container" class="flex items-center gap-2 overflow-x-auto pb-1 text-xs sm:text-sm max-w-full">
+            <button onclick="filterPartitions('all', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-bold text-blue-500 border-blue-500/50 whitespace-nowrap">All (<span id="filter-count-all">0</span>)</button>
+            <button onclick="filterPartitions('core', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Kernel & Boot (<span id="filter-count-core">0</span>)</button>
+            <button onclick="filterPartitions('super', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Dynamic Super (<span id="filter-count-super">0</span>)</button>
+            <button onclick="filterPartitions('storage', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Storage (<span id="filter-count-storage">0</span>)</button>
+            <button onclick="filterPartitions('nvram', this)" class="part-filter-btn px-3.5 py-1.5 rounded-xl glass-pill font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] whitespace-nowrap">Protected NVRAM (<span id="filter-count-nvram">0</span>)</button>
           </div>
         </div>
 
-        <!-- RESPONSIVE STORAGE CAPACITY ALLOCATION (Multi-Tier Apple Inspector) -->
+        <!-- DYNAMIC TWO-TIER CAPACITY ALLOCATION INSPECTOR -->
         <div class="glass-card rounded-2xl p-4 sm:p-6 mb-7">
           <div class="flex justify-between items-center text-xs sm:text-sm mb-3.5 font-medium">
-            <span class="text-[var(--foreground)] font-semibold flex items-center gap-2">
+            <span class="text-[var(--foreground)] font-bold flex items-center gap-2">
               <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
                 <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
                 <line x1="6" y1="6" x2="6.01" y2="6"></line>
                 <line x1="6" y1="18" x2="6.01" y2="18"></line>
               </svg>
-              <span>eMMC Flash Memory Allocation</span>
+              <span>Dynamically Computed Storage Capacity</span>
             </span>
-            <span class="font-mono text-blue-500 font-bold">~32.00 GB Total Capacity</span>
+            <span class="font-mono text-blue-500 font-extrabold" id="total-capacity-display">Calculating...</span>
           </div>
 
-          <!-- Tier 1: Proportional Bar with Adaptive Minimum Cell Widths -->
-          <div class="w-full rounded-2xl bg-black/40 border border-[var(--glass-card-border)] p-1.5 shadow-inner select-none overflow-x-auto">
-            <div class="flex items-center gap-1.5 min-w-[620px] sm:min-w-full h-11 sm:h-12">
-              
-              <!-- SUPER Segment -->
-              <div style="flex: 17.5 1 125px;" onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Dynamic container storing Android system, vendor, product, odm. Android Sparse format 0xed26ff3a.')" class="min-w-[125px] h-full rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2.5 cursor-pointer shadow-md">
-                <span class="truncate">SUPER (5.18 GB)</span>
-              </div>
-
-              <!-- USERDATA Segment -->
-              <div style="flex: 73.5 1 180px;" onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted userdata partition. Erased via low-level NAND hardware wipe 0x64 (0x07) to unbrick broken power key prompt.')" class="min-w-[180px] h-full rounded-xl bg-amber-500 hover:bg-amber-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2.5 cursor-pointer shadow-md">
-                <span class="truncate">USERDATA (~24.0 GB)</span>
-              </div>
-
-              <!-- RECOVERY Segment -->
-              <div style="flex: 3.5 1 75px;" onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="min-w-[75px] h-full rounded-xl bg-blue-500 hover:bg-blue-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2 cursor-pointer shadow-md">
-                <span class="truncate">REC (53M)</span>
-              </div>
-
-              <!-- BOOT Segment -->
-              <div style="flex: 2.5 1 70px;" onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="min-w-[70px] h-full rounded-xl bg-cyan-400 hover:bg-cyan-300 transition-colors flex items-center justify-center text-xs font-bold text-black px-2 cursor-pointer shadow-md">
-                <span class="truncate">BOOT (36M)</span>
-              </div>
-
-              <!-- EFS Segment -->
-              <div style="flex: 3.0 1 70px;" onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Radio calibrations, IMEI, MAC address certificates. Immutable and hard write-protected by driver.')" class="min-w-[70px] h-full rounded-xl bg-rose-500 hover:bg-rose-400 transition-colors flex items-center justify-center text-xs font-bold text-white px-2 cursor-pointer shadow-md">
-                <span class="truncate">EFS (20M)</span>
-              </div>
-
+          <!-- Tier 1: Proportional Bar (Dynamically Populated + Auto-Scroll Center) -->
+          <div id="capacity-bar-track" class="w-full rounded-2xl bg-black/40 border border-[var(--glass-card-border)] p-1.5 shadow-inner select-none overflow-x-auto scrollbar-none">
+            <div id="dynamic-capacity-segments" class="flex items-center gap-1.5 min-w-[640px] sm:min-w-full h-11 sm:h-12">
+              <!-- Dynamically populated from binary PIT parsing -->
             </div>
           </div>
 
-          <!-- Tier 2: Responsive Partition Card Deck (Grid of Major Partitions) -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4 pt-3 border-t border-[var(--glass-card-border)]">
-            
-            <div onclick="selectPartition('SUPER', 30, 10854400, 'AP', 'super.img', 'Dynamic container storing Android system, vendor, product, odm. Android Sparse format 0xed26ff3a.')" class="p-3 rounded-xl glass-pill hover:border-emerald-500/50 cursor-pointer transition-all flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                <span class="font-mono text-xs font-bold text-emerald-500">17.5%</span>
-              </div>
-              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">SUPER</div>
-              <div class="font-mono text-xs text-[var(--muted-foreground)]">5.18 GiB Dynamic</div>
-            </div>
-
-            <div onclick="selectPartition('USERDATA', 37, 54525952, 'AP', 'userdata.img', 'Encrypted userdata partition. Erased via low-level NAND hardware wipe 0x64 (0x07) to unbrick broken power key prompt.')" class="p-3 rounded-xl glass-pill hover:border-amber-500/50 cursor-pointer transition-all flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
-                <span class="font-mono text-xs font-bold text-amber-500">73.5%</span>
-              </div>
-              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">USERDATA</div>
-              <div class="font-mono text-xs text-[var(--muted-foreground)]">~24.0 GiB Ext4</div>
-            </div>
-
-            <div onclick="selectPartition('RECOVERY', 19, 108544, 'AP', 'recovery.img', 'Stock One UI recovery binary or LineageOS / TWRP touch recovery image.')" class="p-3 rounded-xl glass-pill hover:border-blue-500/50 cursor-pointer transition-all flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                <span class="font-mono text-xs font-bold text-blue-500">3.5%</span>
-              </div>
-              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">RECOVERY</div>
-              <div class="font-mono text-xs text-[var(--muted-foreground)]">53.0 MiB Stock/OS</div>
-            </div>
-
-            <div onclick="selectPartition('BOOT', 18, 73728, 'AP', 'boot.img', 'Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.')" class="p-3 rounded-xl glass-pill hover:border-cyan-400/50 cursor-pointer transition-all flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="w-3 h-3 rounded-full bg-cyan-400"></span>
-                <span class="font-mono text-xs font-bold text-cyan-500">2.5%</span>
-              </div>
-              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">BOOT</div>
-              <div class="font-mono text-xs text-[var(--muted-foreground)]">36.0 MiB Kernel</div>
-            </div>
-
-            <div onclick="selectPartition('EFS', 1, 40960, 'AP', 'efs.img', 'Radio calibrations, IMEI, MAC address certificates. Immutable and hard write-protected by driver.')" class="p-3 rounded-xl glass-pill hover:border-rose-500/50 cursor-pointer transition-all flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="w-3 h-3 rounded-full bg-rose-500"></span>
-                <span class="font-mono text-xs font-bold text-rose-500">LOCKED</span>
-              </div>
-              <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">EFS / NVRAM</div>
-              <div class="font-mono text-xs text-[var(--muted-foreground)]">20.0 MiB Protected</div>
-            </div>
-
+          <!-- Tier 2: Dynamic Responsive Partition Card Deck (Auto-Scroll Center on Selection) -->
+          <div id="dynamic-card-deck" class="flex overflow-x-auto sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4 pt-3.5 border-t border-[var(--glass-card-border)] pb-2 scrollbar-none">
+            <!-- Dynamically populated from top storage consumers -->
           </div>
         </div>
 
@@ -343,9 +312,19 @@
           
           <!-- Partition Grid List (7 Cols) -->
           <div class="lg:col-span-7 glass-card rounded-2xl overflow-hidden flex flex-col">
-            <div class="p-4 border-b border-[var(--glass-card-border)] bg-black/20 flex items-center justify-between text-xs sm:text-sm font-semibold">
-              <span class="text-[var(--foreground)]">Partition Inventory Record</span>
-              <span class="text-[var(--muted-foreground)] font-mono" id="partition-counter">Showing 42 partitions</span>
+            <div class="p-4 border-b border-[var(--glass-card-border)] bg-black/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-semibold">
+              <div class="flex items-center gap-2">
+                <span class="text-[var(--foreground)] font-bold">Partition Table Inventory</span>
+                <span class="text-[var(--muted-foreground)] font-mono text-xs font-semibold" id="partition-counter">Parsing...</span>
+              </div>
+              <!-- Live Search -->
+              <div class="relative w-full sm:w-48">
+                <input type="text" id="partition-search-input" placeholder="Search partition..." oninput="handlePartitionSearch()" class="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/30 border border-[var(--glass-pill-border)] text-xs font-mono text-[var(--foreground)] placeholder-[var(--text-contrast-tertiary)] outline-none focus:border-blue-400">
+                <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[var(--muted-foreground)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
             </div>
 
             <div class="divide-y divide-[var(--glass-card-border)] max-h-96 overflow-y-auto" id="partition-list-container">
@@ -358,12 +337,12 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <span class="text-xs sm:text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Partition Inspector</span>
-                <span id="inspect-badge" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-mono font-bold bg-blue-500/15 text-blue-500 border border-blue-400/30">ID 18</span>
+                <span id="inspect-badge" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-mono font-bold bg-blue-500/15 text-blue-500 border border-blue-400/30">ID —</span>
               </div>
               <div>
-                <h3 id="inspect-name" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">BOOT</h3>
+                <h3 id="inspect-name" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">SELECT PARTITION</h3>
                 <p id="inspect-desc" class="text-xs sm:text-sm text-[var(--muted-foreground)] mt-2 leading-relaxed font-medium">
-                  Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.
+                  Click any partition in the capacity bar, card deck, or inventory list to inspect its geometry.
                 </p>
               </div>
 
@@ -371,23 +350,23 @@
               <div class="space-y-3 pt-4 border-t border-[var(--glass-card-border)] text-xs sm:text-sm">
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)] font-medium">Flash Filename:</span>
-                  <span id="inspect-file" class="font-mono font-semibold text-[var(--foreground)]">boot.img</span>
+                  <span id="inspect-file" class="font-mono font-bold text-[var(--foreground)]">—</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)] font-medium">Block Count:</span>
-                  <span id="inspect-blocks" class="font-mono text-[var(--foreground)] font-medium">73,728 blocks</span>
+                  <span id="inspect-blocks" class="font-mono text-[var(--foreground)] font-medium">—</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)] font-medium">Allocated Capacity:</span>
-                  <span id="inspect-size" class="font-mono font-bold text-blue-500 text-sm sm:text-base">36.00 MiB</span>
+                  <span id="inspect-size" class="font-mono font-extrabold text-blue-500 text-sm sm:text-base">—</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)] font-medium">Binary Domain:</span>
-                  <span id="inspect-type" class="font-medium text-[var(--foreground)]">AP (Application Processor)</span>
+                  <span id="inspect-type" class="font-medium text-[var(--foreground)]">—</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-[var(--muted-foreground)] font-medium">Flash Safety Tier:</span>
-                  <span id="inspect-safety" class="font-semibold text-emerald-500">Safe for Direct Flashing</span>
+                  <span id="inspect-safety" class="font-bold text-emerald-500">—</span>
                 </div>
               </div>
 
@@ -402,7 +381,7 @@
                   <span>LOKE Protocol Rationale</span>
                 </div>
                 <p id="inspect-rationale" class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                  LOKE verifies the OEM RSA cryptographic signature on the final sequence block. Mismatches trigger error code -1.
+                  Select a partition above to view wire transfer rationale and signature verification rules.
                 </p>
               </div>
             </div>
@@ -432,7 +411,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <!-- Step 1 -->
           <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
               <span class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-500 font-mono text-xs font-bold flex items-center justify-center">01</span>
@@ -444,7 +422,6 @@
             </p>
           </div>
 
-          <!-- Step 2 -->
           <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
               <span class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-500 font-mono text-xs font-bold flex items-center justify-center">02</span>
@@ -456,7 +433,6 @@
             </p>
           </div>
 
-          <!-- Step 3 -->
           <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
               <span class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-500 font-mono text-xs font-bold flex items-center justify-center">03</span>
@@ -468,7 +444,6 @@
             </p>
           </div>
 
-          <!-- Step 4 -->
           <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-2">
             <div class="flex items-center justify-between">
               <span class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-500 font-mono text-xs font-bold flex items-center justify-center">04</span>
@@ -481,7 +456,6 @@
           </div>
         </div>
 
-        <!-- Wire Packet Table (High Contrast) -->
         <div class="glass-card rounded-2xl p-5 sm:p-6">
           <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)] mb-4">Protocol Frame Structure (1024-Byte Control Block)</h3>
           <div class="overflow-x-auto">
@@ -549,8 +523,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          
-          <!-- Recipe 1 -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div class="space-y-3">
               <div class="flex items-center gap-2.5">
@@ -569,7 +541,6 @@
             </button>
           </div>
 
-          <!-- Recipe 2 -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div class="space-y-3">
               <div class="flex items-center gap-2.5">
@@ -588,11 +559,10 @@
             </button>
           </div>
 
-          <!-- Recipe 3 -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div class="space-y-3">
               <div class="flex items-center gap-2.5">
-                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/20 text-emerald-500 border border-emerald-400/30">SCENARIO 3</span>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-400/30">SCENARIO 3</span>
                 <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">Full Stock OS Reinstallation</h3>
               </div>
               <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
@@ -602,16 +572,15 @@
                 exynos-loke-rescue full-raw-restore -s ~/Downloads/stock -e
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('full-raw-restore')" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-500 border border-emerald-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
+            <button onclick="applyDiagnosticMode('full-raw-restore')" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
               Load Scenario in Command Studio
             </button>
           </div>
 
-          <!-- Recipe 4 -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div class="space-y-3">
               <div class="flex items-center gap-2.5">
-                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-rose-500/20 text-rose-500 border border-rose-400/30">SCENARIO 4</span>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-400/30">SCENARIO 4</span>
                 <h3 class="text-sm sm:text-base font-bold text-[var(--foreground)]">FAIL! (Auth) / VaultKeeper Lock (-1)</h3>
               </div>
               <p class="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
@@ -621,11 +590,10 @@
                 exynos-loke-rescue rescue-boot -a ~/Downloads/stock/AP_*.tar.md5
               </div>
             </div>
-            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-500 border border-rose-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
+            <button onclick="applyDiagnosticMode('rescue-boot')" class="w-full py-2.5 px-4 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-400/35 text-xs sm:text-sm font-bold transition-colors shadow-sm">
               Load Scenario in Command Studio
             </button>
           </div>
-
         </div>
       </div>
     </section>
@@ -641,8 +609,6 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          <!-- Options Form (7 Cols) -->
           <div class="lg:col-span-7 space-y-5">
             <div>
               <label class="block text-xs sm:text-sm font-bold text-[var(--foreground)] mb-2.5">Recovery Mode Selection</label>
@@ -680,16 +646,25 @@
                   </div>
                 </label>
 
+                <label class="flex items-center gap-3.5 p-3.5 rounded-xl glass-card cursor-pointer sm:col-span-2">
+                  <input type="radio" name="mode" value="flash-raw" onchange="updateCommand()" class="w-4 h-4 accent-blue-500">
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-[var(--foreground)]">Mode 3: Flash Selected Partition</span>
+                      <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/20 text-blue-500 border border-blue-400/30" id="badge-mode-selected-part">BOOT</span>
+                    </div>
+                    <div class="text-xs text-[var(--muted-foreground)]" id="label-mode-selected-part">Target: boot.img (Raw direct flash bypassing samloader dynamic assertions)</div>
+                  </div>
+                </label>
+
               </div>
             </div>
 
-            <!-- Path Field -->
             <div id="path-input-group" class="space-y-2">
               <label class="block text-xs sm:text-sm font-bold text-[var(--foreground)]">Firmware Path / Archive</label>
               <input type="text" id="fw-path" value="~/Downloads/stock" oninput="updateCommand()" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)] text-xs sm:text-sm font-mono text-[var(--foreground)] font-medium focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none transition-all">
             </div>
 
-            <!-- Toggles with High Contrast -->
             <div class="space-y-3 pt-3 border-t border-[var(--glass-card-border)] text-xs sm:text-sm">
               <label class="block font-bold text-[var(--foreground)]">Execution Options</label>
               
@@ -719,10 +694,8 @@
             </div>
           </div>
 
-          <!-- macOS Terminal Window Preview (5 Cols, High Contrast) -->
           <div class="lg:col-span-5 flex flex-col justify-between">
             <div class="bg-zinc-950 text-zinc-100 rounded-2xl p-5 sm:p-6 border border-zinc-800 shadow-2xl">
-              <!-- Traffic lights -->
               <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800">
                 <div class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shadow-sm"></span>
@@ -732,7 +705,6 @@
                 <span class="text-xs font-mono text-zinc-400 font-bold">Terminal &mdash; zsh</span>
               </div>
 
-              <!-- Terminal contents (High Contrast) -->
               <div class="font-mono text-xs sm:text-sm space-y-2.5">
                 <div class="text-zinc-400 font-medium"># Linux recovery execution command</div>
                 <div class="text-sky-300 font-bold break-all select-all leading-relaxed" id="cmd-output">
@@ -778,7 +750,6 @@
         </div>
 
         <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-5">
-          <!-- Live Telemetry Bar (High Contrast) -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs sm:text-sm">
             <div class="p-3.5 rounded-xl bg-black/40 border border-[var(--glass-card-border)]">
               <div class="text-[var(--muted-foreground)] font-semibold">Protocol State</div>
@@ -798,7 +769,6 @@
             </div>
           </div>
 
-          <!-- Progress Track -->
           <div class="space-y-2">
             <div class="flex justify-between items-center text-xs sm:text-sm font-semibold">
               <span id="sim-current-part" class="text-[var(--foreground)]">Target: boot.img (36.00 MiB)</span>
@@ -809,7 +779,6 @@
             </div>
           </div>
 
-          <!-- Simulated Console Feed (High Contrast) -->
           <div class="p-4 rounded-xl bg-zinc-950 font-mono text-xs text-zinc-200 h-36 overflow-y-auto space-y-1.5 border border-zinc-800" id="sim-log">
             <div class="text-zinc-400 font-semibold">> Mock LOKE Device ready. Press "Start Live Simulation" to begin testbed session.</div>
           </div>
@@ -828,7 +797,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs sm:text-sm">
-          <!-- Protected -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 border-rose-500/35 bg-rose-500/10 space-y-3.5">
             <div class="flex items-center gap-2 text-rose-500 font-bold text-sm sm:text-base">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -856,7 +824,6 @@
             </ul>
           </div>
 
-          <!-- Permitted -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 border-emerald-500/35 bg-emerald-500/10 space-y-3.5">
             <div class="flex items-center gap-2 text-emerald-500 font-bold text-sm sm:text-base">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -890,81 +857,309 @@
     <footer class="text-center text-xs sm:text-sm text-[var(--muted-foreground)] pt-4 pb-6 flex items-center justify-center gap-2 font-medium">
       <span>Exynos LOKE Rescue</span>
       <span>&bull;</span>
-      <span>Liquid Glass Material Design</span>
+      <span>Liquid Glass Dynamic Engine</span>
       <span>&bull;</span>
       <span>Linux Native 04e8:685d Driver</span>
     </footer>
 
   </div>
 
-  <!-- Real-Time Data & Interactive Behaviors -->
+  <!-- Real-Time Binary PIT Parsing & Dynamic Reactive Behaviors -->
   <script>
-    // Complete 42 partition inventory from A21S_EUR_OPEN.pit
-    const PARTITIONS = [
-      { id: 80, name: "BOOTLOADER", file: "sboot.bin", blocks: 8192, type: "AP", category: "core", desc: "Primary stage bootloader binary (sboot.bin)" },
-      { id: 90, name: "DDI", file: "—", blocks: 2048, type: "AP", category: "core", desc: "Display driver interface parameters" },
-      { id: 91, name: "ECT", file: "ect.bin", blocks: 0, type: "AP", category: "core", desc: "Exynos calibration table" },
-      { id: 70, name: "PIT", file: "—", blocks: 16, type: "AP", category: "core", desc: "Partition Information Table partition record" },
-      { id: 71, name: "MD5HDR", file: "md5.img", blocks: 2048, type: "AP", category: "core", desc: "Firmware MD5 validation header" },
-      { id: 1, name: "EFS", file: "efs.img", blocks: 40960, type: "AP", category: "nvram", desc: "Radio calibrations, IMEI, MAC address certificates (IMMUTABLE)" },
-      { id: 2, name: "SEC_EFS", file: "sec_efs.img", blocks: 40960, type: "AP", category: "nvram", desc: "Secondary backup EFS mirror store" },
-      { id: 3, name: "RESERVED", file: "—", blocks: 8192, type: "AP", category: "core", desc: "OEM reserved blocks" },
-      { id: 4, name: "CPEFS", file: "—", blocks: 16384, type: "AP", category: "nvram", desc: "Cellular processor parameter store" },
-      { id: 5, name: "STEADY", file: "steady.bin", blocks: 8192, type: "AP", category: "core", desc: "Hardware power state configuration" },
-      { id: 6, name: "PARAM", file: "param.bin", blocks: 16384, type: "AP", category: "core", desc: "Display bootscreen and download mode graphics" },
-      { id: 7, name: "BOTA", file: "—", blocks: 73728, type: "AP", category: "core", desc: "Bootloader over-the-air staging buffer" },
-      { id: 8, name: "LDFW", file: "ldfw.img", blocks: 16384, type: "AP", category: "core", desc: "Low-level display firmware overlay" },
-      { id: 9, name: "TZSW", file: "tzsw.img", blocks: 3072, type: "AP", category: "core", desc: "ARM TrustZone Secure OS image" },
-      { id: 10, name: "TZAR", file: "tzar.img", blocks: 13312, type: "AP", category: "core", desc: "TrustZone Anti-Rollback table" },
-      { id: 11, name: "KEYSTORAGE", file: "keystorage.bin", blocks: 1024, type: "AP", category: "nvram", desc: "Hardware-backed keystore partition" },
-      { id: 12, name: "NAD_REFER", file: "nad_refer.bin", blocks: 2048, type: "AP", category: "core", desc: "NAND reference voltages" },
-      { id: 13, name: "UP_PARAM", file: "up_param.bin", blocks: 16384, type: "AP", category: "core", desc: "User parameter configuration" },
-      { id: 14, name: "MISC", file: "misc.bin", blocks: 4096, type: "AP", category: "core", desc: "Android recovery boot command flag" },
-      { id: 15, name: "UH", file: "uh.bin", blocks: 4096, type: "AP", category: "core", desc: "Micro-hypervisor binary" },
-      { id: 16, name: "UHCFG", file: "uhuh.bin", blocks: 8192, type: "AP", category: "core", desc: "Hypervisor configuration table" },
-      { id: 17, name: "BLCMD", file: "blcmd.bin", blocks: 1024, type: "AP", category: "core", desc: "Bootloader command buffer" },
-      { id: 18, name: "BOOT", file: "boot.img", blocks: 73728, type: "AP", category: "core", desc: "Android Linux kernel and ramdisk image" },
-      { id: 19, name: "RECOVERY", file: "recovery.img", blocks: 108544, type: "AP", category: "core", desc: "Stock or custom touch recovery environment" },
-      { id: 20, name: "DTB", file: "dt.img", blocks: 16384, type: "AP", category: "core", desc: "Device Tree Blob binary" },
-      { id: 21, name: "DTBO", file: "dtbo.img", blocks: 16384, type: "AP", category: "core", desc: "Device Tree Blob Overlay table" },
-      { id: 22, name: "RADIO", file: "modem.bin", blocks: 102400, type: "CP", category: "core", desc: "Shannon cellular baseband modem firmware" },
-      { id: 23, name: "PERSISTENT", file: "—", blocks: 1024, type: "AP", category: "core", desc: "FRP lock and OEM unlocking state byte" },
-      { id: 24, name: "VBMETA", file: "vbmeta.img", blocks: 1024, type: "AP", category: "core", desc: "Verified Boot 2.0 cryptographic signatures" },
-      { id: 25, name: "VBMETA_SAMSUNG", file: "vbmeta_samsung.img", blocks: 1024, type: "AP", category: "core", desc: "Samsung proprietary knox verified boot metadata" },
-      { id: 26, name: "KEYREFUGE", file: "—", blocks: 32768, type: "AP", category: "nvram", desc: "Knox key refuge encrypted partition" },
-      { id: 27, name: "KEYDATA", file: "—", blocks: 32768, type: "AP", category: "nvram", desc: "Keystore non-volatile cryptographic parameters" },
-      { id: 28, name: "METADATA", file: "metadata.img", blocks: 65536, type: "AP", category: "core", desc: "Encrypted disk metadata for Adoptable Storage" },
-      { id: 29, name: "RESERVED2", file: "—", blocks: 3072, type: "AP", category: "core", desc: "OEM boundary padding" },
-      { id: 30, name: "SUPER", file: "super.img", blocks: 10854400, type: "AP", category: "super", desc: "Dynamic container storing system, vendor, product, odm" },
-      { id: 31, name: "PRISM", file: "prism.img", blocks: 1638400, type: "AP", category: "storage", desc: "Country-specific regional CSC applications" },
-      { id: 32, name: "OPTICS", file: "optics.img", blocks: 40960, type: "AP", category: "storage", desc: "Carrier customization and operator packages" },
-      { id: 33, name: "CACHE", file: "cache.img", blocks: 409600, type: "AP", category: "storage", desc: "Android temporary cache storage" },
-      { id: 34, name: "OMR", file: "omr.img", blocks: 40960, type: "AP", category: "storage", desc: "Open Market Customization resources" },
-      { id: 35, name: "CP_DEBUG", file: "modem_debug.bin", blocks: 10240, type: "CP", category: "core", desc: "Cellular modem debug ramdump" },
-      { id: 36, name: "SPU", file: "spu.img", blocks: 102400, type: "AP", category: "core", desc: "Secure Processing Unit firmware" },
-      { id: 37, name: "USERDATA", file: "userdata.img", blocks: 54525952, type: "AP", category: "storage", desc: "Encrypted user storage and app data" }
-    ];
+    // Embedded Base64 binary PIT seed data (real Galaxy A21s A21S_EUR_OPEN.pit)
+    const EMBEDDED_A21S_PIT_B64 = "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";
 
-    let currentSelectedPartition = PARTITIONS[22]; // BOOT by default
+    let parsedPit = { count: 0, entries: [] };
+    let currentSelectedPartition = null;
+    let currentFilter = 'all';
+    let searchQuery = '';
 
-    function renderPartitionList(filterCategory = 'all') {
+    // Auto-slide utility: scrolls element to center of container horizontally or vertically
+    function scrollIntoCenter(element, container) {
+      if (!element || !container) return;
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+
+      // Horizontal auto-slide center
+      if (container.scrollWidth > container.clientWidth) {
+        const currentScrollLeft = container.scrollLeft;
+        const targetScrollLeft = currentScrollLeft + (elementRect.left - containerRect.left) - (container.clientWidth / 2) + (elementRect.width / 2);
+        container.scrollTo({ left: Math.max(0, targetScrollLeft), behavior: 'smooth' });
+      }
+
+      // Vertical auto-slide center
+      if (container.scrollHeight > container.clientHeight) {
+        const currentScrollTop = container.scrollTop;
+        const targetScrollTop = currentScrollTop + (elementRect.top - containerRect.top) - (container.clientHeight / 2) + (elementRect.height / 2);
+        container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' });
+      }
+    }
+
+    // Binary PIT Parser
+    function parseBinaryPitBuffer(buffer) {
+      const view = new DataView(buffer);
+      const magic = view.getUint32(0, true);
+      if (magic !== 0x12349876) {
+        throw new Error("Invalid PIT magic: 0x" + magic.toString(16).toUpperCase());
+      }
+
+      const count = view.getUint32(4, true);
+      const entries = [];
+
+      for (let i = 0; i < count; i++) {
+        const offset = 28 + i * 132;
+        if (offset + 132 > buffer.byteLength) break;
+
+        const binary_type = view.getUint32(offset, true);
+        const device_type = view.getUint32(offset + 4, true);
+        const partition_id = view.getUint32(offset + 8, true);
+        const attributes = view.getUint32(offset + 12, true);
+        const update_attributes = view.getUint32(offset + 16, true);
+        const block_size_or_offset = view.getUint32(offset + 20, true);
+        const block_count = view.getUint32(offset + 24, true);
+        const file_offset = view.getUint32(offset + 28, true);
+        const file_size = view.getUint32(offset + 32, true);
+
+        const nameBytes = new Uint8Array(buffer, offset + 36, 32);
+        const fileBytes = new Uint8Array(buffer, offset + 68, 32);
+        const fotaBytes = new Uint8Array(buffer, offset + 100, 32);
+
+        const partition_name = readAsciiCString(nameBytes);
+        const flash_filename = readAsciiCString(fileBytes);
+        const fota_filename = readAsciiCString(fotaBytes);
+
+        let category = 'core';
+        const upper = partition_name.toUpperCase();
+        if (['EFS', 'SEC_EFS', 'CPEFS', 'KEYSTORAGE', 'KEYDATA', 'KEYREFUGE'].includes(upper)) {
+          category = 'nvram';
+        } else if (upper === 'SUPER') {
+          category = 'super';
+        } else if (['USERDATA', 'CACHE', 'PRISM', 'OPTICS', 'OMR'].includes(upper)) {
+          category = 'storage';
+        }
+
+        let desc = `Samsung physical partition ${partition_name}`;
+        if (upper === 'BOOT') desc = "Android Linux kernel and ramdisk. Essential for resolving bootloader softbricks.";
+        else if (upper === 'RECOVERY') desc = "Stock or custom touch recovery environment (One UI / LineageOS / TWRP).";
+        else if (upper === 'VBMETA') desc = "Android Verified Boot 2.0 cryptographic hashes, public keys, and AVB descriptor records.";
+        else if (upper === 'SUPER') desc = "Android Dynamic Partitions container storing system, vendor, product, and odm images.";
+        else if (upper === 'USERDATA') desc = "Encrypted user storage. Erasing from Download Mode solves broken power button confirmation traps.";
+        else if (upper === 'EFS') desc = "Encrypted File System holding radio calibrations, IMEI, and MAC address certificates (IMMUTABLE).";
+        else if (upper === 'DTBO') desc = "Device Tree Blob Overlay containing peripheral pinmux configurations and Exynos topology.";
+        else if (upper === 'RADIO') desc = "Shannon cellular baseband modem firmware image.";
+
+        entries.push({
+          id: partition_id,
+          name: partition_name,
+          file: flash_filename || "—",
+          fota: fota_filename || "—",
+          blocks: block_count,
+          offset: block_size_or_offset,
+          binary_type: binary_type,
+          attributes: attributes,
+          category: category,
+          desc: desc,
+          sizeBytes: block_count * 512
+        });
+      }
+
+      return { count, entries };
+    }
+
+    function readAsciiCString(bytes) {
+      let len = 0;
+      while (len < bytes.length && bytes[len] !== 0) len++;
+      return new TextDecoder("ascii").decode(bytes.subarray(0, len)).trim();
+    }
+
+    function formatBytes(bytes) {
+      if (bytes >= 1024 * 1024 * 1024) return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GiB';
+      if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MiB';
+      if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KiB';
+      return bytes + ' B';
+    }
+
+    // Load initial PIT data dynamically
+    function loadInitialPit() {
+      try {
+        const binStr = atob(EMBEDDED_A21S_PIT_B64);
+        const len = binStr.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binStr.charCodeAt(i);
+        }
+        parsedPit = parseBinaryPitBuffer(bytes.buffer);
+        applyParsedPitData(parsedPit, "A21S_EUR_OPEN.pit (42 partitions)");
+      } catch (e) {
+        console.error("Failed to parse embedded PIT", e);
+      }
+    }
+
+    // Handle custom user .pit file upload
+    function handlePitFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          parsedPit = parseBinaryPitBuffer(e.target.result);
+          document.getElementById('label-upload-pit').innerText = file.name;
+          applyParsedPitData(parsedPit, `${file.name} (${parsedPit.count} partitions)`);
+        } catch (err) {
+          alert("Error parsing PIT file: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Dynamic UI builder from parsed PIT
+    function applyParsedPitData(pit, subtitle) {
+      document.getElementById('pit-meta-subtitle').innerText = subtitle;
+      document.getElementById('nav-count-badge').innerText = pit.count;
+
+      // Update filter counts
+      document.getElementById('filter-count-all').innerText = pit.entries.length;
+      document.getElementById('filter-count-core').innerText = pit.entries.filter(p => p.category === 'core').length;
+      document.getElementById('filter-count-super').innerText = pit.entries.filter(p => p.category === 'super').length;
+      document.getElementById('filter-count-storage').innerText = pit.entries.filter(p => p.category === 'storage').length;
+      document.getElementById('filter-count-nvram').innerText = pit.entries.filter(p => p.category === 'nvram').length;
+
+      // Calculate total dynamic storage
+      let totalBytes = pit.entries.reduce((acc, p) => acc + p.sizeBytes, 0);
+      if (totalBytes < 1024 * 1024 * 1024) {
+        // If userdata block_count is 0 in some PIT files (dynamic remaining), estimate default 32GB flash
+        totalBytes = 32 * 1024 * 1024 * 1024;
+      }
+      document.getElementById('total-capacity-display').innerText = `~${formatBytes(totalBytes)} Flash Space`;
+
+      // Build Dynamic Capacity Bar
+      buildDynamicCapacityBar(pit.entries, totalBytes);
+
+      // Build Dynamic Top Storage Card Deck
+      buildDynamicCardDeck(pit.entries, totalBytes);
+
+      // Render Partition List
+      renderDynamicPartitionList();
+
+      // Select default partition (BOOT or first entry)
+      const defaultPart = pit.entries.find(p => p.name === 'BOOT') || pit.entries[0];
+      if (defaultPart) {
+        selectPartition(defaultPart.name, defaultPart.id, defaultPart.blocks, defaultPart.binary_type === 0 ? 'AP' : 'CP', defaultPart.file, defaultPart.desc);
+      }
+    }
+
+    function buildDynamicCapacityBar(entries, totalBytes) {
+      const container = document.getElementById('dynamic-capacity-segments');
+      container.innerHTML = '';
+
+      // Find major consumers
+      const majorNames = ['USERDATA', 'SUPER', 'CACHE', 'RECOVERY', 'BOOT', 'RADIO', 'EFS', 'VENDOR', 'SYSTEM'];
+      const majorEntries = entries.filter(p => majorNames.includes(p.name) || p.sizeBytes > 15 * 1024 * 1024);
+
+      // Color mapper
+      const colors = {
+        'SUPER': 'bg-emerald-500 hover:bg-emerald-400 text-white',
+        'USERDATA': 'bg-amber-500 hover:bg-amber-400 text-white',
+        'RECOVERY': 'bg-blue-500 hover:bg-blue-400 text-white',
+        'BOOT': 'bg-cyan-500 hover:bg-cyan-400 text-white',
+        'RADIO': 'bg-indigo-500 hover:bg-indigo-400 text-white',
+        'EFS': 'bg-rose-500 hover:bg-rose-400 text-white',
+        'CACHE': 'bg-violet-500 hover:bg-violet-400 text-white',
+      };
+
+      const fixedBytes = entries.filter(p => p.blocks > 0).reduce((acc, p) => acc + p.sizeBytes, 0);
+      const remainingBytes = Math.max(0, totalBytes - fixedBytes);
+
+      majorEntries.forEach(p => {
+        let sizeVal = p.sizeBytes;
+        if (p.name === 'USERDATA' && (p.blocks === 0 || sizeVal === 0)) {
+          sizeVal = remainingBytes > 0 ? remainingBytes : (24.3 * 1024 * 1024 * 1024);
+        }
+
+        let pct = ((sizeVal / totalBytes) * 100);
+        pct = Math.max(4.0, pct); // Enforce visual floor so small partitions are always visible
+
+        const colorClass = colors[p.name] || 'bg-blue-600 hover:bg-blue-500 text-white';
+        const seg = document.createElement('div');
+        seg.id = `cap-seg-${p.name}`;
+        seg.style.flex = `${pct} 1 85px`;
+        seg.className = `min-w-[85px] sm:min-w-[110px] h-full rounded-xl ${colorClass} transition-all duration-200 flex items-center justify-center text-xs font-bold px-2 cursor-pointer shadow-md select-none border border-white/20`;
+        seg.title = `${p.name}: ${formatBytes(sizeVal)} (${pct.toFixed(1)}%) - Click to inspect`;
+        seg.onclick = () => {
+          selectPartition(p.name, p.id, p.blocks, p.binary_type === 0 ? 'AP' : 'CP', p.file, p.desc);
+        };
+
+        seg.innerHTML = `<span class="truncate pointer-events-none">${p.name} <span class="opacity-80 text-[11px] font-normal">(${formatBytes(sizeVal)})</span></span>`;
+        container.appendChild(seg);
+      });
+    }
+
+    function buildDynamicCardDeck(entries, totalBytes) {
+      const container = document.getElementById('dynamic-card-deck');
+      container.innerHTML = '';
+
+      const topKeyPartitions = ['SUPER', 'USERDATA', 'RECOVERY', 'BOOT', 'EFS'];
+      const targets = entries.filter(p => topKeyPartitions.includes(p.name));
+
+      const fixedBytes = entries.filter(p => p.blocks > 0).reduce((acc, p) => acc + p.sizeBytes, 0);
+      const remainingBytes = Math.max(0, totalBytes - fixedBytes);
+
+      targets.forEach(p => {
+        let sizeVal = p.sizeBytes;
+        if (p.name === 'USERDATA' && (p.blocks === 0 || sizeVal === 0)) {
+          sizeVal = remainingBytes > 0 ? remainingBytes : (24.3 * 1024 * 1024 * 1024);
+        }
+        let pct = ((sizeVal / totalBytes) * 100).toFixed(1);
+        const isNvram = p.category === 'nvram';
+
+        const card = document.createElement('div');
+        card.id = `deck-card-${p.name}`;
+        card.className = "min-w-[140px] sm:min-w-0 flex-shrink-0 sm:flex-shrink p-3 sm:p-3.5 rounded-xl glass-pill hover:border-blue-400/50 cursor-pointer transition-all flex flex-col justify-between";
+        card.onclick = () => {
+          selectPartition(p.name, p.id, p.blocks, p.binary_type === 0 ? 'AP' : 'CP', p.file, p.desc);
+        };
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="w-2.5 h-2.5 rounded-full ${isNvram ? 'bg-rose-500' : 'bg-blue-500'}"></span>
+            <span class="font-mono text-xs font-bold ${isNvram ? 'text-rose-500' : 'text-blue-500'}">${isNvram ? 'LOCKED' : pct + '%'}</span>
+          </div>
+          <div class="font-bold text-xs sm:text-sm text-[var(--foreground)]">${p.name}</div>
+          <div class="font-mono text-xs text-[var(--muted-foreground)] font-medium">${formatBytes(sizeVal)}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderDynamicPartitionList() {
       const container = document.getElementById('partition-list-container');
       container.innerHTML = '';
 
-      const filtered = filterCategory === 'all' 
-        ? PARTITIONS 
-        : PARTITIONS.filter(p => p.category === filterCategory);
+      let list = parsedPit.entries;
+      if (currentFilter !== 'all') {
+        list = list.filter(p => p.category === currentFilter);
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        list = list.filter(p => p.name.toLowerCase().includes(q) || p.file.toLowerCase().includes(q));
+      }
 
-      document.getElementById('partition-counter').innerText = `Showing ${filtered.length} of ${PARTITIONS.length} partitions`;
+      document.getElementById('partition-counter').innerText = `Showing ${list.length} of ${parsedPit.entries.length}`;
 
-      filtered.forEach(p => {
-        const mib = (p.blocks * 512 / (1024 * 1024)).toFixed(2);
-        const sizeDisplay = mib >= 1024 ? (mib / 1024).toFixed(2) + ' GiB' : mib + ' MiB';
+      list.forEach(p => {
         const isProtected = p.category === 'nvram';
-
         const row = document.createElement('div');
-        row.className = "px-4 py-3 sm:py-3.5 hover:bg-black/10 dark:hover:bg-white/5 cursor-pointer flex items-center justify-between transition-colors";
-        row.onclick = () => selectPartition(p.name, p.id, p.blocks, p.type, p.file, p.desc);
+        row.id = `part-row-${p.name}`;
+        row.className = "px-4 py-3 sm:py-3.5 hover:bg-black/10 dark:hover:bg-white/5 cursor-pointer flex items-center justify-between transition-colors border-l-4 border-transparent";
+        row.onclick = () => {
+          selectPartition(p.name, p.id, p.blocks, p.binary_type === 0 ? 'AP' : 'CP', p.file, p.desc);
+        };
+
+        let displaySize = formatBytes(p.sizeBytes);
+        if (p.name === 'USERDATA' && (p.blocks === 0 || p.sizeBytes === 0)) {
+          displaySize = '~24.3 GiB (Remaining)';
+        }
 
         row.innerHTML = `
           <div class="flex items-center gap-3">
@@ -980,7 +1175,7 @@
             </div>
           </div>
           <div class="text-right">
-            <div class="text-xs sm:text-sm font-mono font-bold text-[var(--foreground)]">${sizeDisplay}</div>
+            <div class="text-xs sm:text-sm font-mono font-bold text-[var(--foreground)]">${displaySize}</div>
             <div class="text-xs font-semibold ${isProtected ? 'text-rose-500' : 'text-blue-500'}">${p.category.toUpperCase()}</div>
           </div>
         `;
@@ -988,26 +1183,39 @@
       });
     }
 
-    function filterPartitions(category) {
+    function filterPartitions(category, btnElement) {
+      currentFilter = category;
       document.querySelectorAll('.part-filter-btn').forEach(btn => {
-        btn.classList.remove('text-blue-500', 'border-blue-500/50', 'font-semibold');
+        btn.classList.remove('text-blue-500', 'border-blue-500/50', 'font-bold');
         btn.classList.add('text-[var(--muted-foreground)]', 'font-medium');
       });
-      event.target.classList.add('text-blue-500', 'border-blue-500/50', 'font-semibold');
-      event.target.classList.remove('text-[var(--muted-foreground)]');
-      renderPartitionList(category);
+      btnElement.classList.add('text-blue-500', 'border-blue-500/50', 'font-bold');
+      btnElement.classList.remove('text-[var(--muted-foreground)]');
+
+      // Auto-slide active filter button to center of row
+      scrollIntoCenter(btnElement, document.getElementById('filter-pills-container'));
+      renderDynamicPartitionList();
+    }
+
+    function handlePartitionSearch() {
+      searchQuery = document.getElementById('partition-search-input').value.trim();
+      renderDynamicPartitionList();
     }
 
     function selectPartition(name, id, blocks, type, file, desc) {
-      currentSelectedPartition = { name, id, blocks, type, file, desc };
+      const entry = parsedPit ? parsedPit.entries.find(p => p.name === name) : null;
+      let sizeBytes = blocks * 512;
+      if (name === 'USERDATA' && (blocks === 0 || sizeBytes === 0)) {
+        sizeBytes = 24.3 * 1024 * 1024 * 1024;
+      }
+      currentSelectedPartition = entry || { name, id, blocks, type, file, desc, sizeBytes };
+
       document.getElementById('inspect-name').innerText = name;
       document.getElementById('inspect-badge').innerText = 'ID ' + id;
       document.getElementById('inspect-desc').innerText = desc;
       document.getElementById('inspect-file').innerText = file;
-      document.getElementById('inspect-blocks').innerText = Number(blocks).toLocaleString() + ' blocks';
-
-      const mib = (blocks * 512 / (1024 * 1024)).toFixed(2);
-      document.getElementById('inspect-size').innerText = mib >= 1024 ? (mib / 1024).toFixed(2) + ' GiB' : mib + ' MiB';
+      document.getElementById('inspect-blocks').innerText = blocks === 0 && name === 'USERDATA' ? 'Dynamic NAND Allocation' : Number(blocks).toLocaleString() + ' blocks';
+      document.getElementById('inspect-size').innerText = formatBytes(currentSelectedPartition.sizeBytes);
       document.getElementById('inspect-type').innerText = type + ' (Application Processor)';
 
       const isProtected = ['EFS', 'SEC_EFS', 'CPEFS', 'KEYSTORAGE', 'KEYDATA', 'KEYREFUGE'].includes(name);
@@ -1023,10 +1231,52 @@
         safetyElem.className = "font-bold text-emerald-500";
         ratElem.innerText = "LOKE verifies the OEM RSA cryptographic signature on the final sequence block. Mismatches trigger error code -1.";
       }
+
+      // 1. Visual active ring in card deck + auto-slide center
+      document.querySelectorAll('#dynamic-card-deck > div').forEach(c => c.classList.remove('ring-2', 'ring-blue-500'));
+      const activeCard = document.getElementById(`deck-card-${name}`);
+      if (activeCard) {
+        activeCard.classList.add('ring-2', 'ring-blue-500');
+        scrollIntoCenter(activeCard, document.getElementById('dynamic-card-deck'));
+      }
+
+      // 2. Visual active ring in capacity segments + auto-slide center
+      document.querySelectorAll('#dynamic-capacity-segments > div').forEach(s => s.classList.remove('ring-2', 'ring-white', 'scale-[1.03]'));
+      const activeSeg = document.getElementById(`cap-seg-${name}`);
+      if (activeSeg) {
+        activeSeg.classList.add('ring-2', 'ring-white', 'scale-[1.03]');
+        scrollIntoCenter(activeSeg, document.getElementById('capacity-bar-track'));
+      }
+
+      // 3. Visual active in partition list + auto-slide center
+      document.querySelectorAll('#partition-list-container > div').forEach(r => r.classList.remove('bg-blue-500/15', 'border-blue-500'));
+      const activeRow = document.getElementById(`part-row-${name}`);
+      if (activeRow) {
+        activeRow.classList.add('bg-blue-500/15', 'border-blue-500');
+        scrollIntoCenter(activeRow, document.getElementById('partition-list-container'));
+      }
+
+      // 4. Update simulator target display
+      const simTarget = document.getElementById('sim-current-part');
+      if (simTarget) {
+        simTarget.innerText = `Target: ${file} (${formatBytes(currentSelectedPartition.sizeBytes)})`;
+      }
+
+      // 5. Update Command Studio mode label & badge
+      const badgeMode = document.getElementById('badge-mode-selected-part');
+      if (badgeMode) {
+        badgeMode.innerText = name;
+      }
+      const labelMode = document.getElementById('label-mode-selected-part');
+      if (labelMode) {
+        labelMode.innerText = `Target: ${file} (${formatBytes(currentSelectedPartition.sizeBytes)}) — Raw direct flash bypassing assertions`;
+      }
+      updateCommand();
     }
 
     function copySinglePartitionCommand() {
-      const cmd = `exynos-loke-rescue flash-raw -p ${currentSelectedPartition.name} ${currentSelectedPartition.file}`;
+      if (!currentSelectedPartition) return;
+      const cmd = `exynos-loke-rescue flash-raw -p ${currentSelectedPartition.name} ~/Downloads/stock/${currentSelectedPartition.file}`;
       navigator.clipboard.writeText(cmd).then(() => {
         const text = document.getElementById('btn-copy-partition-text');
         text.innerText = 'Copied to Clipboard!';
@@ -1034,14 +1284,18 @@
       });
     }
 
+    // Tab Switcher with Auto-Center Slide
     function switchTab(tabId) {
       document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.classList.remove('glass-pill-active', 'font-semibold');
+        btn.classList.remove('glass-pill-active', 'font-bold');
         btn.classList.add('text-[var(--muted-foreground)]');
       });
       const activeBtn = document.getElementById('btn-' + tabId);
-      activeBtn.classList.add('glass-pill-active', 'font-semibold');
+      activeBtn.classList.add('glass-pill-active', 'font-bold');
       activeBtn.classList.remove('text-[var(--muted-foreground)]');
+
+      // Auto-slide active tab to center of navigation container
+      scrollIntoCenter(activeBtn, document.getElementById('nav-tabs-container'));
 
       ['tab-storage', 'tab-protocol', 'tab-diagnostics', 'tab-studio', 'tab-simulator', 'tab-safety'].forEach(id => {
         const view = document.getElementById('content-' + id);
@@ -1063,11 +1317,14 @@
     }
 
     function updateCommand() {
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      const path = document.getElementById('fw-path').value.trim();
-      const erase = document.getElementById('flag-erase').checked;
-      const noReboot = document.getElementById('flag-no-reboot').checked;
-      const verbose = document.getElementById('flag-verbose').checked;
+      const modeRadio = document.querySelector('input[name="mode"]:checked');
+      if (!modeRadio) return;
+      const mode = modeRadio.value;
+      const fwInput = document.getElementById('fw-path');
+      const path = (fwInput && fwInput.value) ? fwInput.value.trim() : '~/Downloads/stock';
+      const erase = !!document.getElementById('flag-erase')?.checked;
+      const noReboot = !!document.getElementById('flag-no-reboot')?.checked;
+      const verbose = !!document.getElementById('flag-verbose')?.checked;
 
       let cmd = 'exynos-loke-rescue';
       if (verbose) cmd += ' -v';
@@ -1093,6 +1350,14 @@
         document.getElementById('path-input-group').classList.add('hidden');
         cmd += ' probe';
         explanation = 'Connects to Samsung device over USB, performs ODIN<->LOKE handshake, and reads live PIT table into memory.';
+      } else if (mode === 'flash-raw') {
+        document.getElementById('path-input-group').classList.add('hidden');
+        const pName = currentSelectedPartition ? currentSelectedPartition.name : 'BOOT';
+        const pFile = currentSelectedPartition ? currentSelectedPartition.file : 'boot.img';
+        cmd += ` flash-raw -p ${pName} ~/Downloads/stock/${pFile}`;
+        if (erase) cmd += ' -e';
+        if (noReboot) cmd += ' --no-reboot';
+        explanation = `Transmits ${pFile} directly to flash controller targeting partition ${pName}. Bypasses samloader-rs dynamic partition assertions.`;
       }
 
       document.getElementById('cmd-output').innerText = cmd;
@@ -1113,6 +1378,27 @@
       });
     }
 
+    // Toggle Theme Mode for Contrast Syncing
+    let currentThemeMode = 'auto';
+    function toggleThemeMode() {
+      const root = document.documentElement;
+      if (currentThemeMode === 'auto') {
+        currentThemeMode = 'light';
+        root.classList.add('light');
+        root.classList.remove('dark');
+        document.getElementById('theme-mode-text').innerText = 'Theme: Light';
+      } else if (currentThemeMode === 'light') {
+        currentThemeMode = 'dark';
+        root.classList.add('dark');
+        root.classList.remove('light');
+        document.getElementById('theme-mode-text').innerText = 'Theme: Dark';
+      } else {
+        currentThemeMode = 'auto';
+        root.classList.remove('light', 'dark');
+        document.getElementById('theme-mode-text').innerText = 'Theme: Auto';
+      }
+    }
+
     // Live Flash Simulator State Machine
     let simInterval = null;
     function startSimulation() {
@@ -1123,12 +1409,16 @@
         return;
       }
 
+      const part = currentSelectedPartition || (parsedPit && parsedPit.entries.find(p => p.name === 'BOOT')) || { name: 'BOOT', file: 'boot.img', sizeBytes: 37748736 };
+      const isProtected = ['EFS', 'SEC_EFS', 'CPEFS', 'KEYSTORAGE', 'KEYDATA', 'KEYREFUGE'].includes(part.name);
+
       document.getElementById('btn-sim-text').innerText = 'Stop Simulation';
       const log = document.getElementById('sim-log');
       log.innerHTML = '';
 
-      function addLog(msg) {
+      function addLog(msg, colorClass = 'text-zinc-200') {
         const d = document.createElement('div');
+        d.className = colorClass;
         d.innerText = `> ${msg}`;
         log.appendChild(d);
         log.scrollTop = log.scrollHeight;
@@ -1139,38 +1429,62 @@
       addLog('Negotiating Session Setup: Opcode 0x64 Subcmd 0x00...');
       addLog('Protocol Tier: Odin v3. Sequence macro buffer: 1,048,576 bytes.');
 
-      let chunk = 0;
-      const totalChunks = 256;
+      if (isProtected) {
+        addLog(`[SECURITY EXCEPTION] Refusing flash target "${part.name}"!`, 'text-rose-400 font-bold');
+        addLog('Device invariant: EFS / Baseband NVRAM writes are strictly prohibited by exynos-loke-rescue.', 'text-rose-400 font-semibold');
+        addLog('Session aborted safely without corrupting baseband radio calibration.', 'text-amber-400 font-semibold');
+        document.getElementById('sim-state').innerText = 'ABORT (PROTECTED)';
+        document.getElementById('btn-sim-text').innerText = 'Start Live Simulation';
+        return;
+      }
+
+      const totalBytes = part.sizeBytes > 0 ? part.sizeBytes : 37748736;
+      const chunkSize = 1048576; // 1 MiB
+      const totalChunks = Math.max(8, Math.ceil(totalBytes / chunkSize));
+      let currentChunk = 0;
+
+      document.getElementById('sim-current-part').innerText = `Target: ${part.file} (${formatBytes(totalBytes)})`;
       document.getElementById('sim-state').innerText = 'STREAMING';
 
+      const startTime = Date.now();
+
       simInterval = setInterval(() => {
-        chunk += 4;
-        const pct = Math.min(100, Math.round((chunk / totalChunks) * 100));
+        currentChunk += Math.max(1, Math.floor(totalChunks / 32));
+        if (currentChunk > totalChunks) currentChunk = totalChunks;
+
+        const pct = Math.min(100, Math.round((currentChunk / totalChunks) * 100));
         document.getElementById('sim-progress-bar').style.width = pct + '%';
         document.getElementById('sim-pct').innerText = pct + '%';
-        document.getElementById('sim-chunks').innerText = `${chunk} / ${totalChunks}`;
-        document.getElementById('sim-speed').innerText = `${(32.5 + Math.random() * 4).toFixed(1)} MB/s`;
-        document.getElementById('sim-eta').innerText = `00:${String(Math.max(0, 8 - Math.round(chunk / 32))).padStart(2, '0')}`;
+        document.getElementById('sim-chunks').innerText = `${currentChunk} / ${totalChunks}`;
 
-        if (chunk % 32 === 0 && chunk < totalChunks) {
-          addLog(`Sequence ${(chunk / 32)} committed (1048576 bytes). Subcmd 0x02 ACK received.`);
+        const elapsedSec = (Date.now() - startTime) / 1000;
+        const streamedBytes = (currentChunk / totalChunks) * totalBytes;
+        const speedMb = elapsedSec > 0 ? (streamedBytes / (1024 * 1024) / elapsedSec) : 34.2;
+        document.getElementById('sim-speed').innerText = `${speedMb.toFixed(1)} MB/s`;
+
+        const remainingChunks = totalChunks - currentChunk;
+        const etaSec = speedMb > 0 ? Math.ceil((remainingChunks * chunkSize) / (speedMb * 1024 * 1024)) : 0;
+        document.getElementById('sim-eta').innerText = `00:${String(Math.floor(elapsedSec)).padStart(2, '0')} / 00:${String(Math.min(99, etaSec)).padStart(2, '0')}`;
+
+        if (currentChunk % Math.max(1, Math.floor(totalChunks / 8)) === 0 && currentChunk < totalChunks) {
+          addLog(`Sequence ${(currentChunk / Math.max(1, Math.floor(totalChunks / 8)))} committed (${formatBytes(streamedBytes)}). Subcmd 0x02 ACK received.`);
         }
 
-        if (chunk >= totalChunks) {
+        if (currentChunk >= totalChunks) {
           clearInterval(simInterval);
           simInterval = null;
           document.getElementById('sim-state').innerText = 'PASS (0x00)';
           document.getElementById('sim-speed').innerText = '0.00 MB/s';
           document.getElementById('btn-sim-text').innerText = 'Restart Simulation';
-          addLog('Final sequence block committed. Bootloader RSA signature validated.');
-          addLog('CMD_SESSION_END (0x67) transmitted. Emergency recovery flag reset.');
-          addLog('SUCCESS: Partition BOOT flashed cleanly. Rebooting device.');
+          addLog(`Transfer of ${part.file} (${formatBytes(totalBytes)}) successfully completed!`, 'text-emerald-400 font-bold');
+          addLog('Session Close (0x67:0x01) emitted. Little Kernel committing param 0x01 -> 0x00.', 'text-emerald-400');
+          addLog('Device verified signature SEANDROIDENFORCE. Initiating reboot into One UI.', 'text-cyan-400 font-bold');
         }
       }, 100);
     }
 
-    // Initialize partition list on load
-    renderPartitionList('all');
+    // Initialize Dynamic PIT Parser on Startup
+    loadInitialPit();
   </script>
 </body>
 </html>
