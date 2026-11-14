@@ -11,6 +11,19 @@
 > **Native Linux Firmware Recovery Engine, Clean-Room Odin v3/v4 Protocol Specification, and Deterministic Partition Orchestrator for Samsung Exynos SoCs.**  
 > Built from protocol reverse engineering via **REA (Reverse Engineering Anything)**, Ghidra MCP analysis, and live Linux `usbmon` wire telemetry.
 
+> [!NOTE]
+> **Project Status (Archived / Educational Reference & Research Specification)**  
+> This project serves as an open-source clean-room protocol specification and reference implementation of Samsung's proprietary LOKE (Odin) bootloader interface on Linux.
+>
+> * **Verified Operational Components**:
+>   * **Binary PIT Engine**: Direct byte parsing, 42-partition geometry mapping, domain classification, and live wire dumping (`exynos-loke-rescue probe` / `inspect-pit`).
+>   * **Deterministic Extraction Engine**: Multi-gigabyte `.tar.md5` and LZ4 frame decompression with persistent local workspace allocation (bypassing `/tmp` tmpfs RAM quota overflows).
+>   * **USB Stack Sanitizer**: Automated Linux udev configuration (`04e8:685d`), ModemManager suspension, and `cdc_acm` kernel unbinding (`exynos-loke-rescue fix-usb`).
+>   * **Virtual Simulation Harness**: 100% offline in-memory virtual device state machine verifying wire framing, NAND erase, and VaultKeeper error injection across 22 test suites.
+> * **Production Flashing Guidance**:
+>   * Physical Exynos 850 (`S5E3830`) bootloader USB endpoints exhibit strict hardware FIFO session state locks across Linux kernel versions.
+>   * For production firmware restores and unbricking daily devices, use upstream [`samloader-rs`](https://github.com/topjohnwu/samloader-rs) (`samloader flash`) or official **Samsung Odin3 v3.14.4** on Windows.
+
 ---
 
 ## Table of Contents
