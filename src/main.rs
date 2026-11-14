@@ -39,7 +39,7 @@ fn main() -> Result<()> {
 
         Some(Commands::Probe) => {
             ui::badge_step(1, 2, "Connecting to Samsung LOKE Bootloader...");
-            let session = NativeLokeSession::connect(cli.verbose)?;
+            let mut session = NativeLokeSession::connect(cli.verbose)?;
             ui::render_card(
                 "NEGOTIATED PROTOCOL SESSION",
                 &[
@@ -58,6 +58,7 @@ fn main() -> Result<()> {
             ui::badge_step(2, 2, "Querying live device PIT table...");
             let pit = session.fetch_pit()?;
             pit.print_summary();
+            session.end_session_with_mode(SessionEndSubcmd::CloseNoReboot)?;
         }
 
         Some(Commands::InspectPit { pit }) => match pit {
@@ -68,10 +69,11 @@ fn main() -> Result<()> {
             }
             None => {
                 ui::badge_step(1, 2, "Connecting to live device...");
-                let session = NativeLokeSession::connect(cli.verbose)?;
+                let mut session = NativeLokeSession::connect(cli.verbose)?;
                 ui::badge_step(2, 2, "Dumping live PIT table...");
                 let table = session.fetch_pit()?;
                 table.print_summary();
+                session.end_session_with_mode(SessionEndSubcmd::CloseNoReboot)?;
             }
         },
 
@@ -227,7 +229,14 @@ fn main() -> Result<()> {
         }) => {
             ui::badge_step(1, 3, "Locating stock AP archive...");
             let ap_archive = archive::locate_ap_archive(&ap)?;
-            let (_guard, work_dir) = archive::resolve_work_dir(keep_extracted, &ap_archive)?;
+            let effective_keep = keep_extracted.or_else(|| {
+                if ap.is_dir() {
+                    Some(ap.clone())
+                } else {
+                    ap.parent().map(|p| p.to_path_buf())
+                }
+            });
+            let (_guard, work_dir) = archive::resolve_work_dir(effective_keep, &ap_archive)?;
 
             ui::badge_step(2, 3, "Decompressing signed boot, vbmeta, and recovery images...");
             let targets = ["boot.img", "vbmeta.img", "recovery.img"];
@@ -277,7 +286,14 @@ fn main() -> Result<()> {
         }) => {
             ui::badge_step(1, 3, "Locating stock firmware directory...");
             let ap_archive = archive::locate_ap_archive(&stock_dir)?;
-            let (_guard, work_dir) = archive::resolve_work_dir(keep_extracted, &ap_archive)?;
+            let effective_keep = keep_extracted.or_else(|| {
+                if stock_dir.is_dir() {
+                    Some(stock_dir.clone())
+                } else {
+                    stock_dir.parent().map(|p| p.to_path_buf())
+                }
+            });
+            let (_guard, work_dir) = archive::resolve_work_dir(effective_keep, &ap_archive)?;
 
             ui::badge_step(2, 3, "Extracting full stock partitions (including dynamic SUPER container)...");
             let targets = [

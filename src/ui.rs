@@ -582,7 +582,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                 if usb_status.is_some() {
                     badge_step(1, 2, "Negotiating ODIN<->LOKE Handshake...");
                     match NativeLokeSession::connect(cli.verbose) {
-                        Ok(session) => {
+                        Ok(mut session) => {
                             render_card(
                                 "NEGOTIATED PROTOCOL SESSION",
                                 &[
@@ -599,6 +599,7 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                                 }
                                 Err(e) => badge_error("PIT READ ERROR", &format!("{:#}", e)),
                             }
+                            let _ = session.end_session_with_mode(SessionEndSubcmd::CloseNoReboot);
                         }
                         Err(e) => badge_error("CONNECT FAILED", &format!("{:#}", e)),
                     }

@@ -152,6 +152,8 @@ pub struct ControlFrame {
     pub arg1: u32,
     pub arg2: u32,
     pub arg3: u32,
+    pub arg4: u32,
+    pub arg5: u32,
     pub string_arg: Option<String>,
 }
 
@@ -164,6 +166,8 @@ impl ControlFrame {
             arg1: 0,
             arg2: 0,
             arg3: 0,
+            arg4: 0,
+            arg5: 0,
             string_arg: None,
         }
     }
@@ -213,6 +217,39 @@ impl ControlFrame {
         .with_args(part_id, 0, 0, 0)
     }
 
+    pub fn file_transfer_flash() -> Self {
+        Self::new(
+            LokeCommand::FileTransfer,
+            FileTransferSubcmd::StartPartition as u32,
+        )
+    }
+
+    pub fn file_transfer_slice(aligned_len: u32) -> Self {
+        Self::new(
+            LokeCommand::FileTransfer,
+            0x02, // Slice subcommand
+        )
+        .with_args(aligned_len, 0, 0, 0)
+    }
+
+    pub fn file_transfer_commit(
+        slice_size: u32,
+        partition_id: u32,
+        is_end_of_file: u32,
+    ) -> Self {
+        let mut frame = Self::new(
+            LokeCommand::FileTransfer,
+            0x03, // End/Commit subcommand
+        );
+        frame.arg0 = 0; // Unified layout magic = 0
+        frame.arg1 = slice_size;
+        frame.arg2 = 0; // BinaryType::ApplicationProcessor = 0
+        frame.arg3 = 0; // DeviceType = 0
+        frame.arg4 = partition_id;
+        frame.arg5 = is_end_of_file;
+        frame
+    }
+
     pub fn session_end(mode: SessionEndSubcmd) -> Self {
         Self::new(LokeCommand::SessionEnd, mode as u32).with_args(0, 0, 0, 0)
     }
@@ -228,6 +265,8 @@ impl ControlFrame {
         cursor.write_u32::<LittleEndian>(self.arg1).unwrap();
         cursor.write_u32::<LittleEndian>(self.arg2).unwrap();
         cursor.write_u32::<LittleEndian>(self.arg3).unwrap();
+        cursor.write_u32::<LittleEndian>(self.arg4).unwrap();
+        cursor.write_u32::<LittleEndian>(self.arg5).unwrap();
 
         if let Some(ref s) = self.string_arg {
             let bytes = s.as_bytes();

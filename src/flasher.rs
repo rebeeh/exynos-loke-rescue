@@ -82,7 +82,7 @@ fn flash_via_native_nusb(targets: &[PartitionTarget], options: FlashOptions) -> 
             .cyan()
             .bold()
     );
-    let session = NativeLokeSession::connect(options.verbose)?;
+    let mut session = NativeLokeSession::connect(options.verbose)?;
     let pit = session.fetch_pit()?;
 
     if options.erase_userdata {

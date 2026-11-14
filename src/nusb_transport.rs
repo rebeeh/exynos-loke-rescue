@@ -1,7 +1,7 @@
 use crate::error::RescueError;
 use crate::loke_proto::{
-    ControlFrame, FileTransferSubcmd, LokeAck, LokeCommand, PitSubcmd, ProtocolTier,
-    SessionEndSubcmd, SessionSetupSubcmd, ACK_PACKET_SIZE, HANDSHAKE_REQUEST, HANDSHAKE_RESPONSE,
+    ControlFrame, LokeAck, LokeCommand, PitSubcmd, ProtocolTier, SessionEndSubcmd,
+    SessionSetupSubcmd, ACK_PACKET_SIZE, HANDSHAKE_REQUEST, HANDSHAKE_RESPONSE,
 };
 use crate::pit::PitTable;
 use anyhow::{bail, Context, Result};
@@ -28,6 +28,7 @@ pub struct NativeLokeSession {
     iface: Interface,
     pub tier: ProtocolTier,
     pub verbose: bool,
+    pub session_active: bool,
 }
 
 impl NativeLokeSession {
@@ -54,11 +55,29 @@ impl NativeLokeSession {
             iface,
             tier: ProtocolTier::OdinV3,
             verbose,
+            session_active: false,
         };
 
         session.perform_handshake()?;
         session.negotiate_session()?;
+        session.session_active = true;
         Ok(session)
+    }
+
+    fn reset_and_drain(&self) {
+        let _ = self.iface.clear_halt(EP_IN);
+        let _ = self.iface.clear_halt(EP_OUT);
+
+        // Drain any stale packets left in EP_IN FIFO buffer
+        for _ in 0..10 {
+            if let Ok(stale) = self.bulk_read(512, 20) {
+                if stale.is_empty() {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
     }
 
     fn bulk_write(&self, data: &[u8], timeout_ms: u64) -> Result<()> {
@@ -132,12 +151,46 @@ impl NativeLokeSession {
     }
 
     fn perform_handshake(&self) -> Result<()> {
-        self.bulk_write(HANDSHAKE_REQUEST, 2000)?;
-        let resp = self.bulk_read(4, 2000)?;
-        if resp.as_slice() != HANDSHAKE_RESPONSE {
-            return Err(RescueError::HandshakeFailed(resp).into());
+        self.reset_and_drain();
+
+        for attempt in 1..=4 {
+            if self.verbose {
+                println!("    Attempting ODIN handshake (attempt {}/4)...", attempt);
+            }
+
+            let _ = self.bulk_write(HANDSHAKE_REQUEST, 1000);
+
+            // Read response: allow up to 64 bytes to accommodate possible "FAIL" prefix or extra chars
+            if let Ok(resp) = self.bulk_read(64, 1500) {
+                let s = String::from_utf8_lossy(&resp);
+                if s.contains("LOKE") {
+                    return Ok(());
+                }
+                if s.starts_with("FAIL") {
+                    if let Ok(next) = self.bulk_read(64, 500) {
+                        let next_s = String::from_utf8_lossy(&next);
+                        if next_s.contains("LOKE") {
+                            return Ok(());
+                        }
+                    }
+                }
+            }
+
+            // Recovery step: if device was left in an open session from a prior command,
+            // send CMD_SESSION_END (0x67) to gracefully close it and return device to INIT state.
+            if attempt < 4 {
+                let end = ControlFrame::new(
+                    LokeCommand::SessionEnd,
+                    SessionEndSubcmd::CloseNoReboot as u32,
+                );
+                let _ = self.bulk_write(&end.to_bytes(), 500);
+                let _ = self.bulk_read(8, 500);
+                self.reset_and_drain();
+                std::thread::sleep(Duration::from_millis(150));
+            }
         }
-        Ok(())
+
+        Err(RescueError::HandshakeFailed(HANDSHAKE_RESPONSE.to_vec()).into())
     }
 
     /// Negotiates protocol version (`v4` vs `v3`). Critically, if the bootloader
@@ -253,33 +306,48 @@ impl NativeLokeSession {
             reader.read_exact(&mut seq_buf[..current_seq_len])?;
 
             // 1. Announce sequence byte count (`0x66`, subcmd `0x00`)
-            let start_seq = ControlFrame::new(
-                LokeCommand::FileTransfer,
-                FileTransferSubcmd::StartPartition as u32,
-            )
-            .with_args(aligned_len as u32, 0, 0, 0);
+            let start_seq = ControlFrame::file_transfer_flash();
             let _ = self.send_control_and_ack(&start_seq, 10_000)?;
 
-            // 2. Transmit sequence in `pkt_size` USB bulk chunks
+            // 2. Start slice transmission (`0x66`, subcmd `0x02`)
+            let slice_cmd = ControlFrame::file_transfer_slice(aligned_len as u32);
+            let _ = self.send_control_and_ack(&slice_cmd, 10_000)?;
+
+            // 3. Transmit sequence in `pkt_size` USB bulk chunks with streaming ACK
             let mut offset = 0;
+            let mut chunk_idx = 0;
             while offset < aligned_len {
                 let end = (offset + pkt_size).min(aligned_len);
                 self.bulk_write(&seq_buf[offset..end], 15_000)?;
+
+                // Read streaming chunk ACK (8 bytes)
+                if let Ok(ack_raw) = self.bulk_read(8, 5_000) {
+                    if ack_raw.len() >= 8 {
+                        let status = i32::from_le_bytes([ack_raw[4], ack_raw[5], ack_raw[6], ack_raw[7]]);
+                        if status < 0 {
+                            bail!("LOKE reported transfer error {} at chunk {}", status, chunk_idx);
+                        }
+                    }
+                }
+
                 offset = end;
+                chunk_idx += 1;
                 pb.set_position((bytes_sent + offset as u64).min(total_size));
             }
 
             bytes_sent += current_seq_len as u64;
             let is_final_sequence = if bytes_sent >= total_size { 1 } else { 0 };
 
-            // 3. Commit sequence & verify cryptographic signature on final block (`0x66`, subcmd `0x02`)
-            let commit = ControlFrame::new(
-                LokeCommand::FileTransfer,
-                FileTransferSubcmd::CommitPartition as u32,
-            )
-            .with_args(0, aligned_len as u32, partition_id, is_final_sequence);
-
-            let _ = self.send_control_and_ack(&commit, 60_000)?;
+            // 4. Commit sequence & verify cryptographic signature (`0x66`, subcmd `0x03`)
+            let commit = ControlFrame::file_transfer_commit(
+                aligned_len as u32,
+                partition_id,
+                is_final_sequence,
+            );
+            let ack = self.send_control_and_ack(&commit, 120_000)?;
+            if ack.status < 0 {
+                bail!("LOKE rejected sequence commit (status code {})", ack.status);
+            }
         }
 
         pb.finish_with_message(format!("{} OK", partition_name));
@@ -324,7 +392,7 @@ impl NativeLokeSession {
 
     /// Sends `CMD_SESSION_END (0x67)` to clear Emergency Recovery flag `0x01` -> `0x00`
     /// and optionally trigger warm reboot or redownload.
-    pub fn end_session_with_mode(&self, mode: SessionEndSubcmd) -> Result<()> {
+    pub fn end_session_with_mode(&mut self, mode: SessionEndSubcmd) -> Result<()> {
         let msg = match mode {
             SessionEndSubcmd::CloseNoReboot => {
                 "Ending session (keeping device in Download Mode)..."
@@ -336,18 +404,32 @@ impl NativeLokeSession {
 
         let end_frame = ControlFrame::new(LokeCommand::SessionEnd, mode as u32);
         let _ = self.send_control_and_ack(&end_frame, 10_000)?;
+        self.session_active = false;
         std::thread::sleep(Duration::from_millis(250));
         Ok(())
     }
 
     /// Sends `CMD_SESSION_END (0x67)` to clear Emergency Recovery flag `0x01` -> `0x00`
     /// and optionally trigger warm reboot.
-    pub fn end_session(&self, no_reboot: bool) -> Result<()> {
+    pub fn end_session(&mut self, no_reboot: bool) -> Result<()> {
         let mode = if no_reboot {
             SessionEndSubcmd::CloseNoReboot
         } else {
             SessionEndSubcmd::RebootNormal
         };
         self.end_session_with_mode(mode)
+    }
+}
+
+impl Drop for NativeLokeSession {
+    fn drop(&mut self) {
+        if self.session_active {
+            let end_frame = ControlFrame::new(
+                LokeCommand::SessionEnd,
+                SessionEndSubcmd::CloseNoReboot as u32,
+            );
+            let _ = self.send_control_and_ack(&end_frame, 1000);
+            self.session_active = false;
+        }
     }
 }
