@@ -11,43 +11,111 @@
 > **Native Linux Firmware Recovery Engine, Clean-Room Odin v3/v4 Protocol Specification, and Deterministic Partition Orchestrator for Samsung Exynos SoCs.**  
 > Built from protocol reverse engineering via **REA (Reverse Engineering Anything)**, Ghidra MCP analysis, and live Linux `usbmon` wire telemetry.
 
-> [!NOTE]
-> **Project Status (Archived / Educational Reference & Research Specification)**  
+> [!IMPORTANT]
+> **Project Status: Archived Research Specification — Recommended Method: Official Samsung Odin**  
 > This project serves as an open-source clean-room protocol specification and reference implementation of Samsung's proprietary LOKE (Odin) bootloader interface on Linux.
 >
-> * **Verified Operational Components**:
+> **For reliably restoring bricked devices, unbricking bootloops, or flashing official stock firmware, users are strongly advised to use official Samsung Odin3 (v3.14.4) on Windows.**
+>
+> Reverse-engineered USB drivers across Linux kernel versions frequently encounter hardware FIFO stalls and session state lockouts on physical Exynos secondary bootloaders (`sboot.bin`). Samsung Odin3 paired with official Samsung USB Mobile drivers provides 100% reliable hardware timing, automated session negotiation, and factory flash recovery.
+>
+> * **Recommended Tool**: Official Samsung Odin3 v3.14.4 on Windows (see [Recommended Method: Official Stock Firmware Flashing via Samsung Odin](#recommended-method-official-stock-firmware-flashing-via-samsung-odin) below).
+> * **Verified Research Components in this Repo**:
 >   * **Binary PIT Engine**: Direct byte parsing, 42-partition geometry mapping, domain classification, and live wire dumping (`exynos-loke-rescue probe` / `inspect-pit`).
 >   * **Deterministic Extraction Engine**: Multi-gigabyte `.tar.md5` and LZ4 frame decompression with persistent local workspace allocation (bypassing `/tmp` tmpfs RAM quota overflows).
 >   * **USB Stack Sanitizer**: Automated Linux udev configuration (`04e8:685d`), ModemManager suspension, and `cdc_acm` kernel unbinding (`exynos-loke-rescue fix-usb`).
 >   * **Virtual Simulation Harness**: 100% offline in-memory virtual device state machine verifying wire framing, NAND erase, and VaultKeeper error injection across 22 test suites.
-> * **Production Flashing Guidance**:
->   * Physical Exynos 850 (`S5E3830`) bootloader USB endpoints exhibit strict hardware FIFO session state locks across Linux kernel versions.
->   * For production firmware restores and unbricking daily devices, use upstream [`samloader-rs`](https://github.com/topjohnwu/samloader-rs) (`samloader flash`) or official **Samsung Odin3 v3.14.4** on Windows.
 
 ---
 
 ## Table of Contents
 
-1. [Executive Overview & Architectural Mandate](#executive-overview--architectural-mandate)
-2. [Clean-Room Reverse Engineering Methodology with REA](#clean-room-reverse-engineering-methodology-with-rea)
+1. [Recommended Method: Official Stock Firmware Flashing via Samsung Odin](#recommended-method-official-stock-firmware-flashing-via-samsung-odin)
+   - [Why Official Odin3 is Recommended](#why-official-odin3-is-recommended)
+   - [Prerequisites](#prerequisites)
+   - [Step-by-Step Flashing Procedure](#step-by-step-flashing-procedure)
+2. [Executive Overview & Architectural Mandate](#executive-overview--architectural-mandate)
+3. [Clean-Room Reverse Engineering Methodology with REA](#clean-room-reverse-engineering-methodology-with-rea)
    - [Legal & Architectural Clean-Room Separation](#legal--architectural-clean-room-separation)
    - [Live USB Wire Telemetry Capture (`usbmon` + `tshark`)](#live-usb-wire-telemetry-capture-usbmon--tshark)
    - [REA & Ghidra Analysis of `odin4` & `sboot.bin`](#rea--ghidra-analysis-of-odin4--sbootbin)
    - [Differential Analysis: Odin v3 vs. Odin v4](#differential-analysis-odin-v3-vs-odin-v4)
-3. [Dual-Engine Architecture](#dual-engine-architecture)
+4. [Dual-Engine Architecture](#dual-engine-architecture)
    - [Engine 1: 100% Native Rust LOKE Transport (`nusb`)](#engine-1-100-native-rust-loke-transport-nusb)
    - [Engine 2: Zero-Copy Archive Streamer & Supervisor](#engine-2-zero-copy-archive-streamer--supervisor)
-4. [Repository Hierarchy](#repository-hierarchy)
-5. [Installation & Setup](#installation--setup)
-6. [Protocol Telemetry & Dissection](#protocol-telemetry--dissection)
-7. [CLI Command Reference](#cli-command-reference)
-8. [Operational Runbooks](#operational-runbooks)
+5. [Repository Hierarchy](#repository-hierarchy)
+6. [Installation & Setup](#installation--setup)
+7. [Protocol Telemetry & Dissection](#protocol-telemetry--dissection)
+8. [CLI Command Reference](#cli-command-reference)
+9. [Operational Runbooks](#operational-runbooks)
    - [Runbook A: Clearing "An error has occurred..."](#runbook-a-clearing-the-blue-an-error-has-occurred-screen)
    - [Runbook B: Recovering from Post-LineageOS Dynamic `super` Bootloops](#runbook-b-recovering-from-post-lineageos-dynamic-super-bootloops)
    - [Runbook C: Resolving `LOKE FAIL! [code: -1]` & VaultKeeper Locks](#runbook-c-resolving-loke-fail-code--1--vaultkeeper-prenormal-locks)
    - [Runbook D: Clean LineageOS Installation Post-Recovery](#runbook-d-clean-lineageos-installation-post-recovery)
    - [Runbook E: Resolving "Dynamic partition pre-flight check failed"](#runbook-e-resolving-the-dynamic-partition-pre-flight-check-failed-error)
-9. [Security & Partition Safety Invariants](#security-and-partition-safety-invariants)
+10. [Security & Partition Safety Invariants](#security-and-partition-safety-invariants)
+
+---
+
+## Recommended Method: Official Stock Firmware Flashing via Samsung Odin
+
+For end users needing to unbrick a Samsung Galaxy device (such as the Galaxy A21s / SM-A217F), clear bootloops, or restore factory One UI firmware, **official Samsung Odin3 running on Windows is the gold standard and recommended path**.
+
+### Why Official Odin3 is Recommended
+
+Physical Samsung Exynos bootloaders (`sboot.bin`) implement strict proprietary timing constraints and FIFO buffers over USB bulk endpoints (`04e8:685d`). Third-party or reverse-engineered Linux USB drivers (`libusb`, `nusb`) often hit endpoint timeouts, unclosed session locks, or kernel pipe resets on multi-gigabyte partitions (`super.img`). Samsung Odin3 on Windows interfaces with the official Samsung Mobile USB driver, ensuring deterministic packet pacing, proper session initialization, and flawless factory partition flashing.
+
+### Prerequisites
+
+1. **Host Computer**: PC or virtual machine running Windows 10 or Windows 11.
+2. **Official Samsung Android USB Driver**:
+   - Download and install the official Samsung Mobile USB Driver package (`SAMSUNG_USB_Driver_for_Mobile_Phones.exe`).
+   - Restart the PC after installation to register the driver services.
+3. **Official Samsung Odin3**:
+   - Download official **Odin3 v3.14.4** (or newer version tested with Android 11/12).
+   - Extract the `.zip` archive to a folder (for example, `C:\Odin3_v3.14.4\`).
+   - Run `Odin3.exe` as Administrator.
+4. **Official 4-File Stock Firmware**:
+   - Obtain the official Samsung stock firmware matching your exact model number and CSC (e.g., model `SM-A217F`, region `BTU` / `EUX` / `INS`). Tools like `Bifrost` or `SamFirm` / `Frija` can download this directly from Samsung servers.
+   - Decompress the zip file to reveal 4 or 5 `.tar.md5` archives:
+     - `BL_...tar.md5` (Bootloader)
+     - `AP_...tar.md5` (System / Recovery / Boot / Super)
+     - `CP_...tar.md5` (Modem / Baseband)
+     - `CSC_...tar.md5` (Carrier Specification Code & partition table)
+     - `HOME_CSC_...tar.md5` (Alternative CSC for keeping user data)
+
+---
+
+### Step-by-Step Flashing Procedure
+
+#### Step 1: Boot Device into Download (Odin) Mode
+1. Power off the phone completely. If the phone is stuck in a bootloop, hold **Volume Down + Power** for 7 to 10 seconds until the screen goes black.
+2. Press and hold both **Volume Up** and **Volume Down** buttons simultaneously.
+3. While holding both volume buttons, connect the phone to your Windows PC using a high-quality USB-C cable (preferably connected to a rear motherboard USB port).
+4. When the teal/cyan **Warning** screen appears on the phone, release the volume buttons.
+5. Press **Volume Up** once to select "Continue".
+6. The phone will display the **Download Mode** screen showing the download arrow and bootloader status details in the top-left corner.
+
+#### Step 2: Configure Odin3 Slots
+1. Launch `Odin3.exe` as Administrator.
+2. Verify that the **ID:COM** box in Odin turns light blue or green (e.g., `0:[COM3]`), and the log window indicates `Added!!`.
+3. Load the firmware files into their corresponding slots by clicking the respective button:
+   - Click **BL** and select the file starting with `BL_...tar.md5`.
+   - Click **AP** and select the file starting with `AP_...tar.md5`. (Note: AP contains `super.img` and may take 1 to 2 minutes to calculate the MD5 checksum).
+   - Click **CP** and select the file starting with `CP_...tar.md5`.
+   - Click **CSC**:
+     - To perform a **clean factory restore** (recommended for unbricking and clearing bootloops): Select the file starting with `CSC_...tar.md5`. This re-partitions and cleanly wipes storage.
+     - To **keep existing user data**: Select `HOME_CSC_...tar.md5`.
+
+#### Step 3: Verify Options & Begin Flashing
+1. Navigate to the **Options** tab in Odin3:
+   - Ensure **Auto Reboot** is **CHECKED**.
+   - Ensure **F. Reset Time** is **CHECKED**.
+   - Ensure **Re-Partition** is **UNCHECKED** (unless flashing a standalone `.pit` file explicitly).
+   - Do not alter any other options.
+2. Click the **Start** button at the bottom of Odin3.
+3. The process will stream `sboot.bin`, `boot.img`, `recovery.img`, `super.img`, and radio partitions. A progress bar will advance on both Odin3 and the device screen.
+4. When complete, the top-left box in Odin3 will display a green **PASS!** status, and the device will automatically reboot into the stock One UI setup wizard.
 
 ---
 

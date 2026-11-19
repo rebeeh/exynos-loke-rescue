@@ -416,6 +416,10 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                 "Open Interactive Web Dashboard",
                 "Launch Apple-inspired HTML storage geometry and diagnostic suite",
             ),
+            (
+                "Official Odin Flashing Guide",
+                "View recommended step-by-step stock firmware flashing guide for Samsung Odin3",
+            ),
             ("Exit", "Terminate session and close"),
         ];
 
@@ -482,6 +486,10 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                     }
                     Err(e) => {
                         badge_error("FLASH FAILED", &format!("{:#}", e));
+                        badge_info(
+                            "RECOMMENDATION",
+                            "If USB timeouts occur, use official Samsung Odin3 v3.14.4 on Windows for guaranteed stock flashing.",
+                        );
                     }
                 }
                 wait_for_enter()?;
@@ -571,6 +579,10 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
                     }
                     Err(e) => {
                         badge_error("RESTORE FAILED", &format!("{:#}", e));
+                        badge_info(
+                            "RECOMMENDATION",
+                            "For guaranteed unbricking and factory restore, flash official 4-file stock firmware via Samsung Odin3 v3.14.4 on Windows.",
+                        );
                     }
                 }
                 wait_for_enter()?;
@@ -804,6 +816,26 @@ pub fn run_wizard(cli: &Cli) -> Result<()> {
             }
 
             8 => {
+                // Official Odin Flashing Guide
+                println!("\n  {}", "── Recommended Method: Samsung Odin3 Guide ──".cyan().bold());
+                render_card(
+                    "OFFICIAL ODIN3 FLASHING GUIDE (WINDOWS)",
+                    &[
+                        ("Recommendation", "Use official Samsung Odin3 v3.14.4 on Windows for 100% stable flashing"),
+                        ("Step 1: Drivers", "Install official Samsung Android USB Driver package"),
+                        ("Step 2: Odin Setup", "Extract Odin3 v3.14.4 and run Odin3.exe as Administrator"),
+                        ("Step 3: Firmware", "Download official 4-file stock firmware (BL, AP, CP, CSC)"),
+                        ("Step 4: Download Mode", "Power off -> Hold [Vol Up] + [Vol Down] -> Connect USB -> Press [Vol Up]"),
+                        ("Step 5: Slot Mapping", "Slot BL -> BL, AP -> AP, CP -> CP, CSC -> CSC (or HOME_CSC to keep data)"),
+                        ("Step 6: Options", "Verify 'Auto Reboot' & 'F. Reset Time' are checked. Leave others default"),
+                        ("Step 7: Flash", "Click Start and wait for green PASS! status"),
+                    ],
+                );
+                badge_info("DETAILS", "Refer to README.md for comprehensive runbooks and driver download links.");
+                wait_for_enter()?;
+            }
+
+            9 => {
                 // Exit
                 println!("\n  Exiting Exynos LOKE Rescue. Session terminated.\n");
                 return Ok(());

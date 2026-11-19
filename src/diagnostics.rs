@@ -38,7 +38,14 @@ pub fn print_diagnostic_guidance(err_msg: &str, is_custom_binary: bool) {
              REMEDIATION:\n\
              1. Physically unplug USB cable from the phone for 5 seconds.\n\
              2. Reconnect directly to a motherboard USB-A 2.0 port.\n\
-             3. Run `exynos-loke-rescue prep-usb` and retry."
+             3. Run `exynos-loke-rescue prep-usb` and retry.\n\
+             \n\
+             RECOMMENDED RECOVERY METHOD:\n\
+             For guaranteed stock firmware restoration and unbricking, use official\n\
+             Samsung Odin3 (v3.14.4) on Windows with Samsung Android USB drivers.\n\
+             Physical Exynos bootloaders implement strict hardware FIFO timing that\n\
+             official Odin handles natively without USB transfer timeouts.\n\
+             See: README.md#recommended-method-official-stock-firmware-flashing-via-samsung-odin"
                 .yellow()
         );
     } else {
@@ -86,7 +93,9 @@ pub fn analyze_loke_failure(code: i32, part_name: &str) {
                      Device bootloader hung or dropped USB communication.\n\
                      REMEDIATION:\n\
                      1. Reconnect USB cable directly without USB hubs.\n\
-                     2. Use Odin v3 transport tier without v4 subcommands.",
+                     2. Use Odin v3 transport tier without v4 subcommands.\n\
+                     RECOMMENDED ALTERNATIVE:\n\
+                     Flash official stock firmware using Samsung Odin3 v3.14.4 on Windows for reliable hardware timing.",
                     part_name
                 )
                 .yellow()
